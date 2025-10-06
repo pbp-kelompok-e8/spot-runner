@@ -6,7 +6,7 @@ Emir Fadhil Basuki - 2406421440
 Kadek Chandra 
 Peter 
 Qowiy 
-William
+William Jonnatan - 2406429020
 
 - Daftar modul + deskripsi modul,
 
