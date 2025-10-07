@@ -6,7 +6,7 @@ Spot runner adalah website yang membantu masyarakat Indonesia menemukan, mendaft
 Emir Fadhil Basuki - 2406421440 
 Kadek Chandra 
 Peter 
-Qowiy 
+Qowiy - 2406435982
 William Jonnatan - 2406429020
 
 - Daftar modul + deskripsi modul,
@@ -20,6 +20,11 @@ Review - Peserta dapat memberikan ulasan dan rating event yang sudah diikuti
 User Profile - Data diri
 
 - Link sumber dataset,
+  1. https://jakartarunningfestival.id/
+  2. https://lariku.info/
+  3. https://uiultra.com/
+  4. https://kalenderlari.com/jadwal/
+  5. https://jadwallari.id/
 
 - Jenis pengguna website kalian,
 
