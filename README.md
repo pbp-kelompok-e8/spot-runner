@@ -10,17 +10,14 @@ Qowiy
 William Jonnatan - 2406429020
 
 - Daftar modul + deskripsi modul,
-Home & Dashboard Event - 
-Event Search & Filter
-Event Calendar View
-Event Detail Page
-Event Registration
-Organizer Dashboard
-Review
-User Profile
-Notification
-Article & Tips
-Payment Integration
+Home & Dashboard Event - Halaman utama yang menampilkan event-event terbaru, terpopuler, dan berdasarkan kategori
+Event Search & Filter - Fitur pencarian event berdasarkan nama, lokasi, tanggal, dan lainnya.
+Event Calendar View - Tampilan kalender interaktif untuk melihat event berdasarkan tanggal
+Event Detail Page - Menampilkan informasi detail : deskripsi, lokasi, penyelenggara, kontak, dan tautan pendaftaran
+Event Registration - Formulir pendaftaran
+Organizer Dashboard - Khusus untuk event organizer untuk menambahkan event, edit detail, melihat jumlah peserta, dll.
+Review - Peserta dapat memberikan ulasan dan rating event yang sudah diikuti
+User Profile - Data diri
 
 - Link sumber dataset,
 
