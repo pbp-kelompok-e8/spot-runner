@@ -1,6 +1,5 @@
 # Spot Runner
 ## About Spot Runner
----
 SpotRunner adalah platform digital yang menghubungkan para pecinta lari dengan berbagai event marathon di seluruh Indonesia. Kami hadir untuk mempermudah dalam menemukan, mengikuti, dan bahkan menyelenggarakan event lari dengan cara yang praktis dan menyenangkan.
 Melalui SpotRunner, user dapat menjelajahi kumpulan event marathon yang lengkap. Dengan fitur filter, user dapat mencari event berdasarkan lokasi terdekat, tanggal pelaksanaan, dan tipe marathon seperti Fun Run, 10K, Half Marathon, hingga Full Marathon. Semua dirancang agar user dapat menemukan event yang paling sesuai dengan tujuan dan kemampuanmu.
 Sebagai seorang runner, kamu bisa mendaftar dan booking event dengan mudah hingga mengikuti event pilihanmu tanpa repot. Event organizer juga dapat menyediakan merchandise dan para pelari akan mendapat koin setelah menyelesaikan suatu event yang dpaat ditukar dnegan merchandise jika koin mencukupi.
@@ -8,7 +7,6 @@ Sementara itu, bagi event organizer, SpotRunner menyediakan sistem manajemen eve
 Kami percaya bahwa lari bukan hanya tentang kecepatan, tapi juga tentang perjalanan dan kenyamanan. Dengan SpotRunner, kami ingin membangun ekosistem yang menyatukan pelari dan penyelenggara event dalam satu wadah yang profesional, transparan, dan mudah diakses.
 
 ## Our Features
----
 Spot Runner memiliki fitur utama, diantaranya:
 1. Explore Marathon Event
 Fitur Explore Marathon Event menampilkan kumpulan event marathon dari berbagai daerah dan kategori. Sistem dilengkapi dengan fitur filter yang memungkinkan penyaringan event berdasarkan lokasi, tipe marathon (Fun Run, 10K, Half Marathon, Full Marathon, dll), tanggal pelaksanaan, dan penyelenggara. Tujuan fitur ini adalah memudahkan pengguna dalam menemukan event yang relevan dan sesuai preferensi.
@@ -22,7 +20,6 @@ Fitur Create & Manage Event ditujukan untuk peran Event Organizer. Melalui fitur
 Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif berpartisipasi dalam event. Coin yang diperoleh dari penyelesaian event dapat digunakan untuk menukar berbagai jenis merchandise, seperti perlengkapan lari, pakaian, atau hadiah eksklusif lainnya. Fitur ini berfungsi untuk meningkatkan engagement pengguna serta memberikan insentif bagi partisipasi berkelanjutan dalam platform.
 
 ## Nama Anggota Kelompok
----
 Peter Yap (2406432910)
 Kadek Chandra Rasmi (2406426473)
 Emir Fadhil Basuki (2406421440) 
@@ -30,11 +27,9 @@ Muhammad Qowiy Shabir  (2406435982)
 William Jonnatan (2406429020)
 
 ## Daftar Modul
----
 
 
 ## Sumber Dataset
----
   1. https://jakartarunningfestival.id/
   2. https://lariku.info/
   3. https://uiultra.com/
@@ -43,7 +38,6 @@ William Jonnatan (2406429020)
 
 
 ## Jenis Pengguna
----
 
 ## URL Deployment PWS : 
 https://william-jonnatan-spotrunner.pbp.cs.ui.ac.id/
