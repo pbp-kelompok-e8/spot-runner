@@ -1,26 +1,40 @@
-# spot-runner
-## Deskripsi Website
-Spot runner adalah website yang membantu masyarakat Indonesia menemukan, mendaftar, dan mengikuti berbagai event lari, baik online maupun offline. Website ini menghubungkan event organizer, komunitas olahraga, dan peserta dalam satu platform yang mudah diakses. 
+# Spot Runner
+## About Spot Runner
+---
+SpotRunner adalah platform digital yang menghubungkan para pecinta lari dengan berbagai event marathon di seluruh Indonesia. Kami hadir untuk mempermudah dalam menemukan, mengikuti, dan bahkan menyelenggarakan event lari dengan cara yang praktis dan menyenangkan.
+Melalui SpotRunner, user dapat menjelajahi kumpulan event marathon yang lengkap. Dengan fitur filter, user dapat mencari event berdasarkan lokasi terdekat, tanggal pelaksanaan, dan tipe marathon seperti Fun Run, 10K, Half Marathon, hingga Full Marathon. Semua dirancang agar user dapat menemukan event yang paling sesuai dengan tujuan dan kemampuanmu.
+Sebagai seorang runner, kamu bisa mendaftar dan booking event dengan mudah hingga mengikuti event pilihanmu tanpa repot. Event organizer juga dapat menyediakan merchandise dan para pelari akan mendapat koin setelah menyelesaikan suatu event yang dpaat ditukar dnegan merchandise jika koin mencukupi.
+Sementara itu, bagi event organizer, SpotRunner menyediakan sistem manajemen event yang lengkap. Event organizer dapat membuat, mengelola, dan memantau event secara efisien — mulai dari pendaftaran peserta, pengaturan kategori lomba, hingga penyelenggaraan selesai.
+Kami percaya bahwa lari bukan hanya tentang kecepatan, tapi juga tentang perjalanan dan kenyamanan. Dengan SpotRunner, kami ingin membangun ekosistem yang menyatukan pelari dan penyelenggara event dalam satu wadah yang profesional, transparan, dan mudah diakses.
 
-## Nama anggota kelompok + NPM, 
-- Emir Fadhil Basuki - 2406421440 
-- Kadek Chandra 
-- Peter 
-- Muhammad Qowiy Shabir - 2406435982
-- William Jonnatan - 2406429020
+## Our Features
+---
+Spot Runner memiliki fitur utama, diantaranya:
+1. Explore Marathon Event
+Fitur Explore Marathon Event menampilkan kumpulan event marathon dari berbagai daerah dan kategori. Sistem dilengkapi dengan fitur filter yang memungkinkan penyaringan event berdasarkan lokasi, tipe marathon (Fun Run, 10K, Half Marathon, Full Marathon, dll), tanggal pelaksanaan, dan penyelenggara. Tujuan fitur ini adalah memudahkan pengguna dalam menemukan event yang relevan dan sesuai preferensi.
+2. Join Marathon Event
+Fitur Join Marathon Event berfungsi untuk melakukan pendaftaran atau booking ke event marathon yang tersedia. Setiap pengguna yang berhasil mendaftar akan menerima tiket digital berisi detail event seperti nama event, lokasi, tanggal, dan nomor tiket. Setelah event selesai, sistem akan memberikan coin reward kepada peserta sesuai dengan tingkat kesulitan event. Coin tersebut dapat dikumpulkan dan ditukarkan dengan merchandise yang tersedia.
+3. Review & Rating
+Fitur Review & Rating memungkinkan pengguna memberikan penilaian terhadap event yang telah mereka ikuti. Review berupa komentar dan rating bintang ini akan ditampilkan secara publik pada halaman event, sehingga dapat berfungsi sebagai indikator kualitas bagi calon peserta lainnya. Bagi event organizer, fitur ini membantu meningkatkan kredibilitas serta memberikan masukan untuk pengembangan event berikutnya.
+4. Create & Manage Event (Event Organizer)
+Fitur Create & Manage Event ditujukan untuk peran Event Organizer. Melalui fitur ini, organizer dapat membuat, memperbarui, dan menghapus event marathon secara mandiri. Fitur ini mencakup pengaturan detail event seperti nama, deskripsi, kategori, lokasi, dan tanggal pelaksanaan. Selain itu, event organizer juga dapat menambahkan merchandise yang akan menjadi hadiah penukaran bagi peserta berdasarkan coin yang mereka kumpulkan.
+5. Merchandise & Rewards
+Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif berpartisipasi dalam event. Coin yang diperoleh dari penyelesaian event dapat digunakan untuk menukar berbagai jenis merchandise, seperti perlengkapan lari, pakaian, atau hadiah eksklusif lainnya. Fitur ini berfungsi untuk meningkatkan engagement pengguna serta memberikan insentif bagi partisipasi berkelanjutan dalam platform.
 
-## Daftar modul + deskripsi modul,
-Home & Dashboard Event - Halaman utama yang menampilkan event-event terbaru, terpopuler, dan berdasarkan kategori
-Event Search & Filter - Fitur pencarian event berdasarkan nama, lokasi, tanggal, dan lainnya.
-Event Calendar View - Tampilan kalender interaktif untuk melihat event berdasarkan tanggal
-Event Detail Page - Menampilkan informasi detail : deskripsi, lokasi, penyelenggara, kontak, dan tautan pendaftaran
-Event Registration - Formulir pendaftaran
-Organizer Dashboard - Khusus untuk event organizer untuk menambahkan event, edit detail, melihat jumlah peserta, dll.
-Review - Peserta dapat memberikan ulasan dan rating event yang sudah diikuti
-User Profile - Data diri
+## Nama Anggota Kelompok
+---
+Peter Yap (2406432910)
+Kadek Chandra Rasmi (2406426473)
+Emir Fadhil Basuki (2406421440) 
+Muhammad Qowiy Shabir  (2406435982) 
+William Jonnatan (2406429020)
+
+## Daftar Modul
+---
 
 
-## Link sumber dataset,
+## Sumber Dataset
+---
   1. https://jakartarunningfestival.id/
   2. https://lariku.info/
   3. https://uiultra.com/
@@ -28,8 +42,11 @@ User Profile - Data diri
   5. https://jadwallari.id/
 
 
-## Jenis pengguna website kalian,
+## Jenis Pengguna
+---
 
-## Link pws
+## URL Deployment PWS : 
+https://william-jonnatan-spotrunner.pbp.cs.ui.ac.id/
 
-## Link design website (Figma, canva, dll) kelompok kalian [OPTIONAL].
+## Design File Figma:
+https://www.figma.com/design/bPYWoCrt7XljkLbyVaHgRU/PBP-Kelompok?node-id=0-1&t=6whKcuuazAz6Wb6q-1
