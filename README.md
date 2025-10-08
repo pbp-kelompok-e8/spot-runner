@@ -1,5 +1,5 @@
 # spot-runner
-- Deskripsi Website
+## Deskripsi Website
 Spot runner adalah website yang membantu masyarakat Indonesia menemukan, mendaftar, dan mengikuti berbagai event lari, baik online maupun offline. Website ini menghubungkan event organizer, komunitas olahraga, dan peserta dalam satu platform yang mudah diakses. 
 
 ## Nama anggota kelompok + NPM, 
