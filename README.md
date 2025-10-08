@@ -6,7 +6,7 @@ Spot runner adalah website yang membantu masyarakat Indonesia menemukan, mendaft
 - Emir Fadhil Basuki - 2406421440 
 - Kadek Chandra 
 - Peter 
-- Qowiy - 2406435982
+- Muhammad Qowiy Shabir - 2406435982
 - William Jonnatan - 2406429020
 
 ## Daftar modul + deskripsi modul,
