@@ -1,9 +1,12 @@
-# Spot Runner
+
+<img width="1440" height="587" alt="banner_PBP_spotrunner" src="https://github.com/user-attachments/assets/47c4894c-102c-441c-9ab5-1175d1f06dac" />
+
 ## About Spot Runner
-SpotRunner adalah platform digital yang menghubungkan para pecinta lari dengan berbagai event marathon di seluruh Indonesia. Kami hadir untuk mempermudah dalam menemukan, mengikuti, dan bahkan menyelenggarakan event lari dengan cara yang praktis dan menyenangkan.
-Melalui SpotRunner, user dapat menjelajahi kumpulan event marathon yang lengkap. Dengan fitur filter, user dapat mencari event berdasarkan lokasi terdekat, tanggal pelaksanaan, dan tipe marathon seperti Fun Run, 10K, Half Marathon, hingga Full Marathon. Semua dirancang agar user dapat menemukan event yang paling sesuai dengan tujuan dan kemampuanmu.
-Sebagai seorang runner, kamu bisa mendaftar dan booking event dengan mudah hingga mengikuti event pilihanmu tanpa repot. Event organizer juga dapat menyediakan merchandise dan para pelari akan mendapat koin setelah menyelesaikan suatu event yang dpaat ditukar dnegan merchandise jika koin mencukupi.
-Sementara itu, bagi event organizer, SpotRunner menyediakan sistem manajemen event yang lengkap. Event organizer dapat membuat, mengelola, dan memantau event secara efisien — mulai dari pendaftaran peserta, pengaturan kategori lomba, hingga penyelenggaraan selesai.
+`SpotRunner` adalah platform digital yang menghubungkan para pecinta lari dengan berbagai event marathon di seluruh Indonesia. Kami hadir untuk mempermudah menemukan, mengikuti, dan bahkan menyelenggarakan event lari dengan cara yang praktis dan menyenangkan. Melalui SpotRunner, user dapat menjelajahi kumpulan event marathon yang lengkap. Dengan fitur filter, user dapat mencari event berdasarkan lokasi terdekat, tanggal pelaksanaan, dan tipe marathon seperti Fun Run, 10K, Half Marathon, hingga Full Marathon. Semua dirancang agar user dapat menemukan event yang paling sesuai dengan tujuan dan kemampuannya.
+
+Sebagai seorang `runner`, kamu bisa mendaftar dan booking event dengan mudah hingga mengikuti event pilihanmu tanpa repot. Event organizer juga dapat menyediakan merchandise dan para pelari akan mendapat koin setelah menyelesaikan suatu event yang dpaat ditukar dnegan merchandise jika koin mencukupi.
+
+Sementara itu, bagi `event organizer`, SpotRunner menyediakan sistem manajemen event yang lengkap. Event organizer dapat membuat, mengelola, dan memantau event secara efisien — mulai dari pendaftaran peserta, pengaturan kategori lomba, hingga penyelenggaraan selesai.
 Kami percaya bahwa lari bukan hanya tentang kecepatan, tapi juga tentang perjalanan dan kenyamanan. Dengan SpotRunner, kami ingin membangun ekosistem yang menyatukan pelari dan penyelenggara event dalam satu wadah yang profesional, transparan, dan mudah diakses.
 
 ## Our Features
