@@ -9,14 +9,23 @@ Kami percaya bahwa lari bukan hanya tentang kecepatan, tapi juga tentang perjala
 ## Our Features
 Spot Runner memiliki fitur utama, diantaranya:
 1. Explore Marathon Event
+
 Fitur Explore Marathon Event menampilkan kumpulan event marathon dari berbagai daerah dan kategori. Sistem dilengkapi dengan fitur filter yang memungkinkan penyaringan event berdasarkan lokasi, tipe marathon (Fun Run, 10K, Half Marathon, Full Marathon, dll), tanggal pelaksanaan, dan penyelenggara. Tujuan fitur ini adalah memudahkan pengguna dalam menemukan event yang relevan dan sesuai preferensi.
+
 2. Join Marathon Event
+
 Fitur Join Marathon Event berfungsi untuk melakukan pendaftaran atau booking ke event marathon yang tersedia. Setiap pengguna yang berhasil mendaftar akan menerima tiket digital berisi detail event seperti nama event, lokasi, tanggal, dan nomor tiket. Setelah event selesai, sistem akan memberikan coin reward kepada peserta sesuai dengan tingkat kesulitan event. Coin tersebut dapat dikumpulkan dan ditukarkan dengan merchandise yang tersedia.
+
 3. Review & Rating
+
 Fitur Review & Rating memungkinkan pengguna memberikan penilaian terhadap event yang telah mereka ikuti. Review berupa komentar dan rating bintang ini akan ditampilkan secara publik pada halaman event, sehingga dapat berfungsi sebagai indikator kualitas bagi calon peserta lainnya. Bagi event organizer, fitur ini membantu meningkatkan kredibilitas serta memberikan masukan untuk pengembangan event berikutnya.
+
 4. Create & Manage Event (Event Organizer)
+
 Fitur Create & Manage Event ditujukan untuk peran Event Organizer. Melalui fitur ini, organizer dapat membuat, memperbarui, dan menghapus event marathon secara mandiri. Fitur ini mencakup pengaturan detail event seperti nama, deskripsi, kategori, lokasi, dan tanggal pelaksanaan. Selain itu, event organizer juga dapat menambahkan merchandise yang akan menjadi hadiah penukaran bagi peserta berdasarkan coin yang mereka kumpulkan.
+
 5. Merchandise & Rewards
+
 Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif berpartisipasi dalam event. Coin yang diperoleh dari penyelesaian event dapat digunakan untuk menukar berbagai jenis merchandise, seperti perlengkapan lari, pakaian, atau hadiah eksklusif lainnya. Fitur ini berfungsi untuk meningkatkan engagement pengguna serta memberikan insentif bagi partisipasi berkelanjutan dalam platform.
 
 ## Nama Anggota Kelompok
