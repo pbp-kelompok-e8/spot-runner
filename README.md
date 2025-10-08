@@ -11,13 +11,15 @@ Kami percaya bahwa lari bukan hanya tentang kecepatan, tapi juga tentang perjala
 
 ## Our Features
 Spot Runner memiliki fitur utama, diantaranya:
-### 1. Explore Marathon Event
-
+<details>
+<summary> 1. Explore Marathon Event
 Fitur Explore Marathon Event menampilkan kumpulan event marathon dari berbagai daerah dan kategori. Sistem dilengkapi dengan fitur filter yang memungkinkan penyaringan event berdasarkan lokasi, tipe marathon (Fun Run, 10K, Half Marathon, Full Marathon, dll), tanggal pelaksanaan, dan penyelenggara. Tujuan fitur ini adalah memudahkan pengguna dalam menemukan event yang relevan dan sesuai preferensi.
-
-### 2. Join Marathon Event
-
+</details>
+  
+<details>
+<summary> 2. Join Marathon Event
 Fitur Join Marathon Event berfungsi untuk melakukan pendaftaran atau booking ke event marathon yang tersedia. Setiap pengguna yang berhasil mendaftar akan menerima tiket digital berisi detail event seperti nama event, lokasi, tanggal, dan nomor tiket. Setelah event selesai, sistem akan memberikan coin reward kepada peserta sesuai dengan tingkat kesulitan event. Coin tersebut dapat dikumpulkan dan ditukarkan dengan merchandise yang tersedia.
+</details>
 
 ### 3. Review & Rating
 
