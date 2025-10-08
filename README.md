@@ -12,26 +12,29 @@ Kami percaya bahwa lari bukan hanya tentang kecepatan, tapi juga tentang perjala
 ## Our Features
 Spot Runner memiliki fitur utama, diantaranya:
 <details>
-<summary> 1. Explore Marathon Event
+<summary> 1. Explore Marathon Event </summary>
 Fitur Explore Marathon Event menampilkan kumpulan event marathon dari berbagai daerah dan kategori. Sistem dilengkapi dengan fitur filter yang memungkinkan penyaringan event berdasarkan lokasi, tipe marathon (Fun Run, 10K, Half Marathon, Full Marathon, dll), tanggal pelaksanaan, dan penyelenggara. Tujuan fitur ini adalah memudahkan pengguna dalam menemukan event yang relevan dan sesuai preferensi.
 </details>
   
 <details>
-<summary> 2. Join Marathon Event
+<summary> 2. Join Marathon Event </summary>
 Fitur Join Marathon Event berfungsi untuk melakukan pendaftaran atau booking ke event marathon yang tersedia. Setiap pengguna yang berhasil mendaftar akan menerima tiket digital berisi detail event seperti nama event, lokasi, tanggal, dan nomor tiket. Setelah event selesai, sistem akan memberikan coin reward kepada peserta sesuai dengan tingkat kesulitan event. Coin tersebut dapat dikumpulkan dan ditukarkan dengan merchandise yang tersedia.
 </details>
 
-### 3. Review & Rating
-
+<details>
+<summary> 3. Review & Rating </summary>
 Fitur Review & Rating memungkinkan pengguna memberikan penilaian terhadap event yang telah mereka ikuti. Review berupa komentar dan rating bintang ini akan ditampilkan secara publik pada halaman event, sehingga dapat berfungsi sebagai indikator kualitas bagi calon peserta lainnya. Bagi event organizer, fitur ini membantu meningkatkan kredibilitas serta memberikan masukan untuk pengembangan event berikutnya.
+</details>
 
-### 4. Create & Manage Event (Event Organizer)
-
+<details>
+<summary> 4. Create & Manage Event (Event Organizer) </summary>
 Fitur Create & Manage Event ditujukan untuk peran Event Organizer. Melalui fitur ini, organizer dapat membuat, memperbarui, dan menghapus event marathon secara mandiri. Fitur ini mencakup pengaturan detail event seperti nama, deskripsi, kategori, lokasi, dan tanggal pelaksanaan. Selain itu, event organizer juga dapat menambahkan merchandise yang akan menjadi hadiah penukaran bagi peserta berdasarkan coin yang mereka kumpulkan.
+</details>
 
-### 5. Merchandise & Rewards
-
+<details>
+<summary> 5. Merchandise & Rewards </summary>
 Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif berpartisipasi dalam event. Coin yang diperoleh dari penyelesaian event dapat digunakan untuk menukar berbagai jenis merchandise, seperti perlengkapan lari, pakaian, atau hadiah eksklusif lainnya. Fitur ini berfungsi untuk meningkatkan engagement pengguna serta memberikan insentif bagi partisipasi berkelanjutan dalam platform.
+</details>
 
 ## Nama Anggota Kelompok
 - Peter Yap (2406432910)
