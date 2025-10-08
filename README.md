@@ -18,12 +18,12 @@ Fitur Explore Marathon Event menampilkan kumpulan event marathon dari berbagai d
   
 <details>
 <summary>  Join Marathon Event </summary>
-Fitur Join Marathon Event berfungsi untuk melakukan pendaftaran atau booking ke event marathon yang tersedia. Setiap pengguna yang berhasil mendaftar akan menerima tiket digital berisi detail event seperti nama event, lokasi, tanggal, dan nomor tiket. Setelah event selesai, sistem akan memberikan coin reward kepada peserta sesuai dengan tingkat kesulitan event. Coin tersebut dapat dikumpulkan dan ditukarkan dengan merchandise yang tersedia.
+Fitur Join Marathon Event berfungsi untuk melakukan pendaftaran atau booking ke event marathon yang tersedia. Setiap pengguna yang berhasil mendaftar akan menerima tiket digital berisi detail event seperti nama event, lokasi, tanggal, dan participant ID. Setelah event selesai, sistem akan memberikan coin reward kepada peserta yang dapat dikumpulkan dan ditukarkan dengan merchandise yang tersedia.
 </details>
 
 <details>
-<summary>  Review & Rating </summary>
-Fitur Review & Rating memungkinkan pengguna memberikan penilaian terhadap event yang telah mereka ikuti. Review berupa komentar dan rating bintang ini akan ditampilkan secara publik pada halaman event, sehingga dapat berfungsi sebagai indikator kualitas bagi calon peserta lainnya. Bagi event organizer, fitur ini membantu meningkatkan kredibilitas serta memberikan masukan untuk pengembangan event berikutnya.
+<summary>  Review </summary>
+Fitur Review memungkinkan pengguna memberikan penilaian terhadap event yang telah mereka ikuti. Review berupa komentar dan rating bintang ini akan ditampilkan secara publik pada halaman event, sehingga dapat berfungsi sebagai indikator kualitas bagi calon peserta lainnya. Bagi event organizer, fitur ini membantu meningkatkan kredibilitas serta memberikan masukan untuk pengembangan event berikutnya.
 </details>
 
 <details>
@@ -49,7 +49,7 @@ Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif 
 | 1  | User            | Autentikasi user, profile user, CRUD review, tukar poin, booking event.                                                               |  Peter  | 
 | 2  | Event           | Event model + public listing & detail. Menyimpan data event, CRUD untuk organizer (Create/Update/Delete), halaman list/detail publik. | William | 
 | 3  | Merchandise     | CRUD Merchandise dan handle penukaran merch.                                                                                          | Chandra | 
-| 4  | Review          | Reviews & ratings. menyimpan review event, menampilkan rata-rata, menampilkan semua review untuk organizer.                           |  Qowiy  | 
+| 4  | Review          | Reviews & ratings. Menyimpan review event, menampilkan rata-rata, menampilkan semua review untuk organizer.                           |  Qowiy  | 
 | 5  | Event Organizer | Organizer tools. Untuk melihat upcoming events, participant counts, recent reviews, list participants per event, CRUD Merchandise.    |   Emir  | 
 
 ## Sumber Dataset
