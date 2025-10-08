@@ -8,23 +8,23 @@ Kami percaya bahwa lari bukan hanya tentang kecepatan, tapi juga tentang perjala
 
 ## Our Features
 Spot Runner memiliki fitur utama, diantaranya:
-1. Explore Marathon Event
+### 1. Explore Marathon Event
 
 Fitur Explore Marathon Event menampilkan kumpulan event marathon dari berbagai daerah dan kategori. Sistem dilengkapi dengan fitur filter yang memungkinkan penyaringan event berdasarkan lokasi, tipe marathon (Fun Run, 10K, Half Marathon, Full Marathon, dll), tanggal pelaksanaan, dan penyelenggara. Tujuan fitur ini adalah memudahkan pengguna dalam menemukan event yang relevan dan sesuai preferensi.
 
-2. Join Marathon Event
+### 2. Join Marathon Event
 
 Fitur Join Marathon Event berfungsi untuk melakukan pendaftaran atau booking ke event marathon yang tersedia. Setiap pengguna yang berhasil mendaftar akan menerima tiket digital berisi detail event seperti nama event, lokasi, tanggal, dan nomor tiket. Setelah event selesai, sistem akan memberikan coin reward kepada peserta sesuai dengan tingkat kesulitan event. Coin tersebut dapat dikumpulkan dan ditukarkan dengan merchandise yang tersedia.
 
-3. Review & Rating
+### 3. Review & Rating
 
 Fitur Review & Rating memungkinkan pengguna memberikan penilaian terhadap event yang telah mereka ikuti. Review berupa komentar dan rating bintang ini akan ditampilkan secara publik pada halaman event, sehingga dapat berfungsi sebagai indikator kualitas bagi calon peserta lainnya. Bagi event organizer, fitur ini membantu meningkatkan kredibilitas serta memberikan masukan untuk pengembangan event berikutnya.
 
-4. Create & Manage Event (Event Organizer)
+### 4. Create & Manage Event (Event Organizer)
 
 Fitur Create & Manage Event ditujukan untuk peran Event Organizer. Melalui fitur ini, organizer dapat membuat, memperbarui, dan menghapus event marathon secara mandiri. Fitur ini mencakup pengaturan detail event seperti nama, deskripsi, kategori, lokasi, dan tanggal pelaksanaan. Selain itu, event organizer juga dapat menambahkan merchandise yang akan menjadi hadiah penukaran bagi peserta berdasarkan coin yang mereka kumpulkan.
 
-5. Merchandise & Rewards
+### 5. Merchandise & Rewards
 
 Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif berpartisipasi dalam event. Coin yang diperoleh dari penyelesaian event dapat digunakan untuk menukar berbagai jenis merchandise, seperti perlengkapan lari, pakaian, atau hadiah eksklusif lainnya. Fitur ini berfungsi untuk meningkatkan engagement pengguna serta memberikan insentif bagi partisipasi berkelanjutan dalam platform.
 
@@ -38,18 +38,11 @@ Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif 
 ## Daftar Modul
 | No |    Nama Modul   |                                               Deskripsi                                                                               | Anggota |  
 | -- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------- | 
-| 1  | User            | Autentikasi user, profile user, CRUD review, tukar poin, booking event.                                                               | Anggota | 
-| 2  | Event           | Event model + public listing & detail. Menyimpan data event, CRUD untuk organizer (Create/Update/Delete), halaman list/detail publik. | Anggota | 
-| 3  | Merchandise     | CRUD Merchandise dan handle penukaran merch.                                                                                          | Anggota | 
-| 4  | Review          | Reviews & ratings. menyimpan review event, menampilkan rata-rata, menampilkan semua review untuk organizer.                           | Anggota | 
-| 5  | Event Organizer | Organizer tools. Untuk melihat upcoming events, participant counts, recent reviews, list participants per event, CRUD Merchandise.    | Anggota | 
-
-
-user :peter
-qowy : review
-william : event
-chandra: merch
-emir : event organizer
+| 1  | User            | Autentikasi user, profile user, CRUD review, tukar poin, booking event.                                                               |  Peter  | 
+| 2  | Event           | Event model + public listing & detail. Menyimpan data event, CRUD untuk organizer (Create/Update/Delete), halaman list/detail publik. | William | 
+| 3  | Merchandise     | CRUD Merchandise dan handle penukaran merch.                                                                                          | Chandra | 
+| 4  | Review          | Reviews & ratings. menyimpan review event, menampilkan rata-rata, menampilkan semua review untuk organizer.                           |  Qowiy  | 
+| 5  | Event Organizer | Organizer tools. Untuk melihat upcoming events, participant counts, recent reviews, list participants per event, CRUD Merchandise.    |   Emir  | 
 
 ## Sumber Dataset
   1. https://jakartarunningfestival.id/
@@ -59,6 +52,33 @@ emir : event organizer
   5. https://jadwallari.id/
 
 ## Jenis Pengguna
+### 1. Runner 
+Akun pengguna biasa. Memiliki atribut:
+- Username 
+- Password
+- Email
+- Base location
+- Poin
+
+Akun runner juga memiliki relasi:
+- Review (one to many) 
+- Event (many to many)
+
+Pengguna dengan role ini dapat mengakses fitur lihat event, booking event, review event yang sudah dilakukan, menukar poin dengan barang merch, dan melihat history event
+
+### 2. Event organizer
+Merupakan pengguna yang dapat membuat dan mengatur event. Pengguna ini memiliki atribut:
+- Username
+- Password
+- Profile Picture
+- Base Location
+
+Akun event organizer memiliki relasi:
+- Event (one to many)
+- Review (one to many)
+- Merchandise (one to many)
+
+Pengguna ini dapat menambahkan event-event baru atau pun mengubah detail-detail pada event yang telah dibuat oleh pengguna sebelumnya. Selain itu, pengguna dengan role ini juga dapat membatalkan atau menghapus event-event yang tidak diinginkan. Pengguna ini juga memiliki akses untuk melihat event yang sedang berjalan, sudah selesai, ataupun dibatalkan. 
 
 ## URL Deployment PWS : 
 https://william-jonnatan-spotrunner.pbp.cs.ui.ac.id/
