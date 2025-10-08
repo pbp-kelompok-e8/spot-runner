@@ -68,7 +68,7 @@ Akun pengguna biasa. Memiliki atribut:
 - Base location
 - Poin
 
-Akun runner juga memiliki relasi:
+Akun runner juga memiliki relasi dengan:
 - Review (one to many) 
 - Event (many to many)
 
@@ -81,7 +81,7 @@ Merupakan pengguna yang dapat membuat dan mengatur event. Pengguna ini memiliki 
 - Profile Picture
 - Base Location
 
-Akun event organizer memiliki relasi:
+Akun event organizer memiliki relasi dengan:
 - Event (one to many)
 - Review (one to many)
 - Merchandise (one to many)
