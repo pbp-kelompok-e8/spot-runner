@@ -3,11 +3,11 @@
 Spot runner adalah website yang membantu masyarakat Indonesia menemukan, mendaftar, dan mengikuti berbagai event lari, baik online maupun offline. Website ini menghubungkan event organizer, komunitas olahraga, dan peserta dalam satu platform yang mudah diakses. 
 
 ## Nama anggota kelompok + NPM, 
-Emir Fadhil Basuki - 2406421440 
-Kadek Chandra 
-Peter 
-Qowiy - 2406435982
-William Jonnatan - 2406429020
+- Emir Fadhil Basuki - 2406421440 
+- Kadek Chandra 
+- Peter 
+- Qowiy - 2406435982
+- William Jonnatan - 2406429020
 
 ## Daftar modul + deskripsi modul,
 Home & Dashboard Event - Halaman utama yang menampilkan event-event terbaru, terpopuler, dan berdasarkan kategori
