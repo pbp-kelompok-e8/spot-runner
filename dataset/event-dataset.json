@@ -1,0 +1,57 @@
+[
+  { 
+    "status": "Finished",
+    "eventname": "Jakarta Running Festival 2025",
+    "location": "Jakarta",
+    "eventDate": "2025-03-16",
+    "regisDeadline": "2025-03-9",
+    "image": null,
+    "category": "5K",
+    "maxParticipant": "100",
+    "description": "Event lari tahunan terbesar di Jakarta dengan ribuan peserta."
+  },
+  {
+    "status": "Finished",
+    "eventname": "UI Ultra 2025",
+    "location": "Depok",
+    "eventDate": "2025-05-25",
+    "regisDeadline": "2025-05-20",
+    "image": null,
+    "category": "Marathon",
+    "maxParticipant": "50",
+    "description": "Lomba ultra marathon dengan rute menantang di area UI."
+  },
+  {
+    "status": "Coming Soon",
+    "eventname": "Borobudur Marathon 2025",
+    "location": "Magelang",
+    "eventDate": "2025-11-23",
+    "regisDeadline": "2025-11-11",
+    "image": null,
+    "category": "5K",
+    "maxParticipant": "80",
+    "description": "Event lari di kawasan Candi Borobudur dengan nuansa budaya Jawa."
+  },
+  {
+    "status": "Coming Soon",
+    "eventname": "Bali Marathon 2025",
+    "location": "Bali",
+    "eventDate": "2025-12-18",
+    "regisDeadline": "2025-011-18",
+    "image": null,
+    "category": "Marathon",
+    "maxParticipant": "35",
+    "description": "Event internasional dengan panorama alam dan budaya Bali."
+  },
+  {
+    "status": "Finished",
+    "eventname": "Bandung Half Marathon 2025",
+    "location": "Bandung",
+    "eventDate": "2025-06-30",
+    "regisDeadline": "2025-06-2 9",
+    "image": null,
+    "category": "Half Marathon",
+    "maxParticipant": "67",
+    "description": "Lari sambil menikmati suasana kota Bandung yang sejuk."
+  }
+]

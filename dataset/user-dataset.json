@@ -1,0 +1,43 @@
+[
+  {
+    "username": "Emir",
+    "email": "emir@mail.com",
+    "password": "testt123",
+    "role": "participant",
+    "location": "Jakarta",
+    "profilePhoto": null
+
+  },
+  {
+    "username": "Kadek",
+    "email": "kadek@mail.com",
+    "password": "organizer1",
+    "role": "organizer",
+    "location": "Bandung",
+    "profilePhoto": null
+  },
+  {
+    "username": "Peter",
+    "email": "peter@mail.com",
+    "password": "organizer2",
+    "role": "organizer",
+    "location": "Surabaya",
+    "profilePhoto": null
+  },
+  {
+    "username": "Qowiy",
+    "email": "qowiy@mail.com",
+    "password": "yayasetuju",
+    "role": "participant",
+    "location": "Bogor",
+    "profilePhoto": null
+  },
+  {
+    "username": "William",
+    "email": "william@mail.com",
+    "password": "larilarilari",
+    "role": "participant",
+    "location": "Bali",
+    "profilePhoto": null
+  }
+]
