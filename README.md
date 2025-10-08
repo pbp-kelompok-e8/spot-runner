@@ -29,11 +29,11 @@ Fitur Create & Manage Event ditujukan untuk peran Event Organizer. Melalui fitur
 Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif berpartisipasi dalam event. Coin yang diperoleh dari penyelesaian event dapat digunakan untuk menukar berbagai jenis merchandise, seperti perlengkapan lari, pakaian, atau hadiah eksklusif lainnya. Fitur ini berfungsi untuk meningkatkan engagement pengguna serta memberikan insentif bagi partisipasi berkelanjutan dalam platform.
 
 ## Nama Anggota Kelompok
-Peter Yap (2406432910)
-Kadek Chandra Rasmi (2406426473)
-Emir Fadhil Basuki (2406421440) 
-Muhammad Qowiy Shabir  (2406435982) 
-William Jonnatan (2406429020)
+- Peter Yap (2406432910)
+- Kadek Chandra Rasmi (2406426473)
+- Emir Fadhil Basuki (2406421440) 
+- Muhammad Qowiy Shabir  (2406435982) 
+- William Jonnatan (2406429020)
 
 ## Daftar Modul
 
