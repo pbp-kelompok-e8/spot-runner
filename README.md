@@ -36,7 +36,13 @@ Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif 
 - William Jonnatan (2406429020)
 
 ## Daftar Modul
-
+| No |    Nama Modul   |    Anggota    | 
+| -- | --------------- | ------------- |
+| 1  | User            | Content Cell  |
+| 2  | Event           | Content Cell  |
+| 3  | Merchandise     | Content Cell  |
+| 4  | Review          | Content Cell  |
+| 5  | Event Organizer | Content Cell  |
 
 ## Sumber Dataset
   1. https://jakartarunningfestival.id/
@@ -44,7 +50,6 @@ Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif 
   3. https://uiultra.com/
   4. https://kalenderlari.com/jadwal/
   5. https://jadwallari.id/
-
 
 ## Jenis Pengguna
 
