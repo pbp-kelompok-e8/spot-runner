@@ -37,12 +37,19 @@ Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif 
 
 ## Daftar Modul
 | No |    Nama Modul   |                                               Deskripsi                                                                               | Anggota |  
-| -- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | Anggota | 
+| -- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------- | 
 | 1  | User            | Autentikasi user, profile user, CRUD review, tukar poin, booking event.                                                               | Anggota | 
 | 2  | Event           | Event model + public listing & detail. Menyimpan data event, CRUD untuk organizer (Create/Update/Delete), halaman list/detail publik. | Anggota | 
 | 3  | Merchandise     | CRUD Merchandise dan handle penukaran merch.                                                                                          | Anggota | 
 | 4  | Review          | Reviews & ratings. menyimpan review event, menampilkan rata-rata, menampilkan semua review untuk organizer.                           | Anggota | 
 | 5  | Event Organizer | Organizer tools. Untuk melihat upcoming events, participant counts, recent reviews, list participants per event, CRUD Merchandise.    | Anggota | 
+
+
+user :peter
+qowy : review
+william : event
+chandra: merch
+emir : event organizer
 
 ## Sumber Dataset
   1. https://jakartarunningfestival.id/
