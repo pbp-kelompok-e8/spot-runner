@@ -50,7 +50,7 @@ Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif 
 | 2  | Event           | Event model + public listing & detail. Menyimpan data event, CRUD untuk organizer (Create/Update/Delete), halaman list/detail publik. | William | 
 | 3  | Merchandise     | CRUD Merchandise dan handle penukaran merch.                                                                                          | Chandra | 
 | 4  | Review          | Reviews & ratings. Menyimpan review event, menampilkan rata-rata, menampilkan semua review untuk organizer.                           |  Qowiy  | 
-| 5  | Event Organizer | Organizer tools. Untuk melihat upcoming events, participant counts, recent reviews, list participants per event                       |   Emir  | 
+| 5  | Event Organizer | Event Organizer Profile and Dashboard                                                                                                 |   Emir  | 
 
 ## Sumber Dataset
   1. https://jakartarunningfestival.id/
