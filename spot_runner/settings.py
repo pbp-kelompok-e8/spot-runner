@@ -42,10 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.merchandise',
+    'apps.main',
     'apps.event',
     'apps.event_organizer',
-    'apps.main',
+    'apps.merchandise',
     'apps.review',
 ]
 

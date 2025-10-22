@@ -18,10 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('apps.main.urls')),  # Routing ke app main
     path('admin/', admin.site.urls),
     path('event/', include('apps.event.urls')),  # Routing ke app event
     path('event-organizer/', include('apps.event_organizer.urls')),  # Routing ke app event_organizer
-    path('', include('apps.main.urls')),  # Routing ke app main
     path('merchandise/', include('apps.merchandise.urls')),  # Routing ke app merchandise
     path('review/', include('apps.review.urls')),  # Routing ke app review
 ]

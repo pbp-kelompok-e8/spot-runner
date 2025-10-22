@@ -10,7 +10,7 @@ from django.contrib import messages
 # Create your views here.
 
 def show_main(request):
-    return HttpResponse("Ini halaman main")
+    return render(request, 'main.html')
 
 def register(request):
     form = UserCreationForm()
