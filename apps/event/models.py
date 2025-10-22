@@ -31,6 +31,12 @@ class Event(models.Model):
         ('tangerang', 'Tangerang')
     ]
 
+    status = [
+        ('coming_soon', 'Coming Soon'),
+        ('on_going', 'On Going'),
+        ('finished', 'Finished'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -46,6 +52,7 @@ class Event(models.Model):
     capacity = models.PositiveIntegerField(default=0)
     total_participans = models.PositiveIntegerField(default=0)
     full = models.BooleanField(default=False)
+    event_status = models.CharField(max_length=20, choices=status, default='coming_soon')
 
     def __str__(self):
         return self.name
@@ -56,5 +63,4 @@ class Event(models.Model):
             self.full = True
         else:
             self.total_participans += 1
-        
         self.save()
