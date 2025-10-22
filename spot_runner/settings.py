@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     'apps.review',
 ]
 
+#kasih tau django kalo pake user custom
+AUTH_USER_MODEL = 'main.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
