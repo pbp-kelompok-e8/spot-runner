@@ -75,6 +75,7 @@ def show_json(request):
             'total_participans': event.total_participans,
             'full': event.full,
             'event_status' : event.event_status,
+            'coin' : event.coin,
             'user_eo_id': event.user_eo_id
         }
         for event in event_list
@@ -82,17 +83,17 @@ def show_json(request):
 
     return JsonResponse(data, safe=False)
 
-def show_xml_by_id(request, news_id):
+def show_xml_by_id(request, event_id):
    try:
-       event_item = Event.objects.filter(pk=news_id)
+       event_item = Event.objects.filter(pk=event_id)
        xml_data = serializers.serialize("xml", event_item)
        return HttpResponse(xml_data, content_type="application/xml")
    except Event.DoesNotExist:
        return HttpResponse(status=404)
 
-def show_json_by_id(request, news_id):
+def show_json_by_id(request, event_id):
     try:
-        event = Event.objects.select_related('user').get(pk=news_id)
+        event = Event.objects.select_related('user').get(pk=event_id)
         data = {
             'id': str(event.id),
             'name': event.name,
@@ -110,6 +111,7 @@ def show_json_by_id(request, news_id):
             'total_participans': event.total_participans,
             'full': event.full,
             'event_status' : event.event_status,
+            'coin' : event.coin,
             'user_eo_id': event.user_eo_id,
             'user_username': event.user_eo.username if event.user_id else None
         }

@@ -53,6 +53,7 @@ class Event(models.Model):
     total_participans = models.PositiveIntegerField(default=0)
     full = models.BooleanField(default=False)
     event_status = models.CharField(max_length=20, choices=status, default='coming_soon')
+    coin = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name

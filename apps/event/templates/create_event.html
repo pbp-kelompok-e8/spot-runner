@@ -1,1 +1,106 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Create New Event</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<form method="POST">
+    {% csrf_token %}
+    <p>
+        <label for="event_status">Status:</label><br>
+        <select id="event_status" name="event_status" required>
+            <option value="coming_soon" selected>Coming Soon</option> 
+            <option value="on_going">On Going</option>
+            <option value="finished">Finished</option>
+        </select>
+    </p>
+
+    <p>
+        <label for="name">Event Name:</label><br>
+        <input type="text" id="name" name="name" maxlength="255" required>
+    </p>
+
+    <p>
+        <label for="event_date">Event Date:</label><br>
+        <input type="datetime-local" id="event_date" name="event_date" required>
+    </p>
+
+    <p>
+        <label for="regist_deadline">Registration Deadline:</label><br>
+        <input type="datetime-local" id="regist_deadline" name="regist_deadline" required>
+    </p>
+
+    <p>
+        <label for="location">Location:</label><br>
+        <select id="location" name="location" required>
+            <option value="" disabled selected>Select a location</option>
+            <option value="jakarta_barat">Jakarta Barat</option>
+            <option value="jakarta_pusat">Jakarta Pusat</option>
+            <option value="jakarta_selatan">Jakarta Selatan</option>
+            <option value="jakarta_timur">Jakarta Timur</option>
+            <option value="jakarta_utara">Jakarta Utara</option>
+            <option value="bekasi">Bekasi</option>
+            <option value="bogor">Bogor</option>
+            <option value="depok">Depok</option>
+            <option value="tangerang">Tangerang</option>
+        </select>
+    </p>
+
+    <p>
+        <label for="contact">Contact Person (Phone):</label><br>
+        <input type="tel" id="contact" name="contact" maxlength="20" required>
+    </p>
+
+    <p>
+        <label for="capacity">Capacity (Max Participants):</label><br>
+        <input type="number" id="capacity" name="capacity" min="0" value="0">
+    </p>
+
+    <p>
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="5" cols="40" required></textarea>
+    </p>
+
+    <p>
+        <label>Event Category (Pilih satu atau lebih):</label><br>
+        
+        <input type="checkbox" id="cat1" name="event_category" value="1"> 
+        <label for="cat1">Fun Run</label><br>
+        
+        <input type="checkbox" id="cat2" name="event_category" value="2">
+        <label for="cat2">5K</label><br>
+        
+        <input type="checkbox" id="cat3" name="event_category" value="3">
+        <label for="cat3">10K</label><br>
+        
+        <input type="checkbox" id="cat4" name="event_category" value="4">
+        <label for="cat4">Half Marathon</label><br>
+        
+        <input type="checkbox" id="cat5" name="event_category" value="5">
+        <label for="cat5">Full Marathon</label><br>
+    </p>
+
+    <p>
+        <label for="image">Image URL 1:</label><br>
+        <input type="url" id="image" name="image" placeholder="https://example.com/image.png">
+    </p>
+    <p>
+        <label for="image2">Image URL 2:</label><br>
+        <input type="url" id="image2" name="image2" placeholder="https://example.com/image.png">
+    </p>
+    <p>
+        <label for="image3">Image URL 3:</label><br>
+        <input type="url" id="image3" name="image3" placeholder="https://example.com/image.png">
+    </p>
+    
+    <br>
+    <button type="submit">Submit Event</button>
+
+</form>
+
+{% include 'footer.html' %}
+{% endblock content %}
