@@ -8,7 +8,7 @@ class User(AbstractUser):
         ('runner', 'Runner'),
         ('event_organizer', 'Event Organizer'),
     )
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='runner')
     email = models.EmailField(unique=True)
 
 class Runner(models.Model):

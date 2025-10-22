@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from django.db.models import Sum
+from django.conf import settings
 import uuid
 
 
@@ -31,7 +32,7 @@ class Merchandise(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='merchandise')
+    organizer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='merchandise')
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='apparel', db_index=True)
@@ -52,11 +53,6 @@ class Merchandise(models.Model):
     @property
     def available(self):
         return self.total_stock > 0
-
-    def get_absolute_url(self):
-        # using UUID PK in URL (use path converter <uuid:pk> in urls.py)
-        from django.urls import reverse
-        return reverse('merchandise-detail', args=[str(self.id)])
 
     @property
     def main_image(self):

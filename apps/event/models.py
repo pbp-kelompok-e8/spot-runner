@@ -1,24 +1,24 @@
 from django.db import models
 import uuid
-from apps.event_organizer.models import EventOrganizer
 
 # Create your models here.git
 
 class EventCategory(models.Model):
-    category = [
+    CATEGORY_CHOICES = [
         ('fun_run', 'Fun Run'),
         ('5k', '5K'),
         ('10k', '10K'),
         ('half_marathon', 'Half Marathon'),
-        ('full_marathon', 'Full Marathon')
+        ('full_marathon', 'Full Marathon'),
     ]
-    category = models.CharField(max_length=20, choices=category,unique=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, unique=True)
 
     def __str__(self):
         return self.get_category_display()
 
 class Event(models.Model):
     user_eo = models.ForeignKey('event_organizer.EventOrganizer', on_delete=models.CASCADE)
+
 
     cities = [
         ('jakarta_barat', 'Jakarta Barat'),
