@@ -10,11 +10,8 @@ from .models import MerchVariant, Redemption, Merchandise
 
 # Create your views here.
 
-def show_main(request):
-    context = {
-        
-    }
-    return render(request, "main.html",context)
+def show_merchandise(request):
+    return render(request, "merchandise_main.html")
 
 @login_required
 def redeem_variant(request, variant_id):
