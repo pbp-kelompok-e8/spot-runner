@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-import EventOrganizer
+from apps.event_organizer.models import EventOrganizer
 
 # Create your models here.git
 
