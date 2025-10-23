@@ -73,7 +73,7 @@
         
         <!-- Mobile User Section -->
         <div class="border-t border-gray-200 pt-4">
-          {% if request.user.is_authenticated %}
+          {% if user.is_authenticated %}
             <div class="mb-4">
               <div class="font-medium text-gray-900">{{ name|default:user.username }}</div>
               <div class="text-sm text-gray-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
