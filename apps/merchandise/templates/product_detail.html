@@ -1,4 +1,4 @@
-{% comment %} {% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block meta %}
@@ -6,60 +6,27 @@
 {% endblock meta %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-8">
-  <div class="max-w-7xl mx-auto px-4">
+{% include 'navbar.html' %}
+
+<body class="bg-gray-50 text-gray-800 mt-16">
+  <div class="max-w-7xl mx-auto px-6 py-10">
     <!-- Back Button -->
     <div class="mb-6">
       <a href="{% url 'merchandise:show_merchandise' %}" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
-        Back to Merchandise
+        Back
       </a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- Left: Image Gallery -->
+      <!-- Left: Product Image -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {% if images %}
-          <!-- Main Image -->
-          <div class="aspect-square relative">
-            <img id="main-image" src="{{ images.0.image.url }}" alt="{{ images.0.alt_text|default:merchandise.name }}" 
-                 class="w-full h-full object-cover">
-            
-            <!-- Category Badge -->
-            <div class="absolute top-4 left-4">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/90 text-indigo-600 shadow">
-                {{ merchandise.get_category_display }}
-              </span>
-            </div>
-          </div>
-          
-          <!-- Image Thumbnails -->
-          {% if images|length > 1 %}
-            <div class="p-4 border-t border-gray-200">
-              <div class="flex gap-2 justify-center">
-                {% for image in images %}
-                  <button onclick="changeMainImage('{{ image.image.url }}', '{{ image.alt_text|default:merchandise.name }}')"
-                          class="w-12 h-12 rounded-lg overflow-hidden border-2 {% if forloop.first %}border-blue-500{% else %}border-gray-200{% endif %} hover:border-blue-300">
-                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:merchandise.name }}" 
-                         class="w-full h-full object-cover">
-                  </button>
-                {% endfor %}
-              </div>
-            </div>
-          {% endif %}
-        {% else %}
-          <!-- No Image Placeholder -->
-          <div class="aspect-square bg-gray-100 flex items-center justify-center">
-            <div class="text-center text-gray-400">
-              <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-              <p>No image available</p>
-            </div>
-          </div>
-        {% endif %}
+        <div class="aspect-square relative">
+          <img src="{{ merchandise.image_url }}" alt="{{ merchandise.name }}" 
+               class="w-full h-full object-cover">
+        </div>
       </div>
 
       <!-- Right: Product Details -->
@@ -68,68 +35,49 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ merchandise.name }}</h1>
           
+          <!-- Community -->
+          <div class="text-sm text-gray-600 mb-4">
+            {{ merchandise.organizer.name|default:"Event Organizer" }}
+          </div>
+          
+          <!-- Category Chip -->
+          <div class="mb-4">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+              {{ merchandise.get_category_display }}
+            </span>
+          </div>
+          
           <!-- Price -->
           <div class="flex items-center gap-3 mb-4">
-            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100 text-yellow-800">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="12" cy="12" r="8"/>
-                <path d="M12 8v8M9 10h6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
+            <img src="{% static 'images/coin-icon.png' %}" alt="Coin icon" class="w-8 h-8">
             <span class="text-2xl font-bold text-gray-900">{{ merchandise.price_coins }} Coins</span>
           </div>
           
           <!-- Description -->
-          <div class="prose max-w-none">
-            <p class="text-gray-600 leading-relaxed">{{ merchandise.description|linebreaks }}</p>
-          </div>
-        </div>
-
-        <!-- Variant Selection -->
-        {% if variants %}
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Available Options</h2>
-            
-            <div class="space-y-4">
-              {% for variant in variants %}
-                <div class="variant-option border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-300 transition-colors"
-                     data-variant-id="{{ variant.id }}" 
-                     data-stock="{{ variant.stock }}"
-                     data-size="{{ variant.size }}">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <div class="w-4 h-4 rounded-full border-2 border-gray-300 variant-radio"></div>
-                      <span class="font-medium text-gray-900">{{ variant.get_size_display }}</span>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                      Stock: <span class="font-medium text-gray-700">{{ variant.stock }}</span>
-                    </div>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        {% endif %}
-
-        <!-- Quantity and Actions -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <!-- Stock Display -->
-          <div id="stock-display" class="mb-4 p-3 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-600">Select a size to see stock availability</p>
+          <div class="mb-6">
+            <p class="text-gray-600 leading-relaxed">{{ merchandise.description }}</p>
           </div>
           
-          <!-- Quantity Control -->
+          <!-- Stock -->
+          <div class="flex items-center gap-2 mb-6">
+            <span class="text-sm text-gray-600">Stock</span>
+            <span class="inline-flex items-center px-8 rounded-full text-sm font-medium bg-gray-100 text-gray-700 py-2">
+              {{ merchandise.stock }}
+            </span>
+          </div>
+          
+          <!-- Quantity and Actions -->
           <div class="flex items-center gap-4 mb-6">
-            <label class="text-sm font-medium text-gray-700">Quantity:</label>
+            <span class="text-sm font-medium text-gray-700">Quantity:</span>
             <div class="flex items-center border border-gray-300 rounded-lg">
-              <button type="button" id="decrease-qty" class="p-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button type="button" id="decrease-qty" class="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                 </svg>
               </button>
-              <input type="number" id="quantity" value="1" min="1" max="1" 
+              <input type="number" id="quantity" value="1" min="1" max="{{ merchandise.stock }}" 
                      class="w-16 text-center border-0 focus:ring-0 focus:outline-none">
-              <button type="button" id="increase-qty" class="p-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button type="button" id="increase-qty" class="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
@@ -137,20 +85,15 @@
             </div>
           </div>
           
-          <!-- Total Price -->
-          <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-            <div class="flex items-center justify-between">
-              <span class="text-lg font-medium text-gray-700">Total:</span>
-              <span id="total-price" class="text-2xl font-bold text-blue-600">{{ merchandise.price_coins }} Coins</span>
-            </div>
-          </div>
-          
           <!-- Redeem Button -->
-          <button id="redeem-btn" 
-                  class="w-full py-4 px-6 bg-gray-400 text-white rounded-lg font-semibold text-lg disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled>
-            Select Size to Redeem
-          </button>
+          {% if not is_organizer %}
+            <button id="redeem-btn" 
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
+                    {% if merchandise.stock == 0 or user_coins < merchandise.price_coins %}disabled{% endif %}>
+              <img src="{% static 'images/coin-icon2.png' %}" alt="Coin icon" class="w-6 h-6">
+              Tukar {{ merchandise.price_coins }} Koin
+            </button>
+          {% endif %}
           
           <!-- Organizer Actions -->
           {% if is_organizer %}
@@ -177,290 +120,210 @@
       </div>
     </div>
   </div>
-</div>
 
-<!-- Confirm Redemption Modal -->
-<div id="redeem-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-  <div class="flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white rounded-xl max-w-md w-full p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-bold text-gray-900">Confirm Redemption</h3>
-        <button type="button" id="close-modal" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-      
-      <div class="space-y-4">
-        <div>
-          <h4 class="font-semibold text-gray-900" id="modal-product-name">{{ merchandise.name }}</h4>
+  <!-- Confirm Redemption Modal -->
+  <div id="redeem-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-bold text-gray-900">Confirm Redemption</h3>
+          <button type="button" id="close-modal" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
         </div>
         
-        <div>
-          <h5 class="font-medium text-gray-900 mb-2">Details</h5>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="text-gray-600">Quantity:</span>
-              <span class="font-medium" id="modal-quantity">1</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-600">Size:</span>
-              <span class="font-medium" id="modal-size">-</span>
+        <div class="space-y-4">
+          <div>
+            <h4 class="font-semibold text-gray-900" id="modal-product-name">{{ merchandise.name }}</h4>
+          </div>
+          
+          <div>
+            <h5 class="font-medium text-gray-900 mb-2">Details</h5>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Jumlah:</span>
+                <span class="font-medium" id="modal-quantity">1</span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div>
-          <h5 class="font-medium text-gray-900 mb-2">Total</h5>
-          <div class="text-2xl font-bold text-gray-900" id="modal-total">{{ merchandise.price_coins }} Coins</div>
-        </div>
-        
-        <div class="flex gap-3 pt-4">
-          <button type="button" id="cancel-redeem" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-            Cancel
-          </button>
-          <button type="button" id="confirm-redeem" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            Confirm
-          </button>
+          
+          <div>
+            <h5 class="font-medium text-gray-900 mb-2">Total</h5>
+            <div class="text-2xl font-bold text-gray-900" id="modal-total">{{ merchandise.price_coins }} Coins</div>
+          </div>
+          
+          <div class="flex gap-3 pt-4">
+            <button type="button" id="cancel-redeem" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="button" id="confirm-redeem" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+              Confirm
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-let selectedVariant = null;
-let currentQuantity = 1;
-let basePrice = {{ merchandise.price_coins }};
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const quantityInput = document.getElementById('quantity');
+      const decreaseBtn = document.getElementById('decrease-qty');
+      const increaseBtn = document.getElementById('increase-qty');
+      const redeemBtn = document.getElementById('redeem-btn');
+      const modal = document.getElementById('redeem-modal');
+      const closeModal = document.getElementById('close-modal');
+      const cancelRedeem = document.getElementById('cancel-redeem');
+      const confirmRedeem = document.getElementById('confirm-redeem');
+      const modalQuantity = document.getElementById('modal-quantity');
+      const modalTotal = document.getElementById('modal-total');
 
-// Image gallery
-function changeMainImage(imageUrl, altText) {
-  document.getElementById('main-image').src = imageUrl;
-  document.getElementById('main-image').alt = altText;
-  
-  // Update active thumbnail
-  document.querySelectorAll('#images-container button').forEach(btn => {
-    btn.classList.remove('border-blue-500');
-    btn.classList.add('border-gray-200');
-  });
-  event.target.closest('button').classList.remove('border-gray-200');
-  event.target.closest('button').classList.add('border-blue-500');
-}
-
-// Variant selection
-document.querySelectorAll('.variant-option').forEach(option => {
-  option.addEventListener('click', function() {
-    // Remove previous selection
-    document.querySelectorAll('.variant-option').forEach(opt => {
-      opt.classList.remove('border-blue-500', 'bg-blue-50');
-      opt.querySelector('.variant-radio').classList.remove('bg-blue-500', 'border-blue-500');
-      opt.querySelector('.variant-radio').classList.add('border-gray-300');
-    });
-    
-    // Select current option
-    this.classList.add('border-blue-500', 'bg-blue-50');
-    this.querySelector('.variant-radio').classList.add('bg-blue-500', 'border-blue-500');
-    this.querySelector('.variant-radio').classList.remove('border-gray-300');
-    
-    // Update selected variant
-    selectedVariant = {
-      id: this.dataset.variantId,
-      size: this.dataset.size,
-      stock: parseInt(this.dataset.stock)
-    };
-    
-    // Update stock display
-    document.getElementById('stock-display').innerHTML = `
-      <p class="text-sm text-gray-600">Stock: <span class="font-medium text-gray-900">${selectedVariant.stock}</span></p>
-    `;
-    
-    // Update quantity max
-    const quantityInput = document.getElementById('quantity');
-    quantityInput.max = selectedVariant.stock;
-    if (currentQuantity > selectedVariant.stock) {
-      currentQuantity = selectedVariant.stock;
-      quantityInput.value = currentQuantity;
-    }
-    
-    // Update redeem button
-    updateRedeemButton();
-  });
-});
-
-// Quantity controls
-document.getElementById('increase-qty').addEventListener('click', function() {
-  if (selectedVariant && currentQuantity < selectedVariant.stock) {
-    currentQuantity++;
-    document.getElementById('quantity').value = currentQuantity;
-    updateTotalPrice();
-  }
-});
-
-document.getElementById('decrease-qty').addEventListener('click', function() {
-  if (currentQuantity > 1) {
-    currentQuantity--;
-    document.getElementById('quantity').value = currentQuantity;
-    updateTotalPrice();
-  }
-});
-
-document.getElementById('quantity').addEventListener('change', function() {
-  const value = parseInt(this.value);
-  if (selectedVariant && value >= 1 && value <= selectedVariant.stock) {
-    currentQuantity = value;
-    updateTotalPrice();
-  } else {
-    this.value = currentQuantity;
-  }
-});
-
-// Update total price
-function updateTotalPrice() {
-  const total = basePrice * currentQuantity;
-  document.getElementById('total-price').textContent = `${total} Coins`;
-}
-
-// Update redeem button
-function updateRedeemButton() {
-  const btn = document.getElementById('redeem-btn');
-  if (!selectedVariant) {
-    btn.textContent = 'Select Size to Redeem';
-    btn.disabled = true;
-    btn.className = 'w-full py-4 px-6 bg-gray-400 text-white rounded-lg font-semibold text-lg disabled:cursor-not-allowed disabled:opacity-50';
-    return;
-  }
-  
-  const totalPrice = basePrice * currentQuantity;
-  const userCoins = {{ user_coins }};
-  
-  if (selectedVariant.stock === 0) {
-    btn.textContent = 'Out of Stock';
-    btn.disabled = true;
-    btn.className = 'w-full py-4 px-6 bg-gray-400 text-white rounded-lg font-semibold text-lg disabled:cursor-not-allowed disabled:opacity-50';
-  } else if (userCoins < totalPrice) {
-    btn.textContent = `Insufficient Coins (Need ${totalPrice})`;
-    btn.disabled = true;
-    btn.className = 'w-full py-4 px-6 bg-gray-400 text-white rounded-lg font-semibold text-lg disabled:cursor-not-allowed disabled:opacity-50';
-  } else {
-    btn.textContent = `Redeem ${totalPrice} Coins`;
-    btn.disabled = false;
-    btn.className = 'w-full py-4 px-6 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700';
-  }
-}
-
-// Redeem flow
-document.getElementById('redeem-btn').addEventListener('click', function() {
-  if (!selectedVariant || this.disabled) return;
-  
-  // Update modal content
-  document.getElementById('modal-product-name').textContent = '{{ merchandise.name }}';
-  document.getElementById('modal-quantity').textContent = currentQuantity;
-  document.getElementById('modal-size').textContent = selectedVariant.size;
-  document.getElementById('modal-total').textContent = `${basePrice * currentQuantity} Coins`;
-  
-  // Show modal
-  document.getElementById('redeem-modal').classList.remove('hidden');
-});
-
-// Modal controls
-document.getElementById('close-modal').addEventListener('click', function() {
-  document.getElementById('redeem-modal').classList.add('hidden');
-});
-
-document.getElementById('cancel-redeem').addEventListener('click', function() {
-  document.getElementById('redeem-modal').classList.add('hidden');
-});
-
-document.getElementById('confirm-redeem').addEventListener('click', function() {
-  if (!selectedVariant) return;
-  
-  const totalPrice = basePrice * currentQuantity;
-  
-  // Send AJAX request
-  fetch(`{% url 'merchandise:redeem_variant' 0 %}`.replace('0', selectedVariant.id), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-    },
-    body: JSON.stringify({
-      quantity: currentQuantity
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // Close modal
-      document.getElementById('redeem-modal').classList.add('hidden');
-      
-      // Show success toast
-      if (window.showToast) {
-        window.showToast('success', 'Redemption successful!');
-      }
-      
-      // Update UI
-      selectedVariant.stock = data.new_stock;
-      document.getElementById('stock-display').innerHTML = `
-        <p class="text-sm text-gray-600">Stock: <span class="font-medium text-gray-900">${data.new_stock}</span></p>
-      `;
-      
-      // Update quantity if needed
-      if (currentQuantity > data.new_stock) {
-        currentQuantity = data.new_stock;
-        document.getElementById('quantity').value = currentQuantity;
-        document.getElementById('quantity').max = data.new_stock;
-      }
-      
-      // Update redeem button
-      updateRedeemButton();
-      
-      // Update user coins in banner if present
-      const coinDisplay = document.querySelector('[data-user-coins]');
-      if (coinDisplay) {
-        coinDisplay.textContent = `${data.new_user_coins} Coins`;
-      }
-    } else {
-      alert(data.error || 'Redemption failed');
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('Network error occurred');
-  });
-});
-
-// Delete product (for organizers)
-{% if is_organizer %}
-document.getElementById('delete-product').addEventListener('click', function() {
-  if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-    fetch(`{% url 'merchandise:delete_merchandise' merchandise.pk %}`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        if (window.showToast) {
-          window.showToast('success', 'Product deleted successfully');
+      // Quantity controls
+      decreaseBtn.addEventListener('click', function() {
+        let currentQty = parseInt(quantityInput.value);
+        if (currentQty > 1) {
+          quantityInput.value = currentQty - 1;
+          updateRedeemButton();
         }
-        window.location.href = '{% url "merchandise:show_merchandise" %}';
-      } else {
-        alert(data.error || 'Delete failed');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      alert('Network error occurred');
-    });
-  }
-});
-{% endif %}
+      });
 
-// Initialize
-updateTotalPrice();
-</script>
+      increaseBtn.addEventListener('click', function() {
+        let currentQty = parseInt(quantityInput.value);
+        let maxQty = parseInt(quantityInput.max);
+        if (currentQty < maxQty) {
+          quantityInput.value = currentQty + 1;
+          updateRedeemButton();
+        }
+      });
+
+      quantityInput.addEventListener('change', function() {
+        let value = parseInt(this.value);
+        let max = parseInt(this.max);
+        let min = parseInt(this.min);
+        
+        if (value < min) this.value = min;
+        if (value > max) this.value = max;
+        
+        updateRedeemButton();
+      });
+
+      function updateRedeemButton() {
+        let qty = parseInt(quantityInput.value);
+        let price = {{ merchandise.price_coins }};
+        let total = qty * price;
+        
+        if (redeemBtn) {
+          redeemBtn.innerHTML = `
+            <img src="{% static 'images/coin-icon2.png' %}" alt="Coin icon" class="w-5 h-5">
+            Tukar ${total} Koin
+          `;
+        }
+      }
+
+      // Modal controls
+      if (redeemBtn) {
+        redeemBtn.addEventListener('click', function() {
+          let qty = parseInt(quantityInput.value);
+          let price = {{ merchandise.price_coins }};
+          let total = qty * price;
+          
+          modalQuantity.textContent = qty;
+          modalTotal.textContent = total + ' Coins';
+          modal.classList.remove('hidden');
+        });
+      }
+
+      closeModal.addEventListener('click', function() {
+        modal.classList.add('hidden');
+      });
+
+      cancelRedeem.addEventListener('click', function() {
+        modal.classList.add('hidden');
+      });
+
+      // Confirm redemption
+      confirmRedeem.addEventListener('click', function() {
+        let qty = parseInt(quantityInput.value);
+        
+        fetch('{% url "merchandise:redeem_merchandise" merchandise.id %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            quantity: qty
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            modal.classList.add('hidden');
+            if (window.showToast) {
+              window.showToast('success', 'Redemption successful!');
+            }
+            // Reload page to update stock and user coins
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            if (window.showToast) {
+              window.showToast('error', data.error || 'Redemption failed');
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          if (window.showToast) {
+            window.showToast('error', 'Network error');
+          }
+        });
+      });
+
+      // Delete product
+      const deleteBtn = document.getElementById('delete-product');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+          if (confirm('Are you sure you want to delete this product?')) {
+            fetch('{% url "merchandise:delete_merchandise" merchandise.id %}', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                if (window.showToast) {
+                  window.showToast('success', 'Product deleted successfully');
+                }
+                window.location.href = '{% url "merchandise:show_merchandise" %}';
+              } else {
+                if (window.showToast) {
+                  window.showToast('error', data.error || 'Failed to delete product');
+                }
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              if (window.showToast) {
+                window.showToast('error', 'Network error');
+              }
+            });
+          }
+        });
+      }
+    });
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+  </script>
+</body>
+
+{% include 'footer.html' %}
 {% endblock %}
- {% endcomment %}

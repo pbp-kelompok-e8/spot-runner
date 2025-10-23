@@ -1,13 +1,15 @@
-{% comment %} {% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block meta %}
-<title>{{ title }} - Merchandise</title>
+<title>{{ title|default:"Add New Product" }} - Merchandise</title>
 {% endblock meta %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-8">
-  <div class="max-w-4xl mx-auto px-4">
+{% include 'navbar.html' %}
+
+<body class="bg-gray-50 text-gray-800 mt-16">
+  <div class="max-w-4xl mx-auto px-6 py-10">
     <!-- Header -->
     <div class="mb-8">
       <div class="flex items-center gap-4 mb-4">
@@ -18,7 +20,7 @@
           Back to Merchandise
         </a>
       </div>
-      <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+      <h1 class="text-3xl font-bold text-gray-900">{{ title|default:"Add New Product" }}</h1>
     </div>
 
     <!-- Form -->
@@ -31,159 +33,73 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2">
-            {{ form.name.label_tag }}
-            {{ form.name }}
+            <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+            <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                   value="{{ form.name.value|default:'' }}"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter product name" required>
             {% if form.name.errors %}
               <div class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</div>
             {% endif %}
           </div>
           
           <div class="md:col-span-2">
-            {{ form.description.label_tag }}
-            {{ form.description }}
+            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" rows="4"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter product description" required>{{ form.description.value|default:'' }}</textarea>
             {% if form.description.errors %}
               <div class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</div>
             {% endif %}
           </div>
           
           <div>
-            {{ form.category.label_tag }}
-            {{ form.category }}
+            <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <select name="{{ form.category.name }}" id="{{ form.category.id_for_label }}" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+              <option value="">Select Category</option>
+              {% for value, label in form.category.field.choices %}
+                <option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
             {% if form.category.errors %}
               <div class="text-red-600 text-sm mt-1">{{ form.category.errors.0 }}</div>
             {% endif %}
           </div>
           
           <div>
-            {{ form.price_coins.label_tag }}
-            {{ form.price_coins }}
+            <label for="{{ form.price_coins.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Price (Coins)</label>
+            <input type="number" name="{{ form.price_coins.name }}" id="{{ form.price_coins.id_for_label }}" 
+                   value="{{ form.price_coins.value|default:'' }}"
+                   min="1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter price in coins" required>
             {% if form.price_coins.errors %}
               <div class="text-red-600 text-sm mt-1">{{ form.price_coins.errors.0 }}</div>
             {% endif %}
           </div>
-        </div>
-      </div>
 
-      <!-- Product Variants -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">Product Variants</h2>
-          <button type="button" id="add-variant" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Add Variant
-          </button>
-        </div>
-        
-        <div id="variants-container">
-          {{ variant_formset.management_form }}
-          {% for form in variant_formset %}
-            <div class="variant-form border border-gray-200 rounded-lg p-4 mb-4">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-medium text-gray-900">Variant {{ forloop.counter }}</h3>
-                {% if not forloop.first %}
-                  <button type="button" class="remove-variant text-red-600 hover:text-red-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                  </button>
-                {% endif %}
-              </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  {{ form.size.label_tag }}
-                  {{ form.size }}
-                  {% if form.size.errors %}
-                    <div class="text-red-600 text-sm mt-1">{{ form.size.errors.0 }}</div>
-                  {% endif %}
-                </div>
-                
-                <div>
-                  {{ form.stock.label_tag }}
-                  {{ form.stock }}
-                  {% if form.stock.errors %}
-                    <div class="text-red-600 text-sm mt-1">{{ form.stock.errors.0 }}</div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              {% for hidden in form.hidden_fields %}
-                {{ hidden }}
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-        
-        {% if variant_formset.non_form_errors %}
-          <div class="text-red-600 text-sm mt-2">{{ variant_formset.non_form_errors }}</div>
-        {% endif %}
-      </div>
+          <div>
+            <label for="{{ form.stock.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+            <input type="number" name="{{ form.stock.name }}" id="{{ form.stock.id_for_label }}" 
+                   value="{{ form.stock.value|default:'' }}"
+                   min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter stock quantity" required>
+            {% if form.stock.errors %}
+              <div class="text-red-600 text-sm mt-1">{{ form.stock.errors.0 }}</div>
+            {% endif %}
+          </div>
 
-      <!-- Product Images -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">Product Images</h2>
-          <button type="button" id="add-image" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Add Image
-          </button>
+          <div>
+            <label for="{{ form.image_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+            <input type="url" name="{{ form.image_url.name }}" id="{{ form.image_url.id_for_label }}" 
+                   value="{{ form.image_url.value|default:'' }}"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="Enter image URL" required>
+            {% if form.image_url.errors %}
+              <div class="text-red-600 text-sm mt-1">{{ form.image_url.errors.0 }}</div>
+            {% endif %}
+          </div>
         </div>
-        
-        <div id="images-container">
-          {{ image_formset.management_form }}
-          {% for form in image_formset %}
-            <div class="image-form border border-gray-200 rounded-lg p-4 mb-4">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-medium text-gray-900">Image {{ forloop.counter }}</h3>
-                {% if not forloop.first %}
-                  <button type="button" class="remove-image text-red-600 hover:text-red-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                  </button>
-                {% endif %}
-              </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  {{ form.image.label_tag }}
-                  {{ form.image }}
-                  {% if form.image.errors %}
-                    <div class="text-red-600 text-sm mt-1">{{ form.image.errors.0 }}</div>
-                  {% endif %}
-                </div>
-                
-                <div>
-                  {{ form.alt_text.label_tag }}
-                  {{ form.alt_text }}
-                  {% if form.alt_text.errors %}
-                    <div class="text-red-600 text-sm mt-1">{{ form.alt_text.errors.0 }}</div>
-                  {% endif %}
-                </div>
-                
-                <div>
-                  {{ form.order.label_tag }}
-                  {{ form.order }}
-                  {% if form.order.errors %}
-                    <div class="text-red-600 text-sm mt-1">{{ form.order.errors.0 }}</div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              {% for hidden in form.hidden_fields %}
-                {{ hidden }}
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-        
-        {% if image_formset.non_form_errors %}
-          <div class="text-red-600 text-sm mt-2">{{ image_formset.non_form_errors }}</div>
-        {% endif %}
       </div>
 
       <!-- Form Actions -->
@@ -197,85 +113,7 @@
       </div>
     </form>
   </div>
-</div>
+</body>
 
-<script>
-// Variant formset management
-document.addEventListener('DOMContentLoaded', function() {
-  let variantCount = {{ variant_formset.total_form_count }};
-  let imageCount = {{ image_formset.total_form_count }};
-  
-  // Add variant
-  document.getElementById('add-variant').addEventListener('click', function() {
-    const container = document.getElementById('variants-container');
-    const template = container.querySelector('.variant-form').cloneNode(true);
-    
-    // Update form indices
-    template.innerHTML = template.innerHTML.replace(/variants-\d+/g, `variants-${variantCount}`);
-    template.innerHTML = template.innerHTML.replace(/variants\.\d+/g, `variants.${variantCount}`);
-    
-    // Clear values
-    template.querySelectorAll('input, select').forEach(input => {
-      if (input.type !== 'hidden') input.value = '';
-    });
-    
-    // Add remove button
-    const removeBtn = template.querySelector('.remove-variant');
-    if (removeBtn) {
-      removeBtn.style.display = 'block';
-    }
-    
-    container.appendChild(template);
-    variantCount++;
-    
-    // Update management form
-    document.getElementById('id_variants-TOTAL_FORMS').value = variantCount;
-  });
-  
-  // Remove variant
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('.remove-variant')) {
-      e.target.closest('.variant-form').remove();
-      variantCount--;
-      document.getElementById('id_variants-TOTAL_FORMS').value = variantCount;
-    }
-  });
-  
-  // Add image
-  document.getElementById('add-image').addEventListener('click', function() {
-    const container = document.getElementById('images-container');
-    const template = container.querySelector('.image-form').cloneNode(true);
-    
-    // Update form indices
-    template.innerHTML = template.innerHTML.replace(/images-\d+/g, `images-${imageCount}`);
-    template.innerHTML = template.innerHTML.replace(/images\.\d+/g, `images.${imageCount}`);
-    
-    // Clear values
-    template.querySelectorAll('input').forEach(input => {
-      if (input.type !== 'hidden') input.value = '';
-    });
-    
-    // Add remove button
-    const removeBtn = template.querySelector('.remove-image');
-    if (removeBtn) {
-      removeBtn.style.display = 'block';
-    }
-    
-    container.appendChild(template);
-    imageCount++;
-    
-    // Update management form
-    document.getElementById('id_images-TOTAL_FORMS').value = imageCount;
-  });
-  
-  // Remove image
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('.remove-image')) {
-      e.target.closest('.image-form').remove();
-      imageCount--;
-      document.getElementById('id_images-TOTAL_FORMS').value = imageCount;
-    }
-  });
-});
-</script>
-{% endblock %} {% endcomment %}
+{% include 'footer.html' %}
+{% endblock %}
