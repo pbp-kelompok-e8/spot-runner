@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Navbar -->
+{% include 'partials/navbar.html' %}
+
+<div class="max-w-7xl mx-auto px-4 mt-10 mb-16">
+  <!-- Profile Section -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div class="w-16 h-16 rounded-full bg-lime-100 flex items-center justify-center text-lime-600 font-bold text-xl">
+          {{ user.username|slice:":1"|upper }}
+        </div>
+        <div>
+          <h2 class="text-2xl font-semibold text-gray-800">{{ organizer.name }}</h2>
+          <p class="text-gray-500 text-sm">Event Organizer</p>
+          <p class="text-gray-500 text-sm">{{ organizer.location }}</p>
+          <p class="text-gray-400 text-xs">Joined {{ organizer.created_at|date:"d M Y" }}</p>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="text-sm text-red-500 hover:underline mt-4 md:mt-0">Log Out</a>
+    </div>
+  </div>
+
+  <!-- Review & Rating Section -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-semibold text-gray-800">Review & Rating</h3>
+      <div class="flex items-center">
+        <span class="text-lime-500 text-xl mr-1">★</span>
+        <span class="font-semibold text-gray-800 text-lg">{{ avg_rating|default:"0.0" }}</span>
+        <span class="text-sm text-gray-500 ml-1">/ 5.0 rating</span>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 sm:grid-cols-2 gap-4">
+      {% for review in reviews %}
+        {% include 'reviews/review_card.html' with review=review %}
+      {% empty %}
+        <p class="text-gray-500">No reviews yet for your events.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- All Event Section -->
+  <div class="bg-white rounded-2xl shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-5">All Event</h3>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for event in events %}
+        {% include 'events/event_card.html' with event=event %}
+      {% empty %}
+        <p class="text-gray-500">You haven’t created any events yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+{% include 'partials/footer.html' %}
+{% endblock %}
