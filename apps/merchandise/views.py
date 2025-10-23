@@ -166,12 +166,13 @@ def redeem_merchandise(request, id):
     if request.user.runner.coin < total_cost:
         return JsonResponse({'success': False, 'error': 'Insufficient coins'}, status=400)
     
-    # Create redemption - Django akan auto-call save() method
+    # Create redemption - SET EXPLICIT VALUES
     redemption = Redemption.objects.create(
         user=request.user.runner,
         merchandise=merchandise,
-        quantity=quantity
-        # price_per_item dan total_coins akan auto-set di save() method
+        quantity=quantity,
+        price_per_item=merchandise.price_coins,  # ← Set eksplisit
+        total_coins=total_cost  # ← Set eksplisit
     )
     
     # Update user coins and organizer coins

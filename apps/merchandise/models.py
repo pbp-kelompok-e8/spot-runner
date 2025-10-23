@@ -46,7 +46,7 @@ class Redemption(models.Model):
 
     def save(self, *args, **kwargs):
         # Auto-calculate HANYA jika data baru dan merchandise masih ada
-        if self.merchandise and not self.id:  # ← Cek jika baru (belum punya id)
+        if self.merchandise and not self._state.adding:  # ← Cek jika baru (belum punya id)
             self.price_per_item = self.merchandise.price_coins
             self.total_coins = self.price_per_item * self.quantity
         super().save(*args, **kwargs)
