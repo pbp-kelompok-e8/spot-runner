@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
-from django.db.models import Sum
+from django.db.models import Sum, F
 
 # Merchandise landing page
 def show_merchandise(request):
@@ -24,20 +24,25 @@ def show_merchandise(request):
 
     # jika user punya Runner profile
     if hasattr(user, 'runner'):
-        user = user.runner        # reverse OneToOne: User -> Runner
-        coin_balance = user.coin
+        runner_profile = user.runner
+        coin_balance = runner_profile.coin
 
     # jika user juga punya EventOrganizer profile
     if hasattr(user, 'eventorganizer'):
-        user = user.eventorganizer    # reverse OneToOne: User -> EventOrganizer
-        # contoh: hitung total coins earned (atau properti lain)
-        context['organizer_profile'] = user
+        organizer_profile = user.eventorganizer
+        context['organizer_profile'] = organizer_profile
         is_organizer = True
-        earned = Redemption.objects.filter(merchandise__organizer=user).aggregate(total=Sum('total_coins'))['total']
+        
+        # Hitung total coins earned: quantity × price_coins
+        earned = Redemption.objects.filter(
+            merchandise__organizer=organizer_profile
+        ).aggregate(
+            total=Sum(F('quantity') * F('merchandise__price_coins'))
+        )['total']
         organizer_earned = earned or 0
 
     context = {
-        'user' : user,
+        'user': user,
         'products': products,
         'categories': Merchandise.CATEGORY_CHOICES,
         'selected_category': category,
@@ -93,9 +98,9 @@ def add_merchandise(request):
 
 
 @login_required
-def edit_merchandise(request, pk):
+def edit_merchandise(request, id):
     """Edit merchandise product - Owner only"""
-    merchandise = get_object_or_404(Merchandise, pk=pk)
+    merchandise = get_object_or_404(Merchandise, id=id)
     
     # Check ownership
     if not hasattr(request.user, 'eventorganizer') or merchandise.organizer != request.user.eventorganizer:
@@ -120,18 +125,20 @@ def edit_merchandise(request, pk):
 
 @login_required
 @require_POST
-def delete_merchandise(request, pk):
+def delete_merchandise(request, id):
     """Delete merchandise product - Owner only, AJAX endpoint"""
-    merchandise = get_object_or_404(Merchandise, pk=pk)
+    merchandise = get_object_or_404(Merchandise, id=id)
     
     # Check ownership
     if not hasattr(request.user, 'eventorganizer') or merchandise.organizer != request.user.eventorganizer:
         return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
-    merchandise.delete()
-    return JsonResponse({'success': True})
-
-
+    try:
+        merchandise.delete()
+        return JsonResponse({'success': True, 'message': 'Product deleted successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
 @login_required
 @require_POST
 def redeem_merchandise(request, id):
