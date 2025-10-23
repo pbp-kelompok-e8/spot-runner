@@ -12,16 +12,16 @@
     font-size: 0.875rem;
 }
 
-.back-btn{
-    font-size: 20px;  
-    font-weight: 100;     
-    text-align: left;     
-    margin-left: 1.5rem; 
-    margin-bottom: 0.25rem;   
-    color: #111827; 
+.back-btn {    
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #111827;
+    margin-left: 18rem; 
+    margin-bottom: 1rem;
 }
+
 .event-form-body {
-        font-family: 'Inter', sans-serif;
+        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         background-color: #ffffff;
         color: #333;
         padding: 2rem 0;

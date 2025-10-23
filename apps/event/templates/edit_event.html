@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-<title>Create New Event</title>
+<title>Edit Event</title>
 {% endblock meta %}
 
 {% block extra_css %}
@@ -14,20 +14,21 @@
 
 <main class="event-form-body mt-16">
     <div>
-        <a class="back-btn">&lt Back</a>
+        <a href="{% url 'main:show_main' %}" class="back-btn">&lt Back</a>
     </div>
     <div class="form-container">
         <form method="POST">
             {% csrf_token %}
+            <div class="form-title"> 
+                Edit Event
+            </div>
             <div class="form-group">
                 <label for="status-coming">Status</label>
                 <div class="status-selector">
                     <input type="radio" id="status-coming" name="event_status" value="coming_soon" {% if form.event_status.value == 'coming_soon' or not form.event_status.value %}checked{% endif %}>
                     <label for="status-coming" class="status-badge badge-coming-soon">Coming Soon</label>
-                    
                     <input type="radio" id="status-finished" name="event_status" value="finished" {% if form.event_status.value == 'finished' %}checked{% endif %}>
                     <label for="status-finished" class="status-badge badge-finished">Finished</label>
-                    
                     <input type="radio" id="status-ongoing" name="event_status" value="on_going" {% if form.event_status.value == 'on_going' %}checked{% endif %}>
                     <label for="status-ongoing" class="status-badge badge-on-going">On Going</label>
                 </div>

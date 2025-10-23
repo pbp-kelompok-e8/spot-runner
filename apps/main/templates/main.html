@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-<title>Merchandise</title>
+<title>Main Page</title>
 {% endblock meta %}
 
 {% block content %}
@@ -89,7 +89,6 @@
 
       <!-- Event Cards Grid: beri margin-top yang nyaman -->
       <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- contoh card -->
         <article class="bg-white rounded-xl shadow overflow-hidden">
           <div class="h-44 bg-gray-200">
             <img src="{% static 'images/event-sample-1.jpg' %}" alt="event" class="w-full h-full object-cover" />
@@ -102,7 +101,7 @@
             <p class="text-sm text-slate-500 mt-2">10K run through the city with live music and refreshment stations.</p>
             <div class="mt-4 flex items-center justify-between">
               <div class="text-sm text-slate-700 font-medium">Date: 28 Sep</div>
-              <a href="#" class="text-emerald-600 font-semibold">View Details →</a>
+              <a href="{% url 'event:create_event' %}" class="text-emerald-600 font-semibold">View Details →</a>
             </div>
           </div>
         </article>
@@ -120,7 +119,7 @@
             <p class="text-sm text-slate-500 mt-2">An evening marathon along the coast — perfect for sunset lovers.</p>
             <div class="mt-4 flex items-center justify-between">
               <div class="text-sm text-slate-700 font-medium">Date: 12 Oct</div>
-              <a href="#" class="text-emerald-600 font-semibold">View Details →</a>
+              <a href="{% url 'event:create_event' %}" class="text-emerald-600 font-semibold">View Details →</a>
             </div>
           </div>
         </article>

@@ -1,36 +1,53 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import EventForm
 from .models import Event
-# from event_organizer.models import EventOrganizer
+from apps.event_organizer.models import EventOrganizer
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.core.exceptions import PermissionDenied 
 
-# Create your views here.
-# @login_required(login_url='/login')
+@login_required
 def create_event(request):
-    form = EventForm(request.POST or None)
+    try:
+        event_organizer = request.user.event_organizer_profile
+    except EventOrganizer.DoesNotExist:
+        raise PermissionDenied("Anda harus menjadi Event Organizer untuk membuat event.")
 
-    if form.is_valid() and request.method == 'POST':
-        event_entry = form.save(commit = False)
-        event_entry.user = request.user
-        event_entry.save()
-        return redirect('main:show_main')
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event_entry = form.save(commit=False)
+            event_entry.user_eo = event_organizer 
+            event_entry.save()
+            form.save_m2m() 
+            return redirect('main:show_main')
+    else:
+        form = EventForm()
 
     context = {
         'form': form
     }
-
     return render(request, "create_event.html", context)
 
-
+@login_required 
 def edit_event(request, id):
     event = get_object_or_404(Event, pk=id)
-    form = EventForm(request.POST or None, instance=event)
-    if form.is_valid() and request.method == 'POST':
-        form.save()
-        return redirect('main:show_main')
+
+    if event.user_eo.user != request.user: 
+        raise PermissionDenied("Anda tidak diizinkan mengedit event ini.")
+
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=event) 
+        if form.is_valid():
+            event_instance = form.save(commit=False) 
+            event_instance.save() 
+            form.save_m2m() 
+            return redirect('main:show_main')
+    else: 
+        form = EventForm(instance=event) 
+        
     context = {
         'form': form
     }
@@ -42,7 +59,7 @@ def delete_event(request, id):
     return HttpResponseRedirect(reverse('main:show_main'))
 
 
-# @login_required(login_url='/login')
+@login_required(login_url='/login')
 def show_event(request, id):
     event = get_object_or_404(Event, pk=id)
     context = {
@@ -81,7 +98,7 @@ def show_json(request):
             'coin': event.coin, 
             'user_eo': {
                 'id': event.user_eo_id,
-                'username': event.user_eo.username if event.user_eo else None
+                'username': event.user_eo.user.username if event.user_eo else None
                 },            
             'event_categories': category_names 
         })
@@ -123,7 +140,7 @@ def show_json_by_id(request, event_id):
         'coin' : event.coin, 
         'user_eo': {
             'id': event.user_eo_id,
-            'username': event.user_eo.username if event.user_eo_id else None
+            'username': event.user_eo.user.username if event.user_eo_id else None
             },        
         'event_categories': category_names 
     }

@@ -36,6 +36,7 @@ class EventForm(forms.ModelForm):
                 'coin': forms.NumberInput(attrs={'class': 'form-input'}),
                 'event_category': forms.CheckboxSelectMultiple, 
             }
+        
     def clean_name(self):
         name = self.cleaned_data["name"]
         return strip_tags(name)
