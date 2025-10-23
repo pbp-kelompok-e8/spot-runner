@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Review
 from apps.event.models import Event
-from apps.main.models import Runner  # Sesuaikan dengan nama app Anda
+from apps.main.models import Runner
 from apps.event_organizer.models import EventOrganizer
 
 @login_required
