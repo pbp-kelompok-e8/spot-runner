@@ -33,7 +33,7 @@
             <!-- Runner History View -->
             <div class="flex items-center justify-between">
               <div class="flex-1">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ redemption.merchandise.name }}</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ redemption.merchandise.name|default:"[Deleted Product]" }}</h3>
                 <div class="space-y-2 text-sm text-gray-600">
                   <div>
                     <span class="font-medium">Redeem ID:</span> 
@@ -92,7 +92,7 @@
                   <div class="space-y-2">
                     <div>
                       <span class="font-medium text-gray-600">Product Name</span>
-                      <span class="block font-semibold">{{ redemption.merchandise.name }}</span>
+                      <span class="block font-semibold">{{ redemption.merchandise.name|default:"[Deleted Product]" }}</span>
                     </div>
                     <div class="flex justify-between">
                       <div>
