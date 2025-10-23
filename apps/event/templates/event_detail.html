@@ -1,18 +1,298 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% load humanize %} 
 {% block meta %}
-<title>Create New Event</title>
+<title>{{ event.name }} - Event Detail</title>
 {% endblock meta %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/global.css' %}">
-{% endblock extra_css %}
 
 {% block content %}
 {% include 'navbar.html' %}
 
+{% comment %} Header/Banner Section {% endcomment %}
+<header class="relative h-64 md:h-80 bg-gray-700 bg-cover bg-center text-white" 
+        style="background-image: url('{% if event.image %}{{ event.image }}{% else %}{% static 'images/default_banner.jpg' %}{% endif %}');">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-end pb-8 sm:pb-12">
+        <div class="mb-4">
+            <a href="javascript:history.back()" 
+               class="inline-flex items-center px-4 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-gray-900 bg-opacity-60 hover:bg-opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 transition">
+                &lt; Back
+            </a>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+            {{ event.name }}
+        </h1>
+    </div>
+</header>
 
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="relative bg-gray-200 h-64 md:h-96 flex items-center justify-center">
+                    {% if event.image %}
+                        <img src="{{ event.image }}" alt="{{ event.name }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <span class="text-gray-500">No Image Available</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% comment %} About Section {% endcomment %}
+            <div class="bg-white shadow rounded-lg p-6 sm:p-8">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6">About This Event</h2>
+                
+                {% comment %} Quick Info Grid {% endcomment %}
+                <div class="grid grid-cols-2 gap-x-4 gap-y-5 mb-6 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Participants: {{ event.total_participans }}/{{ event.capacity }} {% if event.full %}<span class="ml-2 text-red-600 font-medium">(Full)</span>{% endif %}
+                    </div>
+                    <div class="flex items-center">
+                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                         {{ event.event_date|date:"d M Y" }}
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                         {{ event.get_location_display }}
+                    </div>
+                    <div class="flex items-center">
+                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                         {% for category in event.event_category.all %}
+                             {{ category.get_category_display }}{% if not forloop.last %}, {% endif %}
+                         {% empty %}
+                             N/A
+                         {% endfor %}
+                    </div>
+                </div>
+                
+                {% comment %} Description Text {% endcomment %}
+                <div class="prose prose-sm sm:prose lg:prose-lg max-w-none text-gray-600">
+                    {{ event.description|linebreaks }}
+                </div>
+
+                {% comment %} Action Buttons (Only for Owner) {% endcomment %}
+                {% if user.is_authenticated and event.user_eo.user == user %}
+                <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
+                     <a href="{% url 'event:edit_event' id=event.id %}" 
+                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                         Edit Detail
+                     </a>
+                     <a href="{% url 'event:delete_event' id=event.id %}" 
+                        onclick="return confirm('Are you sure you want to delete this event?');" 
+                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2 border border-red-300 text-sm font-medium rounded-md shadow-sm text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition">
+                         Delete Event
+                     </a>
+                </div>
+                {% endif %}
+            </div>
+
+            {% comment %} Organizer Section {% endcomment %}
+                 <h2 class="text-xl font-semibold text-gray-900 mb-5">Organized By</h2>
+                 <div class="flex items-start space-x-5">
+                    {% if event.user_eo.profile_picture %}
+                    <img class="h-16 w-16 rounded-full object-cover ring-2 ring-offset-2 ring-blue-600" src="{{ event.user_eo.profile_picture }}" alt="{{ event.user_eo.user.username }}">
+                    {% else %}
+                    <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-gray-100">
+                        <svg class="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </span>
+                    {% endif %}
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">{{ event.user_eo.user.username }}</h3>
+                        <div class="mt-2 grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-2 text-sm text-gray-500">
+                             <div>Total Events: {{ event.user_eo.event_set.count }} </div>
+                             <div>Joined: {{ event.user_eo.created_at|date:"d M Y" }}</div>
+                             {% if event.user_eo.base_location %}<div>Base Location: {{ event.user_eo.base_location }}</div>{% endif %}
+                        </div>
+                    </div>
+                 </div>
+
+            <!-- Review dan Rating (Hardcode)-->
+            <h2 class="text-xl font-semibold text-gray-900 mb-5">Rating & Review</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="border border-gray-200 rounded-lg p-4 space-y-2">
+                    <h4 class="font-medium text-gray-800">Leticia Kutch</h4>
+                    <p class="text-xs text-gray-500">Participant Summer Marathon</p>
+                    <p class="text-sm text-gray-600 leading-relaxed">Lorem ipsum dolor sit amet pretium consectetur adipiscing elit. Lorem consectetur adipiscing elit.</p>
+                    <div class="flex items-center space-x-1 pt-1">
+                        <span class="text-yellow-400">★★★★☆</span>
+                        <span class="text-sm font-semibold">4.75</span><span class="text-xs text-gray-500">/5.0 rating</span>
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-4 space-y-2">
+                    <h4 class="font-medium text-gray-800">Another Reviewer</h4>
+                    <p class="text-xs text-gray-500">Participant Fun Run</p>
+                    <p class="text-sm text-gray-600 leading-relaxed">Adipiscing elit. Pretium consectetur adipiscing elit. Lorem consectetur adipiscing.</p>
+                    <div class="flex items-center space-x-1 pt-1">
+                        <span class="text-yellow-400">★★★★★</span>
+                        <span class="text-sm font-semibold">5.00</span><span class="text-xs text-gray-500">/5.0 rating</span>
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-4 space-y-2">
+                        <h4 class="font-medium text-gray-800">Third Person</h4>
+                    <p class="text-xs text-gray-500">Spectator</p>
+                    <p class="text-sm text-gray-600 leading-relaxed">Consectetur adipiscing elit. Pretium consectetur adipiscing elit.</p>
+                    <div class="flex items-center space-x-1 pt-1">
+                        <span class="text-yellow-400">★★★★☆</span>
+                        <span class="text-sm font-semibold">4.00</span><span class="text-xs text-gray-500">/5.0 rating</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1">
+            <div class="sticky top-24 space-y-8">                
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">Registration Open until</h3>                    
+                    <div id="countdown-data" data-deadline="{{ event.regist_deadline|date:'c' }}" class="hidden"></div>
+                    <div id="countdown-timer" class="flex justify-around text-center mb-5">
+                        <div>
+                            <span id="countdown-days" class="text-4xl font-bold block leading-none text-gray-800">--</span>
+                            <span class="text-xs text-gray-500 uppercase">Days</span>
+                        </div>
+                        <div>
+                            <span id="countdown-hours" class="text-4xl font-bold block leading-none text-gray-800">--</span>
+                            <span class="text-xs text-gray-500 uppercase">Hours</span>
+                        </div>
+                        <div>
+                            <span id="countdown-minutes" class="text-4xl font-bold block leading-none text-gray-800">--</span>
+                            <span class="text-xs text-gray-500 uppercase">Minutes</span>
+                        </div>
+                    </div>
+                    
+                    <div id="countdown-expired" class="hidden text-center text-red-600 font-semibold mb-5 p-3 bg-red-50 rounded">
+                        Registration has closed.
+                    </div>
+                    
+                    <div class="text-center text-sm text-gray-600 pb-5 border-b border-gray-200">
+                        <svg class="w-4 h-4 inline-block mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {{ event.regist_deadline|date:"d M Y, H:i" }} WIB
+                    </div>
+                    
+                    <!-- Booking Event -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Races offered by this event</h3>
+                        <form id="booking-form">
+                            <div class="space-y-3">
+                                {% for category in event.event_category.all %}
+                                <label for="race_{{ category.pk }}" class="block border border-gray-300 rounded-lg p-4 hover:border-blue-500 cursor-pointer has-[:checked]:border-blue-600 has-[:checked]:ring-1 has-[:checked]:ring-blue-600 transition">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex flex-col">
+                                             <span class="font-medium text-gray-800">{{ category.get_category_display }}</span>
+                                        </div>
+                                        <input type="radio" id="race_{{ category.pk }}" name="selected_race" value="{{ category.pk }}" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                    </div>
+                                </label>
+                                {% empty %}
+                                 <p class="text-sm text-gray-500">No specific races listed for this event.</p>
+                                {% endfor %}
+                            </div>
+                            <button type="submit" id="book-button"
+                                class="mt-6 w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                {% if user.is_authenticated and user.role == 'event_organizer' %}disabled{% endif %}>
+                                    Book Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+</div>
 
 {% include 'footer.html' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const countdownDataEl = document.getElementById('countdown-data');
+    const daysEl = document.getElementById('countdown-days');
+    const hoursEl = document.getElementById('countdown-hours');
+    const minutesEl = document.getElementById('countdown-minutes');
+    const timerContainerEl = document.getElementById('countdown-timer');
+    const expiredEl = document.getElementById('countdown-expired');
+    const bookButton = document.getElementById('book-button');
+
+    if (!countdownDataEl || !daysEl || !hoursEl || !minutesEl || !timerContainerEl || !expiredEl) {
+        console.error('Countdown elements not found');
+        return;
+    }
+
+    const deadline = countdownDataEl.dataset.deadline;
+    if (!deadline) {
+        console.error('Deadline not found');
+        return;
+    }
+
+    const targetDate = new Date(deadline).getTime();
+
+    if (isNaN(targetDate)) {
+        console.error('Invalid deadline date');
+        return;
+    }
+
+    let countdownInterval;
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+
+        if (distance < 0) {
+            clearInterval(countdownInterval);            
+            timerContainerEl.classList.add('hidden');
+            expiredEl.classList.remove('hidden');
+            if (bookButton) {
+                bookButton.disabled = true;
+                bookButton.textContent = 'Registration Closed';
+                bookButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                bookButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+            }
+            
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+        updateElement(daysEl, days);
+        updateElement(hoursEl, hours);
+        updateElement(minutesEl, minutes);
+    }
+
+    function updateElement(element, value) {
+        const formattedValue = String(value).padStart(2, '0');
+        
+        if (element.textContent !== formattedValue) {
+            element.style.transform = 'scale(1.1)';
+            element.style.transition = 'transform 0.2s ease-in-out';
+            
+            setTimeout(() => {
+                element.textContent = formattedValue;
+                element.style.transform = 'scale(1)';
+            }, 100);
+        }
+    }
+
+    updateCountdown();
+    
+    countdownInterval = setInterval(updateCountdown, 1000);
+    {% if event.full %}
+    if (bookButton) {
+        bookButton.disabled = true;
+        bookButton.textContent = 'Event Full';
+        bookButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        bookButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+    }
+    {% endif %}
+});
+</script>
+
 {% endblock content %}
