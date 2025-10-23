@@ -1,23 +1,31 @@
+
 from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from apps.main.models import User
 from apps.main.forms import CustomUserCreationForm
+from apps.main.forms import CustomUserCreationForm
 from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.contrib.auth import login, logout
 
 # Create your views here.
 
 def show_main(request):
-    return render(request, 'main.html')
+    return HttpResponse("Ini halaman main")
 
 def register(request):
     form = CustomUserCreationForm()
+    form = CustomUserCreationForm()
 
     if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Create New Event</title>
+{% endblock meta %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<main class="event-form-body mt-16">
+    <div>
+        <a href="{% url 'main:show_main' %}" class="back-btn">&lt Back</a>
+    </div>
+    <div class="form-container">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-title"> 
+                Create New Event
+            </div>
+            <div class="form-sub-title">
+                Launch new marathon event
+            </div>
+            <div class="form-group">
+                <label for="status-coming">Status</label>
+                <div class="status-selector">
+                    <input type="radio" id="status-coming" name="event_status" value="coming_soon" {% if form.event_status.value == 'coming_soon' or not form.event_status.value %}checked{% endif %}>
+                    <label for="status-coming" class="status-badge badge-coming-soon">Coming Soon</label>
+                    
+                    <input type="radio" id="status-finished" name="event_status" value="finished" {% if form.event_status.value == 'finished' %}checked{% endif %}>
+                    <label for="status-finished" class="status-badge badge-finished">Finished</label>
+                    
+                    <input type="radio" id="status-ongoing" name="event_status" value="on_going" {% if form.event_status.value == 'on_going' %}checked{% endif %}>
+                    <label for="status-ongoing" class="status-badge badge-on-going">On Going</label>
+                </div>
+                {% for error in form.event_status.errors %}
+                    <p style="color: red; font-size: 0.8rem; margin-top: 4px;">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">Event Name</label>
+                {{ form.name }} 
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }} 
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.location.id_for_label }}">Location</label>
+                {{ form.location }} 
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.event_date.id_for_label }}">Event Date</label>
+                {{ form.event_date }} 
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.regist_deadline.id_for_label }}">Registration Deadline</label>
+                {{ form.regist_deadline }} 
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.contact.id_for_label }}">Contact Person</label>
+                {{ form.contact }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.capacity.id_for_label }}">Max Participants</label>
+                {{ form.capacity }} 
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.image.id_for_label }}">Image URL 1</label>
+                {{ form.image }} 
+            </div>
+            <div class="form-group">
+                <label for="{{ form.image2.id_for_label }}">Image URL 2</label>
+                {{ form.image2 }} 
+            </div>
+            <div class="form-group">
+                <label for="{{ form.image3.id_for_label }}">Image URL 3</label>
+                {{ form.image3 }} 
+            </div>
+
+            <div class="form-group">
+                <label>Event Category</label>
+                <div class="checkbox-group"> 
+                    {{ form.event_category }} 
+                </div>
+                {% for error in form.event_category.errors %}
+                    <p style="color: red; font-size: 0.8rem; margin-top: 4px;">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.coin.id_for_label }}">Coin Reward</label>
+                {{ form.coin }} 
+            </div>
+            <div class="form-group" style="margin-top: 2rem;">
+                <button type="submit" class="submit-btn">
+                    Create Event
+                </button>
+            </div>
+
+        </form>
+    </div>
+</main>
+{% include 'footer.html' %}
+{% endblock content %}

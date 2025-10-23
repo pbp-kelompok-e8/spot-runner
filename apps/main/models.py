@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
 # Create your models here.
+
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('runner', 'Runner'),
@@ -36,6 +38,7 @@ class Runner(models.Model):
         ('pekanbaru', 'Pekanbaru'),
         ('depok', 'Depok'),
     ]
+
 
     base_location = models.CharField(max_length=50, choices=LOCATION_CHOICES, default='depok')
     coin = models.IntegerField(default=0)
