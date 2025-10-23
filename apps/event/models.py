@@ -1,6 +1,5 @@
 from django.db import models
-from django.utils import timezone
-
+from apps.event_organizer.models import EventOrganizer
 
 # Create your models here.
 class Event(models.Model):
@@ -16,7 +15,7 @@ class Event(models.Model):
         ('10k', '10K Marathon'),
     ]
 
-    organizer = models.ForeignKey('event_organizer.EventOrganizer', on_delete=models.CASCADE, related_name='events')
+    organizer = models.ForeignKey(EventOrganizer, on_delete=models.CASCADE, related_name='event')
     title = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
     venue = models.CharField(max_length=255)  # e.g. "New Jersey Motorsports Park"
