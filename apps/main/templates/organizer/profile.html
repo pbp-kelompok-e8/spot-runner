@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="organizer-profile">
+  <h2>{{ organizer.username }}</h2>
+  {% if organizer.profile_picture %}
+    <img src="{{ organizer.profile_picture.url }}" alt="Profile Picture" width="120">
+  {% endif %}
+  <p><strong>Base Location:</strong> {{ organizer.base_location }}</p>
+  <p><strong>Joined:</strong> {{ organizer.created_at|date:"d M Y" }}</p>
+  <p><strong>Total Events:</strong> {{ total_events }}</p>
+  <p><strong>Average Rating:</strong> ⭐ {{ average_rating }}/5</p>
+
+  <hr>
+
+  <h3>Reviews</h3>
+  {% for review in reviews %}
+    <div>
+      <strong>{{ review.reviewer_name }}</strong> — {{ review.rating }}/5<br>
+      <small>{{ review.comment }}</small>
+    </div>
+  {% empty %}
+    <p>No reviews yet.</p>
+  {% endfor %}
+
+  <hr>
+
+  <h3>All Events</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:16px;">
+  {% for event in events %}
+    <div style="border:1px solid #ddd; padding:10px; width:300px;">
+      <h4>{{ event.name }}</h4>
+      <p>{{ event.description|truncatewords:15 }}</p>
+      <p><b>{{ event.date|date:"d M Y" }}</b> - {{ event.location }}</p>
+      <span>Status: {{ event.status }}</span>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
