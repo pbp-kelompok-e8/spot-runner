@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title mb-0">Your Profile</h2>
+                        <span class="badge bg-primary">Event Organizer</span>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="profile-img-container">
+                                {% if organizer.profile_picture %}
+                                    <img src="{{ organizer.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded">
+                                {% else %}
+                                    <div class="placeholder-img rounded d-flex align-items-center justify-content-center bg-light">
+                                        <i class="fas fa-user fa-3x text-secondary"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="profile-info">
+                                <div class="mb-3">
+                                    <label class="text-muted">Username</label>
+                                    <p class="lead mb-1">{{ user.username }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted">Base Location</label>
+                                    <p class="lead mb-1">{{ organizer.base_location|default:"Not set" }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted">Joined</label>
+                                    <p class="lead mb-1">{{ user.date_joined|date:"d M Y" }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-muted">Last Login</label>
+                                    <p class="lead mb-1">{{ user.last_login|date:"H:i A, d M Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'event_organizer:change_password' %}" class="btn btn-secondary">
+                            Change Password
+                        </a>
+                        <a href="{% url 'event_organizer:edit_profile' %}" class="btn btn-primary">
+                            Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-img-container {
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.profile-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder-img {
+    width: 100%;
+    height: 100%;
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

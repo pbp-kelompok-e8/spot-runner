@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Edit Profile</h2>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label">Profile Picture</label>
+                            <div class="profile-img-preview mb-3">
+                                {% if organizer.profile_picture %}
+                                    <img src="{{ organizer.profile_picture.url }}" alt="Current Profile Picture" class="img-fluid rounded">
+                                {% else %}
+                                    <div class="placeholder-img rounded d-flex align-items-center justify-content-center bg-light">
+                                        <i class="fas fa-user fa-3x text-secondary"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <input type="file" name="profile_picture" class="form-control" accept="image/*">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Base Location</label>
+                            <input type="text" name="base_location" class="form-control" value="{{ organizer.base_location }}" placeholder="Enter your base location">
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'event_organizer:profile' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-img-preview {
+    aspect-ratio: 1;
+    max-width: 200px;
+    overflow: hidden;
+}
+
+.profile-img-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder-img {
+    width: 100%;
+    height: 100%;
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
