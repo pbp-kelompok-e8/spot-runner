@@ -58,6 +58,7 @@ Fitur Merchandise & Rewards menjadi sistem penghargaan bagi pengguna yang aktif 
   3. https://uiultra.com/
   4. https://kalenderlari.com/jadwal/
   5. https://jadwallari.id/
+  6. https://www.kaggle.com/datasets/ireddragonicy/dataset-jadwal-event-lariku-info?resource=download&select=lariku_events_full.csv
 
 ## Jenis Pengguna
 #### 1. Runner 

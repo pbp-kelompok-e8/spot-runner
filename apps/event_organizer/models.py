@@ -1,6 +1,20 @@
 from django.db import models
-import uuid
+from django.conf import settings
 
-# Create your models here.
+# EventOrganizer represents a user who can create and manage events.
+# Username/password are managed by Django's user model; this model
+# stores organizer-specific profile data (profile picture, base location).
 class EventOrganizer(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='event_organizer_profile'
+    )
+    profile_picture = models.ImageField(upload_to='organizer_profiles/', null=True, blank=True)
+    base_location = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return getattr(self.user, 'username', f"Organizer {self.pk}")
