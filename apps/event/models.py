@@ -1,24 +1,23 @@
 from django.db import models
 import uuid
 
-# Create your models here.git
+# Create your models here
 
 class EventCategory(models.Model):
-    CATEGORY_CHOICES = [
+    category = [
         ('fun_run', 'Fun Run'),
         ('5k', '5K'),
         ('10k', '10K'),
         ('half_marathon', 'Half Marathon'),
-        ('full_marathon', 'Full Marathon'),
+        ('full_marathon', 'Full Marathon')
     ]
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, unique=True)
+    category = models.CharField(max_length=20, choices=category,unique=True)
 
     def __str__(self):
         return self.get_category_display()
 
 class Event(models.Model):
     user_eo = models.ForeignKey('event_organizer.EventOrganizer', on_delete=models.CASCADE)
-
 
     cities = [
         ('jakarta_barat', 'Jakarta Barat'),
@@ -30,6 +29,12 @@ class Event(models.Model):
         ('bogor', 'Bogor'),
         ('depok', 'Depok'),
         ('tangerang', 'Tangerang')
+    ]
+
+    status = [
+        ('coming_soon', 'Coming Soon'),
+        ('on_going', 'On Going'),
+        ('finished', 'Finished'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -47,6 +52,8 @@ class Event(models.Model):
     capacity = models.PositiveIntegerField(default=0)
     total_participans = models.PositiveIntegerField(default=0)
     full = models.BooleanField(default=False)
+    event_status = models.CharField(max_length=20, choices=status, default='coming_soon')
+    coin = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -57,5 +64,4 @@ class Event(models.Model):
             self.full = True
         else:
             self.total_participans += 1
-        
         self.save()

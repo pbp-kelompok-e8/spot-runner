@@ -1,10 +1,13 @@
 from django.urls import path
-from apps.merchandise.views import show_merchandise
-from apps.merchandise import views 
+from apps.merchandise.views import *
 
 app_name = 'merchandise'
 
 urlpatterns = [
-    path('', views.show_merchandise, name='show_merchandise'),
-    path('redeem/<uuid:variant_id>/', views.redeem_variant, name='redeem_variant'),
+    path('', show_merchandise, name='show_merchandise'),
+    path('<uuid:id>/', product_detail, name='product_detail'),
+    path('add/', add_merchandise, name='add_merchandise'),
+    path('edit/<int:id>/', edit_merchandise, name='edit_merchandise'),
+    path('delete/<int:id>/', delete_merchandise, name='delete_merchandise'),
+
 ]

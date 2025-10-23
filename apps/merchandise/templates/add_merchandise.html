@@ -1,0 +1,281 @@
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>{{ title }} - Merchandise</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-4 mb-4">
+        <a href="{% url 'merchandise:show_merchandise' %}" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Back to Merchandise
+        </a>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+    </div>
+
+    <!-- Form -->
+    <form method="post" enctype="multipart/form-data" class="space-y-8">
+      {% csrf_token %}
+      
+      <!-- Basic Product Information -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Product Information</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}
+              <div class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="md:col-span-2">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+            {% if form.description.errors %}
+              <div class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div>
+            {{ form.category.label_tag }}
+            {{ form.category }}
+            {% if form.category.errors %}
+              <div class="text-red-600 text-sm mt-1">{{ form.category.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div>
+            {{ form.price_coins.label_tag }}
+            {{ form.price_coins }}
+            {% if form.price_coins.errors %}
+              <div class="text-red-600 text-sm mt-1">{{ form.price_coins.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Variants -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Product Variants</h2>
+          <button type="button" id="add-variant" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Add Variant
+          </button>
+        </div>
+        
+        <div id="variants-container">
+          {{ variant_formset.management_form }}
+          {% for form in variant_formset %}
+            <div class="variant-form border border-gray-200 rounded-lg p-4 mb-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-medium text-gray-900">Variant {{ forloop.counter }}</h3>
+                {% if not forloop.first %}
+                  <button type="button" class="remove-variant text-red-600 hover:text-red-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                {% endif %}
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  {{ form.size.label_tag }}
+                  {{ form.size }}
+                  {% if form.size.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.size.errors.0 }}</div>
+                  {% endif %}
+                </div>
+                
+                <div>
+                  {{ form.stock.label_tag }}
+                  {{ form.stock }}
+                  {% if form.stock.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.stock.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        
+        {% if variant_formset.non_form_errors %}
+          <div class="text-red-600 text-sm mt-2">{{ variant_formset.non_form_errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Product Images -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-semibold text-gray-900">Product Images</h2>
+          <button type="button" id="add-image" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Add Image
+          </button>
+        </div>
+        
+        <div id="images-container">
+          {{ image_formset.management_form }}
+          {% for form in image_formset %}
+            <div class="image-form border border-gray-200 rounded-lg p-4 mb-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-medium text-gray-900">Image {{ forloop.counter }}</h3>
+                {% if not forloop.first %}
+                  <button type="button" class="remove-image text-red-600 hover:text-red-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                {% endif %}
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  {{ form.image.label_tag }}
+                  {{ form.image }}
+                  {% if form.image.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.image.errors.0 }}</div>
+                  {% endif %}
+                </div>
+                
+                <div>
+                  {{ form.alt_text.label_tag }}
+                  {{ form.alt_text }}
+                  {% if form.alt_text.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.alt_text.errors.0 }}</div>
+                  {% endif %}
+                </div>
+                
+                <div>
+                  {{ form.order.label_tag }}
+                  {{ form.order }}
+                  {% if form.order.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.order.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        
+        {% if image_formset.non_form_errors %}
+          <div class="text-red-600 text-sm mt-2">{{ image_formset.non_form_errors }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-end gap-4">
+        <a href="{% url 'merchandise:show_merchandise' %}" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+          Cancel
+        </a>
+        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Save Product
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Variant formset management
+document.addEventListener('DOMContentLoaded', function() {
+  let variantCount = {{ variant_formset.total_form_count }};
+  let imageCount = {{ image_formset.total_form_count }};
+  
+  // Add variant
+  document.getElementById('add-variant').addEventListener('click', function() {
+    const container = document.getElementById('variants-container');
+    const template = container.querySelector('.variant-form').cloneNode(true);
+    
+    // Update form indices
+    template.innerHTML = template.innerHTML.replace(/variants-\d+/g, `variants-${variantCount}`);
+    template.innerHTML = template.innerHTML.replace(/variants\.\d+/g, `variants.${variantCount}`);
+    
+    // Clear values
+    template.querySelectorAll('input, select').forEach(input => {
+      if (input.type !== 'hidden') input.value = '';
+    });
+    
+    // Add remove button
+    const removeBtn = template.querySelector('.remove-variant');
+    if (removeBtn) {
+      removeBtn.style.display = 'block';
+    }
+    
+    container.appendChild(template);
+    variantCount++;
+    
+    // Update management form
+    document.getElementById('id_variants-TOTAL_FORMS').value = variantCount;
+  });
+  
+  // Remove variant
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-variant')) {
+      e.target.closest('.variant-form').remove();
+      variantCount--;
+      document.getElementById('id_variants-TOTAL_FORMS').value = variantCount;
+    }
+  });
+  
+  // Add image
+  document.getElementById('add-image').addEventListener('click', function() {
+    const container = document.getElementById('images-container');
+    const template = container.querySelector('.image-form').cloneNode(true);
+    
+    // Update form indices
+    template.innerHTML = template.innerHTML.replace(/images-\d+/g, `images-${imageCount}`);
+    template.innerHTML = template.innerHTML.replace(/images\.\d+/g, `images.${imageCount}`);
+    
+    // Clear values
+    template.querySelectorAll('input').forEach(input => {
+      if (input.type !== 'hidden') input.value = '';
+    });
+    
+    // Add remove button
+    const removeBtn = template.querySelector('.remove-image');
+    if (removeBtn) {
+      removeBtn.style.display = 'block';
+    }
+    
+    container.appendChild(template);
+    imageCount++;
+    
+    // Update management form
+    document.getElementById('id_images-TOTAL_FORMS').value = imageCount;
+  });
+  
+  // Remove image
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-image')) {
+      e.target.closest('.image-form').remove();
+      imageCount--;
+      document.getElementById('id_images-TOTAL_FORMS').value = imageCount;
+    }
+  });
+});
+</script>
+{% endblock %} {% endcomment %}
