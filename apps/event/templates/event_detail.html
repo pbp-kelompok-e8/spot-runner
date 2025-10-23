@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Create New Event</title>
+{% endblock meta %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+
+{% include 'footer.html' %}
+{% endblock content %}
