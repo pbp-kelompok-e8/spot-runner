@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from apps.main.models import User
 from apps.main.forms import CustomUserCreationForm
 from django.contrib import messages
@@ -39,3 +40,19 @@ def login_user(request):
         form = AuthenticationForm(request)
     context = {'form': form}
     return render(request, 'login.html', context)
+
+def show_user(request, username):
+    user = get_object_or_404(User, username=username)
+    
+    context = {
+        'user':user
+    }
+
+    return render(request,"user_detail.html",context)
+
+def logout_user(request):
+    username = request.user.username
+    logout(request)
+    response = HttpResponseRedirect(reverse('main:login'))
+    messages.success(request, f'See u later, {username}!')
+    return response

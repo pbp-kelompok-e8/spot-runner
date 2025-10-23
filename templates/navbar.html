@@ -12,10 +12,10 @@
         
         <!-- Desktop Navigation -->
         <div class="hidden md:flex items-center space-x-8">
-          <a href="/" class="text-black hover:text-gray-900 font-semibold transition-colors">
+          <a href="{% url 'main:show_main'%}" class="text-black hover:text-gray-900 font-semibold transition-colors">
             Home
           </a>
-          <a href="" class="text-black hover:text-gray-900 font-semibold transition-colors">
+          <a href="{% url 'main:show_user' user.username %}" class="text-black hover:text-gray-900 font-semibold transition-colors">
             Profile
           </a>
           <a href="" class="text-black hover:text-gray-900 font-semibold transition-colors">
@@ -25,18 +25,18 @@
         
         <!-- Desktop User Section -->
         <div class="hidden md:flex items-center space-x-6">
-          {% if user.is_authenticated %}
+          {% if request.user.is_authenticated %}
             <div class="text-right">
               <div class="text-sm font-medium text-gray-900">{{ name|default:user.username }}</div>
             </div>
-            <a href="" class="text-red-600 hover:text-red-700 font-semibold transition-colors">
+            <a href="{% url 'main:logout' %}" class="text-red-600 hover:text-red-700 font-semibold transition-colors">
               Logout
             </a>
           {% else %}
-            <a href="" class="text-black hover:text-gray-900 font-semibold transition-colors">
+            <a href="{% url 'main:login' %}" class="text-black hover:text-gray-900 font-semibold transition-colors">
               Login
             </a>
-            <a href="" class="bg-blue-700 hover:bg-blue-600 text-white px-5 py-2 rounded-xl font-medium transition-colors">
+            <a href="{% url 'main:register' %}" class="bg-blue-700 hover:bg-blue-600 text-white px-5 py-2 rounded-xl font-medium transition-colors">
               Register
             </a>
           {% endif %}
@@ -60,10 +60,10 @@
       <div class="px-6 py-4 space-y-4">
         <!-- Mobile Navigation Links -->
         <div class="space-y-1">
-          <a href="/" class="block text-blue-700 hover:text-gray-900 font-medium py-3 transition-colors">
+          <a href="{% url 'main:show_main' %}" class="block text-blue-700 hover:text-gray-900 font-medium py-3 transition-colors">
             Home
           </a>
-          <a href="" class="block text-blue-700 hover:text-gray-900 font-medium py-3 transition-colors">
+          <a href="{% url 'main:show_user' user.username %}" class="block text-blue-700 hover:text-gray-900 font-medium py-3 transition-colors">
             Profile
           </a>
           <a href="" class="block text-blue-700 hover:text-gray-900 font-medium py-3 transition-colors">
@@ -73,20 +73,20 @@
         
         <!-- Mobile User Section -->
         <div class="border-t border-gray-200 pt-4">
-          {% if user.is_authenticated %}
+          {% if request.user.is_authenticated %}
             <div class="mb-4">
               <div class="font-medium text-gray-900">{{ name|default:user.username }}</div>
               <div class="text-sm text-gray-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
             </div>
-            <a href="" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">
+            <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">
               Logout
             </a>
           {% else %}
             <div class="space-y-3">
-              <a href="" class="block text-blue-700 hover:text-gray-900 font-medium py-3 transition-colors">
+              <a href="{% url 'main:login' %}" class="block text-blue-700 hover:text-gray-900 font-medium py-3 transition-colors">
                 Login
               </a>
-              <a href="" class="block bg-blue-700 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded text-center transition-colors">
+              <a href="{% url 'main:register'%}" class="block bg-blue-700 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded text-center transition-colors">
                 Register
               </a>
             </div>

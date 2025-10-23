@@ -13,17 +13,6 @@
                 Hello, welcome back to Spot Runner!
             </p>
 
-            <!-- Form Errors Display -->
-            {% if form.non_field_errors %}
-                <div class="mb-6">
-                {% for error in form.non_field_errors %}
-                    <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-                </div>
-            {% endif %}
-
             <form method="POST" action="" class="space-y-6">
                 {% csrf_token %}
                 
@@ -88,4 +77,37 @@
         </div>
     </div>
 </div>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+            // Handle non-field errors
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    showToast('toast-danger', '{{ error|escapejs }}');
+                {% endfor %}
+            {% endif %}
+
+            // Handle field-specific errors
+            {% for field in form %}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        showToast('toast-danger', '{{ field.label }}: {{ error|escapejs }}');
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            // Handle success messages
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        showToast('toast-success', '{{ message|escapejs }}');
+                    {% elif message.tags == 'error' %}
+                        showToast('toast-danger', '{{ message|escapejs }}');
+                    {% elif message.tags == 'warning' %}
+                        showToast('toast-warning', '{{ message|escapejs }}');
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        });
+</script>
 {% endblock content %}

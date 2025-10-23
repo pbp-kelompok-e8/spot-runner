@@ -179,5 +179,36 @@
             }
         });
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+            // Handle non-field errors
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    showToast('toast-danger', '{{ error|escapejs }}');
+                {% endfor %}
+            {% endif %}
+
+            // Handle field-specific errors
+            {% for field in form %}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        showToast('toast-danger', '{{ field.label }}: {{ error|escapejs }}');
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            // Handle success messages
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        showToast('toast-success', '{{ message|escapejs }}');
+                    {% elif message.tags == 'error' %}
+                        showToast('toast-danger', '{{ message|escapejs }}');
+                    {% elif message.tags == 'warning' %}
+                        showToast('toast-warning', '{{ message|escapejs }}');
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        });
 </script>
 {% endblock content %}

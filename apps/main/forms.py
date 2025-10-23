@@ -5,7 +5,6 @@ from django import forms
 from django.db import transaction
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
     base_location = forms.ChoiceField(choices=Runner.LOCATION_CHOICES, required=True)
 
     profile_picture = forms.URLField(required=False)
