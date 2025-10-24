@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.db.models import Sum, F
+from django.contrib import messages
 
 # Merchandise landing page
 def show_merchandise(request):
@@ -86,6 +87,7 @@ def add_merchandise(request):
             merchandise.organizer = request.user.eventorganizer
             merchandise.save()
             
+            messages.success(request, 'Product added successfully!')
             return HttpResponseRedirect(reverse('merchandise:show_merchandise'))
     else:
         form = MerchandiseForm()
@@ -111,6 +113,7 @@ def edit_merchandise(request, id):
         
         if form.is_valid():
             form.save()
+            messages.success(request, 'Product updated successfully!')
             return HttpResponseRedirect(reverse('merchandise:show_merchandise'))
     else:
         form = MerchandiseForm(instance=merchandise)
