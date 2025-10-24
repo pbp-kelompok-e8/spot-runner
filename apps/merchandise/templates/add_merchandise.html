@@ -8,6 +8,19 @@
 {% block content %}
 {% include 'navbar.html' %}
 
+<!-- Toast Messages -->
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags == 'success' %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          showToast('toast-success', '{{ message }}');
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
 <body class="bg-gray-50 text-gray-800 mt-16">
   <div class="max-w-4xl mx-auto px-6 py-10">
     <!-- Header -->

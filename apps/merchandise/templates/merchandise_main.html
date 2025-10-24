@@ -8,6 +8,19 @@
 {% block content %}
 {% include 'navbar.html' %}
 
+<!-- Toast Messages -->
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags == 'success' %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          showToast('toast-success', '{{ message }}');
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
 <body class="bg-gray-50 text-gray-800 mt-16">
   <div class="max-w-7xl mx-auto px-6 py-10">
 
@@ -223,27 +236,15 @@
             }, 300);
           }
           
-          // Toast notification (jika ada)
-          if (window.showToast) {
-            window.showToast('success', 'Product deleted successfully');
-          } else {
-            alert('Product deleted successfully!');
-          }
+          // Toast notification
+          showToast('toast-success', 'Product deleted successfully');
         } else {
           const errorMsg = data.error || 'Failed to delete product';
-          if (window.showToast) {
-            window.showToast('error', errorMsg);
-          } else {
-            alert('Error: ' + errorMsg);
-          }
+          showToast('toast-danger', errorMsg);
         }
       } catch (err) {
         console.error('Delete error:', err);
-        if (window.showToast) {
-          window.showToast('error', 'Network error occurred');
-        } else {
-          alert('Network error occurred while deleting');
-        }
+        showToast('toast-danger', 'Network error occurred');
       }
     });
   </script>
