@@ -1,24 +1,17 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from apps.main.models import User
 from apps.main.forms import CustomUserCreationForm
-from apps.main.forms import CustomUserCreationForm
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.contrib.auth import login, logout
 from django.contrib.auth import login, logout
 
 # Create your views here.
 
 def show_main(request):
-    return HttpResponse("Ini halaman main")
+    return render(request, 'main.html')
 
 def register(request):
     form = CustomUserCreationForm()

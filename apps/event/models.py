@@ -9,9 +9,7 @@ class EventCategory(models.Model):
         ('half_marathon', 'Half Marathon'),
         ('full_marathon', 'Full Marathon'),
     ]
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES,unique=True)
-    
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES,unique=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, unique=True)
     
     def __str__(self):
         return self.get_category_display()
@@ -36,12 +34,6 @@ class Event(models.Model):
         ('finished', 'Finished'),
     ]
 
-    status = [
-        ('coming_soon', 'Coming Soon'),
-        ('on_going', 'On Going'),
-        ('finished', 'Finished'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -56,10 +48,7 @@ class Event(models.Model):
     total_participans = models.PositiveIntegerField(default=0)
     full = models.BooleanField(default=False)
     event_status = models.CharField(max_length=20, choices=status, default='coming_soon')
-    event_category = models.ManyToManyField(EventCategory, related_name= 'events')
-    coin = models.PositiveIntegerField(default=0)
-    event_status = models.CharField(max_length=20, choices=status, default='coming_soon')
-    event_category = models.ManyToManyField(EventCategory, related_name= 'events')
+    event_category = models.ManyToManyField(EventCategory, related_name='events')
     coin = models.PositiveIntegerField(default=0)
 
     def __str__(self):

@@ -27,7 +27,7 @@ class EventAdmin(admin.ModelAdmin):
             'fields': ('id', 'name', 'description', 'user_eo')
         }),
         ('Event Details', {
-            'fields': ('location', 'event_date', 'regist_deadline', 'distance', 'contact')
+            'fields': ('location', 'event_date', 'regist_deadline', 'contact')
         }),
         ('Capacity & Status', {
             'fields': ('capacity', 'total_participans', 'full', 'event_status')

@@ -3,15 +3,15 @@ from .models import Review
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('user', 'event', 'rating', 'created_at')
+    list_display = ('runner', 'event', 'rating', 'created_at')
     list_filter = ('rating', 'created_at')
-    search_fields = ('user__username', 'event__name', 'review_text')
+    search_fields = ('runner__user__username', 'event__name', 'review_text')
     readonly_fields = ('created_at',)
     date_hierarchy = 'created_at'
     
     fieldsets = (
         (None, {
-            'fields': ('user', 'event', 'rating', 'review_text')
+            'fields': ('runner', 'event', 'event_organizer', 'rating', 'review_text')
         }),
         ('Timestamps', {
             'fields': ('created_at',),
