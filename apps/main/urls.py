@@ -20,4 +20,5 @@ urlpatterns = [
     path('<uuid:id>/edit', edit_event, name='edit_event'),
     path('<uuid:id>/delete', delete_event, name='delete_event'),
     path('user/<str:username>/edit', edit_profile_runner, name='edit_profile'),
+    
 ]

@@ -1,17 +1,11 @@
 # apps/review/models.py
 
 from django.db import models
-<<<<<<< HEAD
 from django.conf import settings
 from apps.event.models import Event
 from apps.main.models import Runner
 from apps.event_organizer.models import EventOrganizer
 
-=======
-from django.contrib.auth.models import User
-from apps.event.models import Event
-from django.conf import settings
->>>>>>> peter-user
 
 class Review(models.Model):
     # Runner yang memberikan review (relasi ke Runner model)
