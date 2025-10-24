@@ -27,13 +27,13 @@ class EventAdmin(admin.ModelAdmin):
             'fields': ('id', 'name', 'description', 'user_eo')
         }),
         ('Event Details', {
-            'fields': ('location', 'event_date', 'regist_deadline', 'distance', 'contact')
+            'fields': ('location', 'event_date', 'regist_deadline', 'contact')
         }),
         ('Capacity & Status', {
             'fields': ('capacity', 'total_participans', 'full', 'event_status')
         }),
         ('Media & Rewards', {
-            'fields': ('image', 'image2', 'image3', 'coin')
+            'fields': ('image', 'coin')
         }),
     )
     
