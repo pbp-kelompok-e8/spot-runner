@@ -8,7 +8,7 @@
 {% block content %}
 {% include 'navbar.html' %}
 
-{% comment %} Header/Banner Section {% endcomment %}
+<!-- Header Event  -->
 <header class="relative h-64 md:h-80 bg-gray-700 bg-cover bg-center text-white" 
         style="background-image: url('{% if event.image %}{{ event.image }}{% else %}{% static 'images/default_banner.jpg' %}{% endif %}');">
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -26,6 +26,7 @@
     </div>
 </header>
 
+<!-- Event Description -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
     <div class="lg:grid lg:grid-cols-3 lg:gap-8">
         <div class="lg:col-span-2 space-y-8">
@@ -39,11 +40,11 @@
                 </div>
             </div>
 
-            {% comment %} About Section {% endcomment %}
+
             <div class="bg-white shadow rounded-lg p-6 sm:p-8">
+
+                <!-- Event Information -->
                 <h2 class="text-2xl font-semibold text-gray-900 mb-6">About This Event</h2>
-                
-                {% comment %} Quick Info Grid {% endcomment %}
                 <div class="grid grid-cols-2 gap-x-4 gap-y-5 mb-6 text-sm text-gray-600">
                     <div class="flex items-center">
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -66,13 +67,12 @@
                          {% endfor %}
                     </div>
                 </div>
-                
-                {% comment %} Description Text {% endcomment %}
                 <div class="prose prose-sm sm:prose lg:prose-lg max-w-none text-gray-600">
                     {{ event.description|linebreaks }}
                 </div>
 
-                {% comment %} Action Buttons (Only for Owner) {% endcomment %}
+               
+                <!-- Edit and Delete Event -->
                 {% if user.is_authenticated and event.user_eo.user == user %}
                 <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
                      <a href="{% url 'event:edit_event' id=event.id %}" 
@@ -88,7 +88,7 @@
                 {% endif %}
             </div>
 
-            {% comment %} Organizer Section {% endcomment %}
+            <!-- Organizer Information -->
             <h2 class="text-xl font-semibold text-gray-900 mb-5">Organized By</h2>
                 <div class="flex items-start space-x-5">
                 {% if event.user_eo.profile_picture %}
