@@ -65,11 +65,11 @@ def show_user(request, username):
         event_date = event.date.date()  # Convert datetime to date if needed
         
         if event_date == today:
-            event.status = "On Going"
+            event.status = "on_going"
         elif event_date < today:
-            event.status = "Finished"
+            event.status = "finished"
         else:  # event_date > today
-            event.status = "Coming Soon"
+            event.status = "coming_soon"
         event.save()
 
     context = {
