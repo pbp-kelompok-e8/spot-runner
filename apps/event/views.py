@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import EventForm
+from django.views.decorators.http import require_POST
 from .models import Event
 from apps.event_organizer.models import EventOrganizer
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -7,6 +8,7 @@ from django.core import serializers
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
+from apps.review.models import Review
 
 @login_required
 def create_event(request):

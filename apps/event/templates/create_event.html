@@ -11,12 +11,14 @@
 <main class="mt-16 py-8 bg-white text-gray-900">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        <!-- Opsi back -->
         <div class="mb-4">
             <a href="javascript:history.back()" class="text-sm font-medium text-gray-700 hover:text-gray-900">
                 &lt; Back
             </a>
         </div>
-
+        
+        <!-- Form Create -->
         <div class="bg-white p-6 sm:p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
             <form id="create-event-form" novalidate>
                 {% csrf_token %}
@@ -28,12 +30,14 @@
                     <p class="text-sm font-medium text-gray-500">Launch new marathon event</p>
                 </div>
 
+                <!-- Error Box -->
                 <div id="form-errors-container" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded" style="display: none;">
                     <p class="font-bold">Please correct the errors below</p>
                     <ul id="form-errors-list" class="list-disc list-inside">
                         </ul>
                 </div>
-
+                
+                <!-- Event Status -->
                 <div class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <div class="flex flex-wrap gap-3">
@@ -57,6 +61,7 @@
                     <div id="error-event_status" class="mt-1 text-xs text-red-600"></div>
                 </div>
 
+                <!-- Input field section -->
                 <div class="mb-5">
                     <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         Event Name
@@ -160,7 +165,8 @@
                     <div id="error-image3" class="mt-1 text-xs text-red-600"></div>
                 </div>
 
-                <div class="mt-6">
+                <!-- Create Button -->
+                <div  class="mt-6">
                     <button type="submit" id="submit-button"
                             class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
                         Create Event
