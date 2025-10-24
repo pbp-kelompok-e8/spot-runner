@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Review
-
+# test
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('user', 'event', 'rating', 'created_at')

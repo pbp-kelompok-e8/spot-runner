@@ -2,7 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from apps.merchandise.models import Merchandise
 from django.utils.html import strip_tags
-
+# test
 class MerchandiseForm(ModelForm):
     class Meta:
         model = Merchandise

@@ -3,7 +3,7 @@ from django.db import models
 from apps.event_organizer.models import EventOrganizer
 from apps.main.models import Runner
 from django.core.validators import MinValueValidator
-
+# test
 # from django.conf import settings
 # User = settings.AUTH_USER_MODEL 
 

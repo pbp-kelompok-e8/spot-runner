@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import EventOrganizer
-
+# Test
 @admin.register(EventOrganizer)
 class EventOrganizerAdmin(admin.ModelAdmin):
     list_display = ('user', 'base_location', 'created_at')

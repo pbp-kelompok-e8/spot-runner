@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.db.models import Sum, F
 from django.contrib import messages
-
+# test
 # Merchandise landing page
 def show_merchandise(request):
     user = request.user if request.user.is_authenticated else None

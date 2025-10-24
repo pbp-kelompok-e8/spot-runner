@@ -1,7 +1,7 @@
 # merchandise/admin.py
 from django.contrib import admin
 from .models import Merchandise, Redemption 
-
+# test
 @admin.register(Merchandise)
 class MerchandiseAdmin(admin.ModelAdmin):
     list_display = ['name', 'price_coins', 'category', 'stock', 'organizer']

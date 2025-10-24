@@ -1,6 +1,6 @@
 from django.urls import path
 from apps.merchandise.views import *
-
+# test
 app_name = 'merchandise'
 
 urlpatterns = [
