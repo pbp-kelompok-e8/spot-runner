@@ -30,5 +30,26 @@
     <!-- Script untuk munculin toast -->
     <script src="{% static 'js/toast.js' %}"></script>
     
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const burgerBtn = document.getElementById("burger-btn");
+        const mobileMenu = document.getElementById("mobile-menu");
+        if (!burgerBtn || !mobileMenu) return; // aman kalau elemen belum ada
+
+        const bars = burgerBtn.querySelectorAll("span");
+
+        burgerBtn.addEventListener("click", () => {
+          mobileMenu.classList.toggle("hidden");
+
+          // Animasi garis burger jadi X
+          bars[0].classList.toggle("rotate-45");
+          bars[0].classList.toggle("translate-y-2");
+          bars[1].classList.toggle("opacity-0");
+          bars[2].classList.toggle("-rotate-45");
+          bars[2].classList.toggle("-translate-y-2");
+        });
+      });
+    </script>
+
   </body>
 </html>
