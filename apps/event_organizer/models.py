@@ -11,14 +11,28 @@ class EventOrganizer(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
+<<<<<<< HEAD
         related_name="event_organizer_profile"
+=======
+        related_name='event_organizer_profile'
+>>>>>>> 94a101df09ea37bf24af45573c2cd0a6c34c119e
     )
 
     profile_picture = models.URLField(blank=True, null=True)
     base_location = models.CharField(max_length=255, blank=True)
+    total_events = models.IntegerField(default=0)
+    rating = models.FloatField(default=0.0)
+    review_count = models.IntegerField(default=0)
+    coin = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.username
+        return self.user.username
+    
+    @property
+    def name(self):
+        return f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username
+    
+    

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Your Profile - Spot Runner</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-10">
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-md p-8">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="text-2xl font-semibold text-gray-800">Your Profile</h2>
+      <span class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-lg font-medium">
+        Event Organizer
+      </span>
+    </div>
+
+    <!-- Profile Info -->
+    <div class="space-y-6 text-gray-700">
+
+      <!-- Dates -->
+      <div class="flex gap-8">
+        <div class="w-1/2">
+          <p class="text-sm text-gray-500">Joined</p>
+          <p class="font-medium">{{ joined_date }}</p>
+        </div>
+        <div class="w-1/2">
+          <p class="text-sm text-gray-500">Last login</p>
+          <p class="font-medium">{{ last_login }}</p>
+        </div>
+      </div>
+
+      <!-- Username (Display Only) -->
+      <div>
+        <label class="block text-sm text-gray-500">Username</label>
+        <p class="font-medium">{{ user.username }}</p>
+      </div>
+
+      <!-- Profile Photo (Image Only) -->
+      <div>
+        <label class="block text-sm text-gray-500">Profile Photo</label>
+        {% if organizer.profile_picture %}
+          <img src="{{ organizer.profile_picture }}" class="w-32 h-32 rounded-xl object-cover mt-2 shadow">
+        {% else %}
+          <p class="text-gray-400">No profile picture</p>
+        {% endif %}
+      </div>
+
+      <!-- Base Location (Display Only) -->
+      <div>
+        <label class="block text-sm text-gray-500">Base Location</label>
+        <p class="font-medium">{{ organizer.base_location|default:"-" }}</p>
+      </div>
+
+      <!-- Password Info -->
+      <div class="text-sm text-gray-500">
+        Want to change your password?
+        <a href="{% url 'event_organizer:change_password' %}" class="text-blue-600 hover:underline">
+          Change password
+        </a>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end gap-3 mt-6">
+        <a href="{% url 'main:logout' %}" 
+           class="px-5 py-2 rounded-lg bg-gray-300 text-gray-700 hover:bg-gray-400">
+          Log out
+        </a>
+
+        <a href="{% url 'event_organizer:edit_profile' %}" 
+           class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+          Edit Profile
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% include 'footer.html' %}
+{% endblock %}

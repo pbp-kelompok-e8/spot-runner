@@ -42,14 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.merchandise',
+    'apps.main',
     'apps.event',
     'apps.event_organizer',
-    'apps.main',
+    'apps.merchandise',
     'apps.review',
+    'django.contrib.humanize',
 ]
 
-#kasih tau django kalo pake user custom
 AUTH_USER_MODEL = 'main.User'
 
 MIDDLEWARE = [
@@ -144,6 +144,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+# Authentication settings
+LOGIN_URL = 'main:login'  # URL name where users will be redirected to log in
+LOGIN_REDIRECT_URL = 'main:show_main'  # URL name where users will be redirected after login
+LOGOUT_REDIRECT_URL = 'main:show_main'  # URL name where users will be redirected after logout
 
 STATIC_URL = '/static/'
 if DEBUG:
@@ -157,3 +161,5 @@ else:
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+

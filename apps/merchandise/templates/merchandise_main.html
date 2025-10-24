@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Merchandise</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<body class="bg-gray-50 text-gray-800 mt-16">
+  <div class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- ===== Banner: runner or organizer ===== -->
+    {% if user.is_authenticated and is_organizer %}
+      <!-- Organizer banner -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mb-8 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <img src="{% static 'images/coin-icon.png' %}"
+             alt="Coin icon"
+             class="w-[90px] h-[85px]" />
+
+          <div>
+            <div class="text-lg font-semibold">
+              {{ organizer_coins|default:0 }} Coins Earned
+            </div>
+            <div class="text-sm text-gray-500">From merchandise redemptions</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <a href="{% url 'merchandise:history' %}" class="inline-flex items-center gap-2 px-4 py-2 text-m bg-white border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.75 7.5V11.5753L16.1363 13.6069C16.3068 13.7093 16.4297 13.8753 16.4779 14.0684C16.5261 14.2614 16.4956 14.4657 16.3931 14.6362C16.2907 14.8068 16.1247 14.9297 15.9316 14.9779C15.7386 15.0261 15.5343 14.9956 15.3638 14.8931L11.6138 12.6431C11.5028 12.5764 11.4109 12.4822 11.3472 12.3695C11.2834 12.2568 11.25 12.1295 11.25 12V7.5C11.25 7.30109 11.329 7.11032 11.4697 6.96967C11.6103 6.82902 11.8011 6.75 12 6.75C12.1989 6.75 12.3897 6.82902 12.5303 6.96967C12.671 7.11032 12.75 7.30109 12.75 7.5ZM12 3C10.8169 2.99705 9.64491 3.22878 8.55193 3.68177C7.45895 4.13477 6.46667 4.80003 5.6325 5.63906C4.95094 6.32906 4.34531 6.99281 3.75 7.6875V6C3.75 5.80109 3.67098 5.61032 3.53033 5.46967C3.38968 5.32902 3.19891 5.25 3 5.25C2.80109 5.25 2.61032 5.32902 2.46967 5.46967C2.32902 5.61032 2.25 5.80109 2.25 6V9.75C2.25 9.94891 2.32902 10.1397 2.46967 10.2803C2.61032 10.421 2.80109 10.5 3 10.5H6.75C6.94891 10.5 7.13968 10.421 7.28033 10.2803C7.42098 10.1397 7.5 9.94891 7.5 9.75C7.5 9.55109 7.42098 9.36032 7.28033 9.21967C7.13968 9.07902 6.94891 9 6.75 9H4.59375C5.26406 8.21062 5.93156 7.46719 6.69281 6.69656C7.73518 5.6542 9.0616 4.94213 10.5063 4.64932C11.9511 4.35651 13.4501 4.49594 14.816 5.0502C16.182 5.60446 17.3543 6.54896 18.1866 7.76569C19.0188 8.98242 19.474 10.4174 19.4953 11.8914C19.5166 13.3654 19.1031 14.8129 18.3064 16.0532C17.5098 17.2935 16.3652 18.2715 15.0159 18.8651C13.6665 19.4586 12.1722 19.6413 10.7196 19.3904C9.26698 19.1395 7.92052 18.4661 6.84844 17.4544C6.77679 17.3867 6.6925 17.3337 6.60039 17.2986C6.50828 17.2634 6.41015 17.2468 6.3116 17.2496C6.21305 17.2524 6.11602 17.2745 6.02604 17.3148C5.93606 17.3551 5.8549 17.4127 5.78719 17.4844C5.71947 17.556 5.66654 17.6403 5.6314 17.7324C5.59626 17.8245 5.57961 17.9227 5.5824 18.0212C5.58518 18.1198 5.60735 18.2168 5.64764 18.3068C5.68792 18.3967 5.74554 18.4779 5.81719 18.5456C6.88542 19.5537 8.18414 20.285 9.6 20.6757C11.0159 21.0664 12.5058 21.1047 13.9399 20.7872C15.3739 20.4696 16.7085 19.8059 17.827 18.854C18.9456 17.9021 19.8142 16.6909 20.357 15.3261C20.8998 13.9613 21.1003 12.4844 20.9411 11.0242C20.7818 9.56411 20.2677 8.16514 19.4434 6.94943C18.6192 5.73373 17.5099 4.73822 16.2125 4.04979C14.915 3.36137 13.4688 3.00095 12 3Z" fill="#7E8D99"/>
+          </svg>History
+          </a>
+          <a href="{% url 'merchandise:add_merchandise' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
+            Add New Product
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+    {% else %}
+      <!-- Runner / default banner -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mb-8 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <img src="{% static 'images/coin-icon.png' %}"
+             alt="Coin icon"
+             class="w-[90px] h-[85px]" />
+          <div>
+            <div class="text-xl font-semibold">
+              {{ user_coins|default:0 }} Coins
+            </div>
+            <div class="text-m font-semibold text-gray-700">Sport Rewards</div>
+          </div>
+        </div>
+
+          <a href="{% url 'merchandise:history' %}" class="inline-flex items-center gap-2 px-4 py-2 text-m bg-white border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.75 7.5V11.5753L16.1363 13.6069C16.3068 13.7093 16.4297 13.8753 16.4779 14.0684C16.5261 14.2614 16.4956 14.4657 16.3931 14.6362C16.2907 14.8068 16.1247 14.9297 15.9316 14.9779C15.7386 15.0261 15.5343 14.9956 15.3638 14.8931L11.6138 12.6431C11.5028 12.5764 11.4109 12.4822 11.3472 12.3695C11.2834 12.2568 11.25 12.1295 11.25 12V7.5C11.25 7.30109 11.329 7.11032 11.4697 6.96967C11.6103 6.82902 11.8011 6.75 12 6.75C12.1989 6.75 12.3897 6.82902 12.5303 6.96967C12.671 7.11032 12.75 7.30109 12.75 7.5ZM12 3C10.8169 2.99705 9.64491 3.22878 8.55193 3.68177C7.45895 4.13477 6.46667 4.80003 5.6325 5.63906C4.95094 6.32906 4.34531 6.99281 3.75 7.6875V6C3.75 5.80109 3.67098 5.61032 3.53033 5.46967C3.38968 5.32902 3.19891 5.25 3 5.25C2.80109 5.25 2.61032 5.32902 2.46967 5.46967C2.32902 5.61032 2.25 5.80109 2.25 6V9.75C2.25 9.94891 2.32902 10.1397 2.46967 10.2803C2.61032 10.421 2.80109 10.5 3 10.5H6.75C6.94891 10.5 7.13968 10.421 7.28033 10.2803C7.42098 10.1397 7.5 9.94891 7.5 9.75C7.5 9.55109 7.42098 9.36032 7.28033 9.21967C7.13968 9.07902 6.94891 9 6.75 9H4.59375C5.26406 8.21062 5.93156 7.46719 6.69281 6.69656C7.73518 5.6542 9.0616 4.94213 10.5063 4.64932C11.9511 4.35651 13.4501 4.49594 14.816 5.0502C16.182 5.60446 17.3543 6.54896 18.1866 7.76569C19.0188 8.98242 19.474 10.4174 19.4953 11.8914C19.5166 13.3654 19.1031 14.8129 18.3064 16.0532C17.5098 17.2935 16.3652 18.2715 15.0159 18.8651C13.6665 19.4586 12.1722 19.6413 10.7196 19.3904C9.26698 19.1395 7.92052 18.4661 6.84844 17.4544C6.77679 17.3867 6.6925 17.3337 6.60039 17.2986C6.50828 17.2634 6.41015 17.2468 6.3116 17.2496C6.21305 17.2524 6.11602 17.2745 6.02604 17.3148C5.93606 17.3551 5.8549 17.4127 5.78719 17.4844C5.71947 17.556 5.66654 17.6403 5.6314 17.7324C5.59626 17.8245 5.57961 17.9227 5.5824 18.0212C5.58518 18.1198 5.60735 18.2168 5.64764 18.3068C5.68792 18.3967 5.74554 18.4779 5.81719 18.5456C6.88542 19.5537 8.18414 20.285 9.6 20.6757C11.0159 21.0664 12.5058 21.1047 13.9399 20.7872C15.3739 20.4696 16.7085 19.8059 17.827 18.854C18.9456 17.9021 19.8142 16.6909 20.357 15.3261C20.8998 13.9613 21.1003 12.4844 20.9411 11.0242C20.7818 9.56411 20.2677 8.16514 19.4434 6.94943C18.6192 5.73373 17.5099 4.73822 16.2125 4.04979C14.915 3.36137 13.4688 3.00095 12 3Z" fill="#7E8D99"/>
+          </svg>History
+          </a>
+      </div>
+    {% endif %}
+
+    <!-- ===== Section Title + Category Filters ===== -->
+    <div class="mb-4">
+      <h2 class="text-3xl font-bold mb-4">Merchandise</h2>
+
+      <div class="bg-white rounded-lg p-4 mb-8">
+        <div class="flex flex-wrap gap-3">
+          <button data-category="all" class="category-btn px-4 py-2 rounded-full border border-indigo-200 text-indigo-600 text-sm bg-white hover:bg-indigo-50">All</button>
+
+          {% for value, label in categories %}
+            <button data-category="{{ value }}" class="category-btn px-4 py-2 rounded-full border border-indigo-200 text-indigo-600 text-sm bg-white hover:bg-indigo-50">
+              {{ label }}
+            </button>
+          {% empty %}
+            <!-- fallback hard-coded categories if none exist in DB -->
+            <button data-category="apparel" class="category-btn px-4 py-2 rounded-full border border-indigo-200 text-indigo-600 text-sm bg-white hover:bg-indigo-50">Apparel</button>
+            <button data-category="accessories" class="category-btn px-4 py-2 rounded-full border border-indigo-200 text-indigo-600 text-sm bg-white hover:bg-indigo-50">Accessories</button>
+            <button data-category="totebag" class="category-btn px-4 py-2 rounded-full border border-indigo-200 text-indigo-600 text-sm bg-white hover:bg-indigo-50">Tote Bag</button>
+            <button data-category="water-bottle" class="category-btn px-4 py-2 rounded-full border border-indigo-200 text-indigo-600 text-sm bg-white hover:bg-indigo-50">Water Bottle</button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Grid of cards ===== -->
+    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
+      {% for product in products %}
+        <div class="product-card" data-category="{{ product.category|default:'' }}">
+          {% include 'card_merchandise.html' with product=product %}
+        </div>
+      {% empty %}
+        <div id="empty-state-initial" class="col-span-full flex flex-col items-center justify-center bg-white rounded-lg p-12 text-center text-gray-500 min-h-[400px]">
+          <img src="{% static 'images/no-product.png' %}" alt="No products found" class="w-32 h-32 mb-4 opacity-50">
+          <h3 class="text-xl font-semibold text-gray-600 mb-2">No Products Found</h3>
+        </div>
+      {% endfor %}
+      
+      <!-- Empty state untuk filter (hidden by default) -->
+      <div id="empty-state-filter" class="col-span-full hidden flex-col items-center justify-center bg-white rounded-lg p-12 text-center text-gray-500 min-h-[400px]">
+        <img src="{% static 'images/no-product.png' %}" alt="No products found" class="w-32 h-32 mb-4 opacity-50">
+        <h3 class="text-xl font-semibold text-gray-600 mb-2">No Products Found</h3>
+        <p class="text-gray-500 text-sm">Try selecting a different category</p>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ===== Client-side filter script ===== -->
+  <script>
+    (function(){
+      const buttons = document.querySelectorAll('.category-btn');
+      const cards = document.querySelectorAll('#products-grid .product-card');
+      const emptyStateFilter = document.getElementById('empty-state-filter');
+
+      function setActive(btn){
+        buttons.forEach(b => {
+          b.classList.remove('bg-indigo-600','text-white');
+          b.classList.add('bg-white','text-indigo-600','border','border-indigo-200','hover:bg-indigo-50');
+        });
+        btn.classList.remove('bg-white','text-indigo-600','border','border-indigo-200','hover:bg-indigo-50');
+        btn.classList.add('bg-indigo-600','text-white');
+      }
+
+      function updateEmptyState() {
+        const visibleCards = Array.from(cards).filter(card => {
+          return card.style.display !== 'none';
+        });
+        
+        if (emptyStateFilter) {
+          if (visibleCards.length === 0 && cards.length > 0) {
+            emptyStateFilter.classList.remove('hidden');
+            emptyStateFilter.classList.add('flex');
+          } else {
+            emptyStateFilter.classList.add('hidden');
+            emptyStateFilter.classList.remove('flex');
+          }
+        }
+      }
+
+      buttons.forEach(btn=>{
+        btn.addEventListener('click', () => {
+          const cat = btn.getAttribute('data-category');
+          setActive(btn);
+
+          cards.forEach(c=>{
+            if(cat === 'all' || !cat){
+              c.style.display = '';
+            } else {
+              if(c.dataset.category === cat) c.style.display = '';
+              else c.style.display = 'none';
+            }
+          });
+
+          updateEmptyState();
+          document.getElementById('products-grid').scrollIntoView({behavior: 'smooth', block: 'start'});
+        });
+      });
+
+      if(buttons[0]) setActive(buttons[0]);
+    })();
+  </script>
+
+  <!-- ===== AJAX Delete Handler (SINGLE VERSION) ===== -->
+  <script>
+    // Helper function - hanya 1x
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Delete handler - pake event delegation
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-action="delete-merch"]');
+      if (!btn) return;
+      
+      e.preventDefault();
+      
+      // Konfirmasi
+      if (!confirm('Are you sure you want to delete this merchandise?')) return;
+      
+      const url = btn.getAttribute('data-url');
+      const card = btn.closest('.product-card'); // Target .product-card bukan article
+
+      btn.disabled = true;
+      btn.innerHTML = '<svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">...</svg>';
+      
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok && data.success) {
+          // Animasi smooth remove
+          if (card) {
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+              card.remove();
+              
+              // Update empty state
+              const remainingCards = document.querySelectorAll('#products-grid .product-card');
+              const emptyStateFilter = document.getElementById('empty-state-filter');
+              
+              if (remainingCards.length === 0 && emptyStateFilter) {
+                emptyStateFilter.classList.remove('hidden');
+                emptyStateFilter.classList.add('flex');
+              }
+            }, 300);
+          }
+          
+          // Toast notification (jika ada)
+          if (window.showToast) {
+            window.showToast('success', 'Product deleted successfully');
+          } else {
+            alert('Product deleted successfully!');
+          }
+        } else {
+          const errorMsg = data.error || 'Failed to delete product';
+          if (window.showToast) {
+            window.showToast('error', errorMsg);
+          } else {
+            alert('Error: ' + errorMsg);
+          }
+        }
+      } catch (err) {
+        console.error('Delete error:', err);
+        if (window.showToast) {
+          window.showToast('error', 'Network error occurred');
+        } else {
+          alert('Network error occurred while deleting');
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+{% include 'footer.html' %}
+{% endblock content %}
+
