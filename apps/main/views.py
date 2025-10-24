@@ -15,7 +15,36 @@ from django.contrib.auth import login, logout
 # Create your views here.
 # test
 def show_main(request):
-    return render(request, 'main.html')
+    from apps.event.models import Event
+    
+    # Get filter parameters
+    category_filter = request.GET.get('category', '')
+    location_filter = request.GET.get('location', '')
+    status_filter = request.GET.get('status', '')
+    
+    # Start with all events
+    events = Event.objects.select_related('user_eo__user').prefetch_related('event_category').all()
+    
+    # Apply filters
+    if category_filter:
+        events = events.filter(event_category__category=category_filter)
+    
+    if location_filter:
+        events = events.filter(location=location_filter)
+    
+    if status_filter:
+        events = events.filter(event_status=status_filter)
+    
+    # Order by event date
+    events = events.order_by('event_date')
+    
+    context = {
+        'events': events,
+        'current_category': category_filter,
+        'current_location': location_filter,
+        'current_status': status_filter,
+    }
+    return render(request, 'main.html', context)
 
 def register(request):
     form = CustomUserCreationForm()
