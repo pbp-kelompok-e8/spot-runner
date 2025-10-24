@@ -1,3 +1,4 @@
+from datetime import date
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -15,7 +16,7 @@ from django.contrib.auth import login, logout
 # Create your views here.
 
 def show_main(request):
-    return HttpResponse("Ini halaman main")
+    return render(request, 'main.html')
 
 def register(request):
     form = CustomUserCreationForm()
@@ -55,12 +56,28 @@ def show_user(request, username):
             'user': user,
         }
         return render(request, "profile.html", context)
+
+    event_list = user.runner.attended_events.all()
+    today = date.today()
+    
+    # Update event statuses based on dates
+    for event in event_list:
+        event_date = event.date.date()  # Convert datetime to date if needed
+        
+        if event_date == today:
+            event.status = "On Going"
+        elif event_date < today:
+            event.status = "Finished"
+        else:  # event_date > today
+            event.status = "Coming Soon"
+        event.save()
+
     context = {
-        'user':user,
-        'event_list': user.runner.attended_events.all()
+        'user': user,
+        'event_list': event_list  # Use the updated event_list
     }
 
-    return render(request,"runner_detail.html",context)
+    return render(request, "runner_detail.html", context)
 
 def logout_user(request):
     username = request.user.username

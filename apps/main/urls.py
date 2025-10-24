@@ -3,7 +3,7 @@ from apps.main.views import register, show_main, login_user, show_user, logout_u
 from apps.event.views import create_event, show_event, show_xml, show_json, show_xml_by_id, show_json_by_id, edit_event, delete_event
 
 app_name = "main"
-
+# test
 urlpatterns = [
     path('', show_main, name='show_main'),
     path('register/', register, name='register'),

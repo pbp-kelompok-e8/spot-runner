@@ -5,7 +5,7 @@ from apps.merchandise.models import Merchandise, Redemption
 from apps.event_organizer.models import EventOrganizer
 from apps.main.models import Runner
 import json
-
+# test
 # Create your tests here.
 User = get_user_model()
 
