@@ -42,11 +42,26 @@
 
         <!-- Base Location (from EventOrganizer model) -->
         <div>
-          <label class="block text-sm font-medium text-gray-700">Base Location</label>
-          <input type="text" name="base_location" 
-                 value="{{ organizer.base_location|default_if_none:'' }}" 
-                 placeholder="Enter your base location"
-                 class="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+          <label for="base_location" class="block text-sm font-medium text-gray-700">Location</label>
+          <div class="mt-1">
+              <select id="base_location" name="base_location"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-500">
+                  <option value="" disabled selected>Select your location</option>
+                  <option value="jakarta">Jakarta</option>
+                  <option value="surabaya">Surabaya</option>
+                  <option value="bandung">Bandung</option>
+                  <option value="medan">Medan</option>
+                  <option value="semarang">Semarang</option>
+                  <option value="makassar">Makassar</option>
+                  <option value="palembang">Palembang</option>
+                  <option value="denpasar">Denpasar</option>
+                  <option value="yogyakarta">Yogyakarta</option>
+                  <option value="surakarta">Surakarta</option>
+                  <option value="malang">Malang</option>
+                  <option value="pekanbaru">Pekanbaru</option>
+                  <option value="depok">Depok</option>
+              </select>
+          </div>
         </div>
 
         <!-- Buttons -->
