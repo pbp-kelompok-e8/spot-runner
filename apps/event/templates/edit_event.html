@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(event) {
         event.preventDefault();
         submitButton.disabled = true;
-        submitButton.textContent = 'Creating...';
+        submitButton.textContent = 'Edting...';
         errorContainer.style.display = 'none';
         errorList.innerHTML = '';
         document.querySelectorAll('[id^="error-"]').forEach(el => {

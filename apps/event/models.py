@@ -34,12 +34,6 @@ class Event(models.Model):
         ('finished', 'Finished'),
     ]
 
-    status = [
-        ('coming_soon', 'Coming Soon'),
-        ('on_going', 'On Going'),
-        ('finished', 'Finished'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, default="Untitled Event")
     description = models.TextField(default="No description available", blank=True)

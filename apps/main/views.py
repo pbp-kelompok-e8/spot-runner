@@ -95,7 +95,7 @@ def edit_profile_runner(request, username):
         user.save()
 
         messages.success(request, "Profile updated successfully!")
-        return redirect('event_organizer:profile')
+        return redirect('main:show_user', username=user.username)
 
     context = {
         'user': user,
@@ -110,6 +110,7 @@ def cancel_event(request, username, id):
     event = get_object_or_404(Event, pk=id)
     user.runner.attended_events.remove(event)
     messages.success(request, f"You have successfully canceled your attendance for {event.name}.")
+    return redirect('main:show_user', username=username)
 
 def participate_in_event(request, username, id):
     user = get_object_or_404(User, username=username)
