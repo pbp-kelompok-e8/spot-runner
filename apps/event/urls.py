@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
 from .views import create_event, show_event, show_xml, show_json, show_xml_by_id, show_json_by_id, edit_event, delete_event
-
 app_name = 'event'
 
 urlpatterns = [

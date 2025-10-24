@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import EventCategory, Event
-
+# Test
 @admin.register(EventCategory)
 class EventCategoryAdmin(admin.ModelAdmin):
     list_display = ('get_category_display', 'category')
@@ -33,7 +33,7 @@ class EventAdmin(admin.ModelAdmin):
             'fields': ('capacity', 'total_participans', 'full', 'event_status')
         }),
         ('Media & Rewards', {
-            'fields': ('image', 'image2', 'image3', 'coin')
+            'fields': ('image', 'coin')
         }),
     )
     

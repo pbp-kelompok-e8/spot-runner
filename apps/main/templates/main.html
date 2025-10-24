@@ -2,24 +2,27 @@
 {% load static %}
 
 {% block meta %}
-<title>Merchandise</title>
+<title>Spot Runner - Home</title>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar.html' %}
 
-<main class="min-h-screen bg-gray-50" style="/* fallback kalau navbar fixed set --nav-h di navbar */ --nav-h:64px;">
+<main class="min-h-screen bg-gray-50"
+      style="/* fallback kalau navbar fixed set --nav-h di navbar */ --nav-h:64px;">
   {# jika navbar fixed, gunakan pt-[var(--nav-h)] agar content terdorong ke bawah #}
   <div class="pt-[var(--nav-h)] md:pt-[var(--nav-h)]">
+
+    {% comment %} tambahin sesuatu test lalal {% endcomment %}
+
     <!-- HERO -->
     <section class="relative">
       <!-- hero wrapper: responsive height (clamp => min 340px, ideal 60vh, max 820px) -->
       <div class="relative w-full h-[clamp(340px,60vh,820px)] overflow-hidden">
         <!-- background image: selalu full-width & responsive.
-             object-position disesuaikan per breakpoint agar cropping bagus (fokus ke kanan). -->
+            object-position disesuaikan per breakpoint agar cropping bagus (fokus ke kanan). -->
         <img src="{% static 'images/banner-hero.png' %}"
-             alt="Banner hero"
-             class="absolute inset-0 w-full h-full object-cover
+            alt="Banner hero"
+            class="absolute inset-0 w-full h-full object-cover
                     object-[85%_50%] sm:object-[75%_50%] md:object-[65%_50%] lg:object-[55%_50%]" />
 
         <!-- overlay untuk kontras teks -->
@@ -36,7 +39,11 @@
 
             <div class="flex flex-wrap gap-3 pt-4">
               <a href="#events"
+<<<<<<< HEAD
                  class="inline-flex items-center gap-2 px-5 py-3 bg-lime-400 hover:bg-lime-500 text-black rounded-full shadow-md font-medium transition">
+=======
+                class="inline-flex items-center gap-2 px-5 py-3 bg-lime-400 hover:bg-lime-500 text-black rounded-full shadow-md font-medium transition">
+>>>>>>> origin/chandra-merchandise
                 Explore Now
               </a>
             </div>
