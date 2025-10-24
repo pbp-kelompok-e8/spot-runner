@@ -1,12 +1,15 @@
 from django.urls import path
-from apps.main.views import register, show_main, login_user, show_user, logout_user
+from apps.main.views import register, show_main, login_user, show_user, logout_user, edit_profile_runner, cancel_event, participate_in_event
 
 app_name = "main"
-
+# test
 urlpatterns = [
     path('', show_main, name='show_main'),
     path('register/', register, name='register'),
     path('login/', login_user, name='login'),
     path('user/<str:username>', show_user, name='show_user'),
     path('logout/', logout_user, name='logout'),
+    path('user/<str:username>/edit', edit_profile_runner, name='edit_profile'),
+    path('user/<str:username>/cancel-event/<str:id>/', cancel_event, name='cancel_event'),
+    path('user/<str:username>/participate-event/<str:id>/', participate_in_event, name='participate_event'),
 ]

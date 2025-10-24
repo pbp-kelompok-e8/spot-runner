@@ -28,19 +28,15 @@ class Runner(models.Model):
     )
 
     LOCATION_CHOICES = [
-        ('jakarta', 'Jakarta'),
-        ('surabaya', 'Surabaya'),
-        ('bandung', 'Bandung'),
-        ('medan', 'Medan'),
-        ('semarang', 'Semarang'),
-        ('makassar', 'Makassar'),
-        ('palembang', 'Palembang'),
-        ('denpasar', 'Denpasar'),
-        ('yogyakarta', 'Yogyakarta'),
-        ('surakarta', 'Surakarta'),
-        ('malang', 'Malang'),
-        ('pekanbaru', 'Pekanbaru'),
+        ('jakarta_barat', 'Jakarta Barat'),
+        ('jakarta_pusat', 'Jakarta Pusat'),
+        ('jakarta_selatan', 'Jakarta Selatan'),
+        ('jakarta_timur', 'Jakarta Timur'),
+        ('jakarta_utara', 'Jakarta Utara'),
+        ('bekasi', 'Bekasi'),
+        ('bogor', 'Bogor'),
         ('depok', 'Depok'),
+        ('tangerang', 'Tangerang')
     ]
 
     email = models.EmailField(unique=True)

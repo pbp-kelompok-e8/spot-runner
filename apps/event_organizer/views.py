@@ -25,9 +25,9 @@ def dashboard_view(request):
     total_events = events.count()
 
     # Grouping Status
-    ongoing_events = events.filter(event_status='ongoing')
+    ongoing_events = events.filter(event_status='on_going')
     finished_events = events.filter(event_status='finished')
-    cancelled_events = events.filter(event_status='cancelled')
+    coming_soon_events = events.filter(event_status='coming_soon')
 
     stats = Review.objects.filter(event__user_eo=organizer).aggregate(
         avg=Avg('rating'),
@@ -42,7 +42,7 @@ def dashboard_view(request):
         'events': events,
         'ongoing_events': ongoing_events,
         'finished_events': finished_events,
-        'cancelled_events': cancelled_events,
+        'coming_soon_events': coming_soon_events,
         'total_events': total_events,
         'avg_rating': avg_rating,     
         'review_count': review_count, 

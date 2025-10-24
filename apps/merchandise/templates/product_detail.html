@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% comment %} # test {% endcomment %}
 {% block meta %}
 <title>{{ merchandise.name }} - Merchandise</title>
 {% endblock meta %}
@@ -8,11 +8,24 @@
 {% block content %}
 {% include 'navbar.html' %}
 
+<!-- Toast Messages -->
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags == 'success' %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          showToast('toast-success', '{{ message }}');
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
 <body class="bg-gray-50 text-gray-800 mt-16">
   <div class="max-w-7xl mx-auto px-6 py-10">
     <!-- Back Button -->
     <div class="mb-6">
-      <a href="{% url 'merchandise:show_merchandise' %}" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800">
+      <a href="{% url 'merchandise:show_merchandise' %}" class="inline-flex items-center gap-2 font-medium text-black hover:text-gray-700">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -107,10 +120,8 @@
                   Edit Product
                 </a>
                 <button type="button" id="delete-product" 
-                        class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
+                        class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 font-semibold bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
+                  <img src="{% static 'images/Trash.png' %}" alt="Delete icon" class="w-6 h-6">
                   Delete Product
                 </button>
               </div>
@@ -179,6 +190,9 @@
       const confirmRedeem = document.getElementById('confirm-redeem');
       const modalQuantity = document.getElementById('modal-quantity');
       const modalTotal = document.getElementById('modal-total');
+      
+      // Get price from template
+      const price = parseInt('{{ merchandise.price_coins|default:0 }}');
 
       // Quantity controls
       decreaseBtn.addEventListener('click', function() {
@@ -211,7 +225,6 @@
 
       function updateRedeemButton() {
         let qty = parseInt(quantityInput.value);
-        let price = {{ merchandise.price_coins }};
         let total = qty * price;
         
         if (redeemBtn) {
@@ -226,7 +239,6 @@
       if (redeemBtn) {
         redeemBtn.addEventListener('click', function() {
           let qty = parseInt(quantityInput.value);
-          let price = {{ merchandise.price_coins }};
           let total = qty * price;
           
           modalQuantity.textContent = qty;
@@ -261,24 +273,18 @@
         .then(data => {
           if (data.success) {
             modal.classList.add('hidden');
-            if (window.showToast) {
-              window.showToast('success', 'Redemption successful!');
-            }
+            showToast('toast-success', 'Redemption successful!');
             // Reload page to update stock and user coins
             setTimeout(() => {
               window.location.reload();
-            }, 1000);
+            }, 1500);
           } else {
-            if (window.showToast) {
-              window.showToast('error', data.error || 'Redemption failed');
-            }
+            showToast('toast-danger', data.error || 'Redemption failed');
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          if (window.showToast) {
-            window.showToast('error', 'Network error');
-          }
+          showToast('toast-danger', 'Network error');
         });
       });
 
@@ -296,21 +302,17 @@
             .then(response => response.json())
             .then(data => {
               if (data.success) {
-                if (window.showToast) {
-                  window.showToast('success', 'Product deleted successfully');
-                }
-                window.location.href = '{% url "merchandise:show_merchandise" %}';
+                showToast('toast-success', 'Product deleted successfully');
+                setTimeout(() => {
+                  window.location.href = '{% url "merchandise:show_merchandise" %}';
+                }, 1500);
               } else {
-                if (window.showToast) {
-                  window.showToast('error', data.error || 'Failed to delete product');
-                }
+                showToast('toast-danger', data.error || 'Failed to delete product');
               }
             })
             .catch(error => {
               console.error('Error:', error);
-              if (window.showToast) {
-                window.showToast('error', 'Network error');
-              }
+              showToast('toast-danger', 'Network error');
             });
           }
         });

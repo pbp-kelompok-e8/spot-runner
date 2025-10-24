@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User, Runner
-
+# test
 class RunnerInline(admin.StackedInline):
     model = Runner
     can_delete = False
@@ -38,14 +38,25 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Runner)
 class RunnerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'get_username', 'email', 'base_location', 'coin')
+    list_display = ('user', 'get_username', 'get_email', 'base_location', 'coin', 'attended_events_count')
     list_filter = ('base_location',)
-    search_fields = ('user__username', 'email', 'base_location')
+    search_fields = ('user__username', 'user__email', 'base_location')
     raw_id_fields = ('user',)
+    filter_horizontal = ('attended_events',)
     
     def get_username(self, obj):
         return obj.user.username
     get_username.short_description = 'Username'
+    get_username.admin_order_field = 'user__username'
+    
+    def get_email(self, obj):
+        return obj.user.email
+    get_email.short_description = 'Email'
+    get_email.admin_order_field = 'user__email'
+    
+    def attended_events_count(self, obj):
+        return obj.attended_events.count()
+    attended_events_count.short_description = 'Events Attended'
     
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user')
+        return super().get_queryset(request).select_related('user').prefetch_related('attended_events')
