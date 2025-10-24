@@ -98,22 +98,22 @@ https://www.figma.com/design/bPYWoCrt7XljkLbyVaHgRU/PBP-Kelompok?node-id=0-1&t=6
 ### Langkah-Langkah Menyiapkan dan Menjalankan Project Secara Lokal
 1. Clone repository dengan menjalankan "git clone https://github.com/pbp-kelompok-e8/spot-runner.git" di terminal
 2. Siapkan environment sebelum menginstall dependencies dengan menjalankan
-    python -m venv venv
-    source venv/bin/activate        # Linux/Mac
-    venv\Scripts\activate           # Windows
-3. Jalankan pip install -r requirements.txt untuk menginstall dependencies
+    -python -m venv venv
+    -source venv/bin/activate        # Linux/Mac
+    -venv\Scripts\activate           # Windows
+3. Jalankan "pip install -r requirements.txt" untuk menginstall dependencies
 4. Setup environment variables dengan menjalankan "cp .env.example .env" dan isi variabel yang diperlukan di .env. Contoh:
-    DEBUG=True
-    SECRET_KEY=your-secret-key
-    DATABASE_URL=sqlite:///db.sqlite3
+    -DEBUG=True
+    -SECRET_KEY=your-secret-key
+    -DATABASE_URL=sqlite:///db.sqlite3
 5. Jalankan Database Migrations
-    python manage.py makemigrations
-    python manage.py migrate
+    -python manage.py makemigrations
+    -python manage.py migrate
 6. Jalankan Test Suite
-    python manage.py test
+    -python manage.py test
 7. Jalankan Server Django
-    python manage.py runserver
+    -python manage.py runserver
 8. Buka di browser
-    http://127.0.0.1:8000/
+    -http://127.0.0.1:8000/
     atau
-    http://localhost:8000/
+    -http://localhost:8000/
