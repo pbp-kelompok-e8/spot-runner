@@ -42,20 +42,12 @@ class Runner(models.Model):
         ('depok', 'Depok'),
     ]
 
-<<<<<<< HEAD
-=======
     email = models.EmailField(unique=True)
     base_location = models.CharField(max_length=50, choices=LOCATION_CHOICES, default='depok')
     coin = models.IntegerField(default=0)
 
 
     
->>>>>>> peter-user
 
-
-<<<<<<< HEAD
 
     
-=======
-    
->>>>>>> peter-user
