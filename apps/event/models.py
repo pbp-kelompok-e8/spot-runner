@@ -67,13 +67,9 @@ class Event(models.Model):
     
     def increment_participans(self):
         if self.total_participans == self.capacity:
-        if self.total_participans == self.capacity:
             self.full = True
         else:
             self.total_participans += 1
-            if self.total_participans == self.capacity:
-                self.full = True
-        self.save()
             if self.total_participans == self.capacity:
                 self.full = True
         self.save()
@@ -83,9 +79,3 @@ class Event(models.Model):
             self.total_participans -= 1
             if self.full:
                 self.full = False
-    def decrement_participans(self):
-        if self.total_participans <= self.capacity:
-            self.total_participans -= 1
-            if self.full:
-                self.full = False
-        self.save()

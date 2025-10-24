@@ -11,10 +11,7 @@ class EventOrganizer(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True
-        primary_key=True
     )
-
-    profile_picture = models.URLField(blank=True, null=True)
 
     profile_picture = models.URLField(blank=True, null=True)
     base_location = models.CharField(max_length=255, blank=True)
@@ -25,9 +22,3 @@ class EventOrganizer(models.Model):
 
     def __str__(self):
         return self.user.username
-    
-    @property
-    def name(self):
-        return f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username
-    
-    

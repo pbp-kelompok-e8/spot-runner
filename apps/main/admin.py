@@ -38,9 +38,9 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Runner)
 class RunnerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'get_username', 'email', 'base_location', 'coin')
+    list_display = ('user', 'get_username', 'base_location', 'coin')
     list_filter = ('base_location',)
-    search_fields = ('user__username', 'email', 'base_location')
+    search_fields = ('user__username', 'base_location')
     raw_id_fields = ('user',)
     
     def get_username(self, obj):
