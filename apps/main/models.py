@@ -1,8 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from apps.event.models import Event
 
 # Create your models here.
+
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('runner', 'Runner'),
@@ -18,25 +21,30 @@ class Runner(models.Model):
         primary_key=True
     )
 
+    attended_events = models.ManyToManyField(
+        Event,           
+        related_name='attendees',     
+        blank=True                    
+    )
+
     LOCATION_CHOICES = [
-        ('jakarta', 'Jakarta'),
-        ('surabaya', 'Surabaya'),
-        ('bandung', 'Bandung'),
-        ('medan', 'Medan'),
-        ('semarang', 'Semarang'),
-        ('makassar', 'Makassar'),
-        ('palembang', 'Palembang'),
-        ('denpasar', 'Denpasar'),
-        ('yogyakarta', 'Yogyakarta'),
-        ('surakarta', 'Surakarta'),
-        ('malang', 'Malang'),
-        ('pekanbaru', 'Pekanbaru'),
+        ('jakarta_barat', 'Jakarta Barat'),
+        ('jakarta_pusat', 'Jakarta Pusat'),
+        ('jakarta_selatan', 'Jakarta Selatan'),
+        ('jakarta_timur', 'Jakarta Timur'),
+        ('jakarta_utara', 'Jakarta Utara'),
+        ('bekasi', 'Bekasi'),
+        ('bogor', 'Bogor'),
         ('depok', 'Depok'),
+        ('tangerang', 'Tangerang')
     ]
 
     email = models.EmailField(unique=True)
     base_location = models.CharField(max_length=50, choices=LOCATION_CHOICES, default='depok')
     coin = models.IntegerField(default=0)
+
+
+    
 
 
     

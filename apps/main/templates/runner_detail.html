@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+
+<title>{{ user.username }} - Spot Runner</title>
+
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}{% include 'confirmation_modal.html' %}{% include 'rate_review_modal.html' %}
+
+<div class="max-w-4xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
+    <!-- Profile Section -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold text-gray-900">Your Profile</h1>
+                <span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
+            </div>
+            <div id="lastLogin"class="text-sm text-gray-500">
+                
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Username -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" value="{{ user.username }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
+
+            <!-- Location -->
+            <div id="location">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input type="text" value="{{ user.runner.base_location|default:'Not set' }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value="********" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
+                <div class="flex items-center text-sm">
+                    <span class="text-gray-500">Forgot your password?</span>
+                    <a href="#" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4 mt-6">
+                <a href="{% url 'main:logout' %}">
+                <button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    Log out
+                </button>
+                </a>
+                <a href="{% url 'main:edit_profile' user.username %}">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Edit Profile
+                    </button>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Event History Section -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
+        <a href="{% url 'main:show_main' %}">
+            <button class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <span>Join new event</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+            </button>
+        </a>
+    </div>
+
+    {% if event_list %}
+        <div class="space-y-6">
+            {% for event in event_list %}
+                <div class="bg-white border {% if event.status == 'Canceled' %}border-red-200{% elif event.status == 'On Going' %}border-blue-200{% else %}border-green-200{% endif %} rounded-lg p-6 relative mb-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ event.name }}</h3>
+                            <p class="text-gray-600">{{ event.location }}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <!-- Status Badge -->
+                            <span class="px-3 py-1 rounded-full text-sm
+                                {% if event.status == 'Canceled' %}
+                                    bg-red-100 text-red-800
+                                {% elif event.status == 'On Going' %}
+                                    bg-blue-100 text-blue-800
+                                {% elif event.status == 'Finished' %}
+                                    bg-green-100 text-green-800
+                                {% endif %}">
+                                {{ event.status }}
+                            </span>
+
+                            <!-- Rating display for finished events with reviews -->
+                            {% if event.status == 'Finished' and event.review %}
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="text-gray-600">({{ event.review.rating }})</span>
+                                </div>
+                            {% endif %}
+
+                            <!-- Menu button for On Going events -->
+                            {% if event.status == 'On Going' %}
+                                <div class="relative">
+                                    <button class="text-gray-400 hover:text-gray-600">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Event Details -->
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <!-- ...existing event details code... -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2 text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                            </svg>
+                            <span class="text-sm">Participant ID</span>
+                            <span class="text-gray-900">{{ event.participant_id }}</span>
+                        </div>
+
+                        {% if event.status == 'On Going' %}
+                            <!-- Cancel Booking button -->
+                            <button onclick="openCancelModal('{% url 'main:cancel_event' user.username event.id %}', '{{ event.name }}')"
+                                class="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                Cancel Booking
+                            </button>
+                        {% elif event.status == 'Finished' and not event.review %}
+                            <!-- Rate this event button -->
+                            <button onclick="openRateModal('{% url 'main:create_review' event.id %}', '{{ event.name }}')"
+                                class="bg-[#CDFA5D] text-gray-700 px-4 py-2 rounded-md hover:bg-[#bfe754] flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                Rate this event
+                            </button>
+                        {% endif %}
+                    </div>
+                    <!-- bikin review disini  -->
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-8">
+            <img src="{% static 'image/no-event-found.png' %}" alt="No events" class="w-32 h-32 mx-auto mb-4">
+            <p class="text-gray-600">You haven't joined any events yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- review disini wak -->
+<script>
+
+        const date = new Date(event.date);
+        const formattedDate = date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+
+
+
+    // --- Logika untuk Cancel Modal (Tugas 3) ---
+    const cancelModal = document.getElementById('confirmation-modal'); // Asumsi dari 'confirmation_modal.html'
+    const cancelModalTitle = document.getElementById('modal-title');
+    const cancelModalText = document.getElementById('modal-text');
+    const cancelModalConfirmButton = document.getElementById('modal-confirm-button');
+
+    function openCancelModal(actionUrl, itemName) {
+        cancelModalTitle.textContent = `Are you sure you want to cancel?`;
+        cancelModalText.textContent = `You'll lose your spot in ${itemName}.`;
+        
+        // Ini adalah form di dalam modal Anda
+        cancelModalConfirmButton.parentElement.action = actionUrl; 
+        
+        cancelModal.classList.remove('hidden');
+    }
+
+
+    // ===================================================================
+    // KODE UTAMA: Inisialisasi
+    // ===================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // --- Tampilkan Last Login ---
+        {% if user.last_login %}
+            const lastLogin = new Date("{{ user.last_login|date:'c' }}");
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('lastLogin').innerText = `Last login: ${lastLogin.toLocaleDateString('en-US', options)}`;
+        {% else %}
+            document.getElementById('lastLogin').innerText = 'Last login: Never';
+        {% endif %}
+
+    });
+</script>
+
+{% include 'footer.html' %}
+{% endblock content %}
