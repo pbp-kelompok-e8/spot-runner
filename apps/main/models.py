@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from apps.event.models import Event
 
 # Create your models here.
 
@@ -21,6 +22,11 @@ class Runner(models.Model):
         primary_key=True
     )
 
+    attended_events = models.ManyToManyField(
+        Event,           
+        related_name='attendees',     
+        blank=True                    
+    )
 
     LOCATION_CHOICES = [
         ('jakarta', 'Jakarta'),

@@ -1,4 +1,3 @@
-
 from apps.main.models import User, Runner
 from django.contrib.auth.forms import UserCreationForm
 from apps.event_organizer.models import EventOrganizer 
@@ -27,11 +26,8 @@ class CustomUserCreationForm(UserCreationForm):
         role = cleaned_data.get('role')
 
         if role == 'runner':
-            email = cleaned_data.get('email')
             base_location = cleaned_data.get('base_location')
-
-            if not email:
-                self.add_error('email', 'Email is required for runners.')
+            
             if not base_location:
                 self.add_error('base_location', 'Base location is required for runners.')
 
@@ -53,7 +49,6 @@ class CustomUserCreationForm(UserCreationForm):
         if self.cleaned_data['role'] == 'runner':
             Runner.objects.create(
                 user=user,
-                email=self.cleaned_data['email'],
                 base_location=self.cleaned_data['base_location']
             )
         elif self.cleaned_data['role'] == 'event_organizer':
@@ -63,5 +58,3 @@ class CustomUserCreationForm(UserCreationForm):
                 base_location=self.cleaned_data['base_location']
             )
         return user
-
-    
