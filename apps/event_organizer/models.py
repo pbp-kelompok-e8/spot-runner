@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
 
 
 # EventOrganizer represents a user who can create and manage events.
@@ -11,11 +10,7 @@ class EventOrganizer(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
-<<<<<<< HEAD
-        related_name="event_organizer_profile"
-=======
         related_name='event_organizer_profile'
->>>>>>> 94a101df09ea37bf24af45573c2cd0a6c34c119e
     )
 
     profile_picture = models.URLField(blank=True, null=True)
@@ -35,4 +30,4 @@ class EventOrganizer(models.Model):
     def name(self):
         return f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username
     
-    
+

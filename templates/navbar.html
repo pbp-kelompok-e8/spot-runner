@@ -16,34 +16,34 @@
           {% if user.role == 'event_organizer' %}
             <!-- EVENT ORGANIZER MENU -->
             <a href="{% url 'main:show_main' %}" 
-               class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'home' %}text-blue-700{% endif %}">
+              class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'home' %}text-blue-700{% endif %}">
               Home
             </a>
             <a href="{% url 'event_organizer:dashboard' %}" 
-               class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-blue-700{% endif %}">
+              class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-blue-700{% endif %}">
               Dashboard
             </a>
             <a href="{% url 'event_organizer:profile' %}" 
-               class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'profile' %}text-blue-700{% endif %}">
+              class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'profile' %}text-blue-700{% endif %}">
               Profile
             </a>
             <a href="{% url 'merchandise:show_merchandise' %}" 
-               class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'merchandise' %}text-blue-700{% endif %}">
+              class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'merchandise' %}text-blue-700{% endif %}">
               Merchandise
             </a>
 
           {% else %}
             <!-- USER MENU -->
             <a href="{% url 'main:show_main'%}" 
-               class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'show_main' %}text-blue-700{% endif %}">
+              class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'show_main' %}text-blue-700{% endif %}">
               Home
             </a>
             <a href="{% url 'main:show_user' user.username %}" 
-               class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'show_user' %}text-blue-700{% endif %}">
+              class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'show_user' %}text-blue-700{% endif %}">
               Profile
             </a>
             <a href="{% url 'merchandise:show_merchandise' %}" 
-               class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'merchandise' %}text-blue-700{% endif %}">
+              class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'merchandise' %}text-blue-700{% endif %}">
               Merchandise
             </a>
           {% endif %}
