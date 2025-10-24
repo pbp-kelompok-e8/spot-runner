@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from apps.main.models import User
+from apps.event.models import Event
 from django.http import JsonResponse
 from apps.main.forms import CustomUserCreationForm
 from django.contrib import messages
@@ -53,10 +54,10 @@ def show_user(request, username):
         context = {
             'user': user,
         }
-        pass
-        # return render(request, "event_organizer_detail.html", context)
+        return render(request, "profile.html", context)
     context = {
         'user':user,
+        'event_list': user.runner.attended_events.all()
     }
 
     return render(request,"runner_detail.html",context)
@@ -69,39 +70,6 @@ def logout_user(request):
     response.delete_cookie('last_login')
     return response
 
-def events_attended(request):
-    user = get_object_or_404(User, username=request.username)
-    event_list = user.attended_events.all()
-    data = []
-    for event in event_list:        
-        category_names = [
-            category.get_category_display() 
-            for category in event.event_category.all()
-        ]        
-        data.append({
-            'id': str(event.id),
-            'name': event.name,
-            'description': event.description,
-            'location': event.get_location_display(), 
-            'event_status' : event.status,
-            'image': event.image,
-            'image2': event.image2,
-            'image3': event.image3,
-            'event_date': event.event_date.isoformat(),
-            'regist_deadline': event.regist_deadline.isoformat(),
-            'contact': event.contact,
-            'capacity': event.capacity,
-            'total_participans': event.total_participans,
-            'full': event.full,            
-            'coin': event.coin, 
-            'user_eo': {
-                'id': event.user_eo_id,
-                'username': event.user_eo.user.username if event.user_eo else None
-                },            
-            'event_categories': category_names 
-        })
-        
-    return JsonResponse(data, safe=False)
 
 @login_required
 def edit_profile_runner(request, username):
@@ -134,3 +102,21 @@ def edit_profile_runner(request, username):
     }
     return render(request, 'edit_profile.html', context)
 
+def cancel_event(request, username, id):
+    user = get_object_or_404(User, username=username)
+    if user != request.user or user.role != 'runner':
+        messages.error(request, "You are not authorized to perform this action.")
+        return redirect('main:show_main')
+    event = get_object_or_404(Event, pk=id)
+    user.runner.attended_events.remove(event)
+    messages.success(request, f"You have successfully canceled your attendance for {event.name}.")
+
+def participate_in_event(request, username, id):
+    user = get_object_or_404(User, username=username)
+    if user != request.user or user.role != 'runner':
+        messages.error(request, "You are not authorized to perform this action.")
+        return redirect('main:show_main')
+    event = get_object_or_404(Event, pk=id)
+    user.runner.attended_events.add(event)
+    messages.success(request, f"You are now registered to attend {event.name}.")
+    return redirect('main:show_user', username=username)

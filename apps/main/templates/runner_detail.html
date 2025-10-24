@@ -66,69 +66,82 @@
 
 
     <!-- Event History Section -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
-            <a href="{% url 'main:show_main' %}">
-                <button
-                    class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    <span>Join new event</span>
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                </button>
-            </a>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loading" class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
-        <svg class="animate-spin h-8 w-8 text-orange-400 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-        </svg>
-        <p class="text-gray-600 mt-3">Loading events...</p>
-        </div>
-
-        <!-- Error State -->
-        <div id="error" class="hidden"></div>
-
-        <!-- Event Grid -->
-        <div id="grid" class="hidden"></div>
-
-        <!-- Empty State -->
-        <div id="empty" class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4 text-center hidden">
-        <div class="w-32 h-32 mx-auto mb-4">
-            <img src="{% static 'image/no-event-found.png' %}" alt="No event found" class="w-full h-full object-contain">
-        </div>
-
-
-
-
-
-
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
+        <a href="{% url 'main:show_main' %}">
+            <button class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <span>Join new event</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+            </button>
+        </a>
     </div>
 
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">Your Reviews</h2>
-    
-    <div id="loading-reviews" class="text-center">
-        <svg class="animate-spin h-8 w-8 text-orange-400 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-        </svg>
-        <p class="text-gray-600 mt-3">Loading reviews...</p>
-    </div>
+    {% if event_list %}
+        <div class="space-y-6">
+            {% for event in event_list %}
+                <div class="bg-blue-50 rounded-lg p-6 relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-900">{{ event.name }}</h3>
+                            <p class="text-gray-600">{{ event.location }}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                {{ event.status }}
+                            </span>
+                            <!-- isi html button cancel disini -->
+                        </div>
+                    </div>
 
-    <div id="error-reviews" class="hidden"></div>
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="text-sm">Date</span>
+                            </div>
+                            <p class="text-gray-900">{{ event.date|date:"d M Y" }}</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                                <span class="text-sm">Location</span>
+                            </div>
+                            <p class="text-gray-900">{{ event.location }}</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                                <span class="text-sm">Type</span>
+                            </div>
+                            <p class="text-gray-900">{{ event.category }}</p>
+                        </div>
+                    </div>
 
-    <div id="grid-reviews" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
-    <div id="empty-reviews" class="text-center hidden">
-        <p class="text-gray-600">You haven't written any reviews yet.</p>
-    </div>
+                    <!-- bikin review html disini -->
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-8">
+            <img src="{% static 'image/no-event-found.png' %}" alt="No events" class="w-32 h-32 mx-auto mb-4">
+            <p class="text-gray-600">You haven't joined any events yet.</p>
+        </div>
+    {% endif %}
 </div>
 
-</div>
+<!-- review disini wak -->
 <script>
 
         const date = new Date(event.date);
@@ -152,32 +165,6 @@
         cancelModal.classList.remove('hidden');
     }
 
-    // --- Logika untuk Rate Modal (Tugas 4) ---
-    const rateModal = document.getElementById('rate-review-modal'); // Asumsi dari 'rate_review_modal.html'
-    const rateModalForm = document.getElementById('rate-review-form');
-    const rateModalEventName = document.getElementById('modal-event-name');
-
-    function openRateModal(actionUrl, eventId, eventName) {
-        rateModalForm.action = actionUrl;
-        rateModalEventName.value = eventName; // Set nama event di input
-        rateModal.classList.remove('hidden');
-    }
-
-    // --- Logika untuk Edit Review Modal (Tugas 5) ---
-    const editReviewModal = document.getElementById('rate-review-modal'); // Kita bisa pakai modal yg sama
-    const editReviewForm = document.getElementById('rate-review-form');
-    const editReviewEventName = document.getElementById('modal-event-name');
-    const editReviewRating = document.getElementById('modal-rating');
-    const editReviewText = document.getElementById('modal-review-text');
-
-    function openEditReviewModal(actionUrl, rating, text) {
-        editReviewForm.action = actionUrl;
-        editReviewEventName.value = "Editing your review"; // Judul
-        editReviewRating.value = rating;
-        editReviewText.value = text;
-        
-        editReviewModal.classList.remove('hidden');
-    }
 
     // ===================================================================
     // KODE UTAMA: Inisialisasi
