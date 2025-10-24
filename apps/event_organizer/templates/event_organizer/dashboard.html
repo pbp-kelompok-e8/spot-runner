@@ -30,7 +30,7 @@
                         <div class="mt-2 text-sm text-gray-600 space-y-1">
                             <p>📦 Total Events: <span class="font-medium">{{ total_events }}</span></p>
                             <p>📅 Joined: <span class="font-medium">{{ organizer.created_at|date:"d M Y" }}</span></p>
-                            <p>📍 Base Location: <span class="font-medium">{{ organizer.base_location|default:"-" }}</span></p>
+                            <p>📍 Base Location: <span class="font-medium">{{ organizer.get_base_location_display|default:"-" }}</span></p>
                         </div>
                     </div>
                 </div>
