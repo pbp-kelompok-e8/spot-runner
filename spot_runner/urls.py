@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('apps.main.urls')),  # Routing ke app main
     path('admin/', admin.site.urls),
     path('', include('apps.main.urls')),
     path('event/', include('apps.event.urls')),  # Routing ke app event
