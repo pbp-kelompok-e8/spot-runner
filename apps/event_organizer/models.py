@@ -10,7 +10,8 @@ class EventOrganizer(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        primary_key=True
+        primary_key=True,
+        related_name='event_organizer_profile'
     )
 
     profile_picture = models.URLField(blank=True, null=True)

@@ -7,23 +7,33 @@ from django.http import HttpResponse
 from django.db.models import Avg, Count
 from .models import EventOrganizer
 from apps.event.models import Event
-from apps.review.models import Review
+# from apps.review.models import Review
 
 # Create your views here.
 @login_required
 def index(request):
-    try:
-        organizer = request.user.event_organizer_profile
-    except EventOrganizer.DoesNotExist:
-        messages.error(request, "You don't have an event organizer profile")
-        return redirect('home')
+    # Check if user has event_organizer role
+    if request.user.role != 'event_organizer':
+        messages.error(request, "Access denied. You need an Event Organizer account to view this page.")
+        return redirect('main:show_main')
+    
+    # Get or create event organizer profile
+    organizer, created = EventOrganizer.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'base_location': ''  # Default empty location
+        }
+    )
+    
+    if created:
+        messages.info(request, "Welcome! Your Event Organizer profile has been created.")
     
     # Get events for this organizer
-    events = Event.objects.filter(organizer=organizer).order_by('-date')
+    events = Event.objects.filter(user_eo=organizer).order_by('-event_date')
     
     # Calculate statistics
     total_events = events.count()
-    reviews = Review.objects.filter(organizer=organizer)
+    reviews = Review.objects.filter(event_organizer=organizer)
     avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
     total_reviews = reviews.count()
     

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+
+<title>{{ user.username }} - Spot Runner</title>
+
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}{% include 'confirmation_modal.html' %}
+
+<div class="max-w-4xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
+    <!-- Profile Section -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold text-gray-900">Your Profile</h1>
+                <span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
+            </div>
+            <div id="lastLogin"class="text-sm text-gray-500">
+                
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Username -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" value="{{ user.username }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
+
+            <!-- Location -->
+            <div id="location">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input type="text" value="{{ user.runner.base_location|default:'Not set' }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value="********" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
+                <div class="flex items-center text-sm">
+                    <span class="text-gray-500">Forgot your password?</span>
+                    <a href="#" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4 mt-6">
+                <a href="{% url 'main:logout_user' %}">
+                <button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    Log out
+                </button>
+                </a>
+                <button onclick="editProfile()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event History Section -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
+            <button onclick="joinNewEvent()" 
+                class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <span>Join new event</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Event Card -->
+        <div class="bg-blue-50 rounded-lg p-6 relative">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">RunThrough Running Grand Prix</h3>
+                    <p class="text-gray-600">New Jersey Motorsports Park</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">On Going</span>
+                    <button class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 6.75a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM12 13a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM12 19.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span class="text-sm">Date</span>
+                    </div>
+                    <p class="text-gray-900">04 Dec 2022</p>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span class="text-sm">Location</span>
+                    </div>
+                    <p class="text-gray-900">San Miguel de Cozumel, Mexico</p>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        <span class="text-sm">Type</span>
+                    </div>
+                    <p class="text-gray-900">Half Marathon</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center gap-2 text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                    </svg>
+                    <span class="text-sm">Participant ID</span>
+                </div>
+                <p class="text-gray-900">DFR-125-563-215</p>
+            </div>
+
+            <button class="absolute bottom-6 right-6 text-red-600 hover:text-red-700 text-sm font-medium">
+                Cancel Booking
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    // Format and display last login time
+    const lastLogin = new Date("{{ user.last_login|date:'c' }}");
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    document.getElementById('lastLogin').innerText = `Last login: ${lastLogin.toLocaleDateString('en-US', options)}`;
+
+
+    //create event card element
+    function buildEventCardElement(event) {
+        // Implementasi pembuatan elemen kartu event berdasarkan data event
+        const articleElement = document.createElement('article');
+        articleElement.className = 'bg-blue-50 rounded-lg p-6 relative hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
+
+        const detailLink = `{% url 'main:show_event' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', product.id);
+        const editLink = `{% url 'main:edit_event' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', product.id);
+        const deleteLink = `{% url 'main:delete_event' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', product.id);
+
+        const category = DOMPurify.sanitize(product.category);
+        const categoryLabel = DOMPurify.sanitize(getReadableCategoryName(category));
+        const isFeatured = product.is_featured;
+        const isHot = product.total_purcased > 10;
+        const brand = DOMPurify.sanitize(product.brand);
+        const sale = DOMPurify.sanitize(product.sale);
+        const rating = DOMPurify.sanitize(product.rating);
+        const total_purchased = DOMPurify.sanitize(product.total_purcased);
+        const isSale = product.sale > 0;
+    }
+
+
+</script>
+
+{% include 'footer.html' %}
+{% endblock content %}
+
+<script>
+    function logout() {
+        // Handle logout functionality
+        window.location.href = "{% url 'main:logout' %}";
+    }
+
+    function editProfile() {
+        // Handle edit profile functionality
+        window.location.href = "{% url 'main:edit_profile' user.username %}";
+    }
+
+    function joinNewEvent() {
+        // Handle join new event functionality
+        window.location.href = "{% url 'event:list' %}";
+    }
+</script>
