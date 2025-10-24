@@ -14,14 +14,17 @@
   </head>
   <body class="bg-[#F9F9F9]">
     {% include 'navbar.html' %}
+
+    <main class="flex-1 pt-16">   <!-- <== BAGIAN PENTING -->
+      {% block content %}
+      {% endblock content %}
+    </main>
     
     <!-- Toast Container -->
     <div id="toast-container"
         class="fixed top-5 right-5 z-50 flex flex-col space-y-3">
       {% include 'toast.html' %}
     </div>
-
-    {% block content %} {% endblock content %}
 
     <!-- Script untuk munculin toast -->
     <script src="{% static 'js/toast.js' %}"></script>

@@ -7,11 +7,11 @@ from django.db.models import Avg, Count
 from apps.event.models import Event
 from apps.main.models import User
 from .models import EventOrganizer
+from apps.review.models import Review
 
 
 @login_required
 def dashboard_view(request):
-    """Dashboard for Event Organizer"""
     if request.user.role != 'event_organizer':
         messages.error(request, "Access denied. Only Event Organizers can access this page.")
         return redirect('main:show_main')
@@ -21,18 +21,21 @@ def dashboard_view(request):
         defaults={'base_location': ''}
     )
 
-    # Hitung total event dan review
     events = Event.objects.filter(user_eo=organizer).order_by('-event_date')
     total_events = events.count()
 
-    # Status grouping
+    # Grouping Status
     ongoing_events = events.filter(event_status='ongoing')
     finished_events = events.filter(event_status='finished')
     cancelled_events = events.filter(event_status='cancelled')
 
-    # Hitung rating (kalau sudah ada model Review)
-    # avg_rating = Review.objects.filter(event__user_eo=organizer).aggregate(avg=Avg('rating'))['avg'] or 0
-    # review_count = Review.objects.filter(event__user_eo=organizer).count()
+    stats = Review.objects.filter(event__user_eo=organizer).aggregate(
+        avg=Avg('rating'),
+        count=Count('rating')
+    )
+
+    avg_rating = round(stats['avg'] or 0, 2)
+    review_count = stats['count'] or 0
 
     context = {
         'organizer': organizer,
@@ -41,8 +44,8 @@ def dashboard_view(request):
         'finished_events': finished_events,
         'cancelled_events': cancelled_events,
         'total_events': total_events,
-        'avg_rating': 4.95,  # sementara hardcoded sesuai gambar
-        'review_count': 12,
+        'avg_rating': avg_rating,     
+        'review_count': review_count, 
     }
     return render(request, 'event_organizer/dashboard.html', context)
 
@@ -72,6 +75,7 @@ def profile_view(request):
 @login_required
 def edit_profile(request):
     """Edit Event Organizer Profile"""
+
     try:
         organizer = request.user.event_organizer_profile
     except EventOrganizer.DoesNotExist:
@@ -81,7 +85,7 @@ def edit_profile(request):
     if request.method == 'POST':
         new_username = request.POST.get('username')
         base_location = request.POST.get('base_location', '')
-        image_url = request.POST.get('profile_photo', '')
+        image_url = request.POST.get('profile_picture', '')  # ✅ name disamakan dengan form
 
         # Update username
         if new_username and new_username != request.user.username:
@@ -90,8 +94,7 @@ def edit_profile(request):
 
         # Update EO fields
         organizer.base_location = base_location
-        if image_url:
-            organizer.profile_picture = image_url
+        organizer.profile_picture = image_url  # ✅ langsung update
         organizer.save()
 
         messages.success(request, "Profile updated successfully!")
@@ -102,6 +105,7 @@ def edit_profile(request):
         'user': request.user,
     }
     return render(request, 'event_organizer/edit_profile.html', context)
+
 
 
 @login_required
