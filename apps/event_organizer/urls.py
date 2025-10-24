@@ -1,5 +1,8 @@
+# apps/event_organizer/urls.py
 from django.urls import path
 from . import views
+
+app_name = 'event_organizer'
 
 app_name = 'event_organizer'
 

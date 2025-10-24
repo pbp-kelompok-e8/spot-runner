@@ -1,12 +1,13 @@
 <div id="reviewContainer">
   {% for review in reviews %}
   <div class="bg-white rounded-2xl shadow-md p-5 mb-4">
-    <h3 class="text-lg font-semibold text-gray-800">{{ review.user.username }}</h3>
-    <p class="text-gray-600 mt-2">{{ review.review_text }}</p>
+    <h3 class="text-lg font-semibold text-gray-800">{{ review.runner.user.username }}</h3>
+    <p class="text-gray-600 mt-2">{{ review.review_text|default:"No comment" }}</p>
     <div class="flex items-center mt-3">
       <span class="text-lime-500 text-lg mr-1">★</span>
       <span class="font-semibold text-gray-800">{{ review.rating }}</span>
       <span class="text-sm text-gray-500 ml-1">/ 5</span>
+      <span class="text-xs text-gray-400 ml-auto">{{ review.created_at|date:"d M Y" }}</span>
     </div>
   </div>
   {% empty %}
