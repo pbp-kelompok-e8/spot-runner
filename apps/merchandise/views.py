@@ -1,91 +1,227 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-import json
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.db.models import F
-from .models import MerchVariant, Redemption, Merchandise
+from apps.merchandise.models import Redemption, Merchandise
+from apps.merchandise.forms import MerchandiseForm
+from django.http import HttpResponseRedirect, JsonResponse
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.db.models import Sum, F
 
-# Create your views here.
-
+# Merchandise landing page
 def show_merchandise(request):
-    return render(request, "merchandise_main.html")
+    user = request.user if request.user.is_authenticated else None
+    context = {'user': user}
+
+    # Get products with filtering
+    category = request.GET.get('category', '')
+    products = Merchandise.objects.all()
+    if category:
+        products = products.filter(category=category)
+    
+    is_organizer = False
+    coin_balance = 0
+    organizer_earned = 0
+
+    # jika user punya Runner profile
+    if hasattr(user, 'runner'):
+        runner_profile = user.runner
+        coin_balance = runner_profile.coin
+
+    # jika user juga punya EventOrganizer profile
+    if hasattr(user, 'eventorganizer'):
+        organizer_profile = user.eventorganizer
+        context['organizer_profile'] = organizer_profile
+        is_organizer = True
+        
+        # Hitung total coins earned: quantity × price_coins
+        earned = Redemption.objects.filter(
+            merchandise__organizer=organizer_profile
+        ).aggregate(
+            total=Sum(F('quantity') * F('merchandise__price_coins'))
+        )['total']
+        organizer_earned = earned or 0
+
+    context = {
+        'user': user,
+        'products': products,
+        'categories': Merchandise.CATEGORY_CHOICES,
+        'selected_category': category,
+        'is_organizer': is_organizer,
+        'organizer_coins': organizer_earned,  
+        'user_coins': coin_balance, 
+    }
+    return render(request, "merchandise_main.html", context)
+
+def product_detail(request, id):
+    merchandise = get_object_or_404(Merchandise, id=id)
+    # Check if current user is the organizer (to disable redeem)
+    is_organizer = False
+    if request.user.is_authenticated and hasattr(request.user, 'eventorganizer'):
+        is_organizer = merchandise.organizer == request.user.eventorganizer
+    
+    # Get user coin balance for regular users
+    user_coins = 0
+    if request.user.is_authenticated and hasattr(request.user, 'runner'):
+        user_coins = getattr(request.user.runner, 'coin', 0)
+    
+    context = {
+        'merchandise': merchandise,
+        'is_organizer': is_organizer,
+        'user_coins': user_coins
+    }
+    return render(request, "product_detail.html", context)
+
+@login_required(login_url='/login')
+def add_merchandise(request):
+    """Add new merchandise product - Event Organizer only"""
+    # Check if user is event organizer
+    if not hasattr(request.user, 'eventorganizer'):
+        return HttpResponseRedirect('/login')
+    
+    if request.method == 'POST':
+        form = MerchandiseForm(request.POST)
+        
+        if form.is_valid():
+            merchandise = form.save(commit=False)
+            merchandise.organizer = request.user.eventorganizer
+            merchandise.save()
+            
+            return HttpResponseRedirect(reverse('merchandise:show_merchandise'))
+    else:
+        form = MerchandiseForm()
+    
+    context = {
+        'form': form,
+        'title': 'Add New Product'
+    }
+    return render(request, "add_merchandise.html", context)
+
 
 @login_required
-def redeem_variant(request, variant_id):
-    """
-    POST endpoint. Body: {"quantity": 1}
-    Returns JSON with redemption_id, remaining_coins, updated_stock
-    """
-    if request.method != 'POST':
-        return JsonResponse({'status':'error', 'error':'Method not allowed'}, status=405)
+def edit_merchandise(request, id):
+    """Edit merchandise product - Owner only"""
+    merchandise = get_object_or_404(Merchandise, id=id)
+    
+    # Check ownership
+    if not hasattr(request.user, 'eventorganizer') or merchandise.organizer != request.user.eventorganizer:
+        return HttpResponseRedirect('/login')
+    
+    if request.method == 'POST':
+        form = MerchandiseForm(request.POST, instance=merchandise)
+        
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('merchandise:show_merchandise'))
+    else:
+        form = MerchandiseForm(instance=merchandise)
+    
+    context = {
+        'form': form,
+        'merchandise': merchandise,
+        'title': 'Edit Product'
+    }
+    return render(request, "add_merchandise.html", context)
 
-    user = request.user
-    body = json.loads(request.body.decode('utf-8') or '{}')
-    qty = int(body.get('quantity', 1))
-    if qty <= 0:
-        return JsonResponse({'status':'error', 'error':'Invalid quantity'}, status=400)
 
-    variant = get_object_or_404(MerchVariant, pk=variant_id)
-    merchandise = variant.merchandise
-    total_price = merchandise.price_coins * qty
-
-    # Ensure user has coins field: user.coins (if you store coins in profile adjust accordingly)
-    # If your coins are in profile, replace user.coins with user.profile.coins and lock profile.
-    if not hasattr(user, 'coins'):
-        return JsonResponse({'status':'error', 'error':'User coin balance not found.'}, status=500)
-
+@login_required
+@require_POST
+def delete_merchandise(request, id):
+    """Delete merchandise product - Owner only, AJAX endpoint"""
+    merchandise = get_object_or_404(Merchandise, id=id)
+    
+    # Check ownership
+    if not hasattr(request.user, 'eventorganizer') or merchandise.organizer != request.user.eventorganizer:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
     try:
-        with transaction.atomic():
-            # Lock variant and user rows
-            v = MerchVariant.objects.select_for_update().get(pk=variant.pk)
-            u = type(user).objects.select_for_update().get(pk=user.pk)  # lock user row
-
-            if not merchandise.is_active:
-                return JsonResponse({'status':'error', 'error':'Product is not active.'}, status=400)
-            if v.stock < qty:
-                return JsonResponse({'status':'error', 'error':'Not enough stock.'}, status=400)
-            if u.coins < total_price:
-                return JsonResponse({'status':'error', 'error':'Not enough coins.'}, status=400)
-
-            # decrement stock and coins atomically using F()
-            v.stock = F('stock') - qty
-            v.save(update_fields=['stock'])
-
-            u.coins = F('coins') - total_price
-            u.save(update_fields=['coins'])
-
-            redemption = Redemption.objects.create(
-                user=user,
-                merchandise=merchandise,
-                variant=v,
-                price_per_item=merchandise.price_coins,
-                quantity=qty,
-                total_coins=total_price,
-                status='redeemed'
-            )
-
+        merchandise.delete()
+        return JsonResponse({'success': True, 'message': 'Product deleted successfully'})
     except Exception as e:
-        return JsonResponse({'status':'error', 'error': str(e)}, status=500)
-
-    # refresh to read F() updated values
-    v.refresh_from_db()
-    u.refresh_from_db()
-
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+@login_required
+@require_POST
+def redeem_merchandise(request, id):
+    """Redeem merchandise - Runner only, AJAX endpoint"""
+    import json
+    
+    merchandise = get_object_or_404(Merchandise, id=id)
+    
+    # Check if user is a runner
+    if not hasattr(request.user, 'runner'):
+        return JsonResponse({'success': False, 'error': 'Only runners can redeem merchandise'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        quantity = int(data.get('quantity', 1))
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return JsonResponse({'success': False, 'error': 'Invalid quantity'}, status=400)
+    
+    # Validate quantity
+    if quantity < 1 or quantity > merchandise.stock:
+        return JsonResponse({'success': False, 'error': 'Invalid quantity'}, status=400)
+    
+    # Check if user has enough coins
+    total_cost = merchandise.price_coins * quantity
+    if request.user.runner.coin < total_cost:
+        return JsonResponse({'success': False, 'error': 'Insufficient coins'}, status=400)
+    
+    # Create redemption - SET EXPLICIT VALUES
+    redemption = Redemption.objects.create(
+        user=request.user.runner,
+        merchandise=merchandise,
+        quantity=quantity,
+        price_per_item=merchandise.price_coins,  # ← Set eksplisit
+        total_coins=total_cost  # ← Set eksplisit
+    )
+    
+    # Update user coins and organizer coins
+    request.user.runner.coin -= total_cost
+    request.user.runner.save()
+    
+    merchandise.organizer.coin += total_cost
+    merchandise.organizer.save()
+    
+    # Update merchandise stock
+    merchandise.stock -= quantity
+    merchandise.save()
+    
     return JsonResponse({
-        'status': 'ok',
+        'success': True, 
         'redemption_id': str(redemption.id),
-        'remaining_coins': u.coins,
-        'variant_stock': v.stock
+        'total_coins': redemption.total_coins
     })
 
-def merch_list(request):
-    qs = Merchandise.objects.filter(is_active=True).select_related('organizer')
-    category = request.GET.get('category')
-    if category:
-        qs = qs.filter(category=category)
-    # pagination optional...
-    context = {'products': qs, 'categories': Merchandise.CATEGORY_CHOICES}
-    return render(request, 'merchandise/main.html', context)
+
+@login_required
+def history(request):
+    """Show redemption history for runners and organizers"""
+    user = request.user
+    
+    context = {}
+    
+    # Check if user is a runner
+    if hasattr(user, 'runner'):
+        redemptions = Redemption.objects.filter(user=user.runner).order_by('-redeemed_at')
+        context.update({
+            'user_type': 'runner',
+            'redemptions': redemptions,
+            'user_coins': user.runner.coin
+        })
+    
+    # Check if user is an event organizer
+    elif hasattr(user, 'eventorganizer'):
+        # Get redemptions for merchandise owned by this organizer
+        redemptions = Redemption.objects.filter(merchandise__organizer=user.eventorganizer).order_by('-redeemed_at')
+        context.update({
+            'user_type': 'organizer',
+            'redemptions': redemptions,
+            'organizer_coins': user.eventorganizer.coin
+        })
+    
+    else:
+        return HttpResponseRedirect('/login')
+    
+    return render(request, 'history.html', context)
+
+

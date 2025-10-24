@@ -13,9 +13,9 @@
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center space-x-8">
         {% if user.is_authenticated %}
-          {% if user.is_event_organizer %}
+          {% if user.role == 'event_organizer' %}
             <!-- EVENT ORGANIZER MENU -->
-            <a href="{% url 'event_organizer:home' %}" 
+            <a href="{% url 'main:show_main' %}" 
                class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'home' %}text-blue-700{% endif %}">
               Home
             </a>
@@ -27,7 +27,7 @@
                class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'profile' %}text-blue-700{% endif %}">
               Profile
             </a>
-            <a href="{% url 'event_organizer:merchandise' %}" 
+            <a href="{% url 'merchandise:show_merchandise' %}" 
                class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'merchandise' %}text-blue-700{% endif %}">
               Merchandise
             </a>
@@ -42,7 +42,7 @@
                class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'show_user' %}text-blue-700{% endif %}">
               Profile
             </a>
-            <a href="{% url 'main:merchandise' %}" 
+            <a href="{% url 'merchandise:show_merchandise' %}" 
                class="text-black hover:text-gray-900 font-semibold transition-colors {% if request.resolver_match.url_name == 'merchandise' %}text-blue-700{% endif %}">
               Merchandise
             </a>
@@ -55,7 +55,7 @@
         {% if request.user.is_authenticated %}
           <div class="text-right">
             <div class="text-sm font-medium text-gray-900">{{ user.username }}</div>
-            {% if user.is_event_organizer %}
+            {% if user.role == 'event_organizer' %}
               <div class="text-xs text-gray-500">Event Organizer</div>
             {% else %}
               <div class="text-xs text-gray-500">Runner</div>
@@ -92,17 +92,17 @@
   <div class="mobile-menu hidden md:hidden bg-white border-t border-gray-200">
     <div class="px-6 py-4 space-y-4">
       {% if user.is_authenticated %}
-        {% if user.is_event_organizer %}
+        {% if user.role == 'event_organizer' %}
           <!-- EVENT ORGANIZER MENU (Mobile) -->
-          <a href="{% url 'event_organizer:home' %}" class="block text-black hover:text-gray-900 font-medium py-3">Home</a>
+          <a href="{% url 'main:show_main' %}" class="block text-black hover:text-gray-900 font-medium py-3">Home</a>
           <a href="{% url 'event_organizer:dashboard' %}" class="block text-black hover:text-gray-900 font-medium py-3">Dashboard</a>
           <a href="{% url 'event_organizer:profile' %}" class="block text-black hover:text-gray-900 font-medium py-3">Profile</a>
-          <a href="{% url 'event_organizer:merchandise' %}" class="block text-black hover:text-gray-900 font-medium py-3">Merchandise</a>
+          <a href="{% url 'merchandise:show_merchandise' %}" class="block text-black hover:text-gray-900 font-medium py-3">Merchandise</a>
         {% else %}
           <!-- USER MENU (Mobile) -->
           <a href="{% url 'main:show_main'%}" class="block text-black hover:text-gray-900 font-medium py-3">Home</a>
           <a href="{% url 'main:show_user' user.username %}" class="block text-black hover:text-gray-900 font-medium py-3">Profile</a>
-          <a href="{% url 'main:merchandise'%}" class="block text-black hover:text-gray-900 font-medium py-3">Merchandise</a>
+          <a href="{% url 'merchandise:show_merchandise'%}" class="block text-black hover:text-gray-900 font-medium py-3">Merchandise</a>
         {% endif %}
       {% endif %}
 
@@ -110,7 +110,7 @@
         {% if user.is_authenticated %}
           <div class="mb-4">
             <div class="font-medium text-gray-900">{{ user.username }}</div>
-            {% if user.is_event_organizer %}
+            {% if user.role == 'event_organizer' %}
               <div class="text-sm text-gray-500">Event Organizer</div>
             {% else %}
               <div class="text-sm text-gray-500">Runner</div>
