@@ -1,8 +1,9 @@
+# apps/main/views.py
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from apps.main.models import User
-from apps.event.models import Event
+from apps.event.models import Event  # Import model Event
 from django.http import JsonResponse
 from apps.main.forms import CustomUserCreationForm
 from django.contrib import messages
@@ -15,7 +16,41 @@ from django.contrib.auth import login, logout
 # Create your views here.
 # test
 def show_main(request):
-    return render(request, 'main.html')
+    """
+    View untuk menampilkan halaman utama dengan daftar event.
+    Mendukung filter berdasarkan kategori dari URL parameter.
+    """
+    # Ambil parameter filter dari URL
+    current_category = request.GET.get('category', '')
+    current_location = request.GET.get('location', '')
+    current_status = request.GET.get('status', '')
+    
+    # Query semua event, urutkan berdasarkan event_date (descending)
+    # Atau bisa pakai '-event_date' untuk event terdekat di atas
+    events = Event.objects.all().order_by('event_date')
+    
+    # Filter berdasarkan kategori jika ada
+    # Menggunakan event_category__category karena ini adalah ManyToMany
+    if current_category:
+        events = events.filter(event_category__category=current_category).distinct()
+    
+    # Filter berdasarkan lokasi jika ada
+    if current_location:
+        events = events.filter(location=current_location)
+    
+    # Filter berdasarkan status jika ada
+    if current_status:
+        events = events.filter(event_status=current_status)
+    
+    # Siapkan context untuk template
+    context = {
+        'events': events,
+        'current_category': current_category,
+        'current_location': current_location,
+        'current_status': current_status,
+    }
+    
+    return render(request, 'main.html', context)
 
 def register(request):
     form = CustomUserCreationForm()

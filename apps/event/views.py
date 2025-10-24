@@ -94,8 +94,11 @@ def delete_event(request, id):
 @login_required(login_url='/login')
 def show_event(request, id):
     event = get_object_or_404(Event, pk=id)
+    reviews = Review.objects.filter(event=event).select_related('runner__user').order_by('-created_at')
+    
     context = {
-        'event': event
+        'event': event,
+        'reviews': reviews,
     }
     return render(request, "event_detail.html", context)
 
