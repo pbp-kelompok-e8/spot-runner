@@ -2,151 +2,92 @@
 {% load static %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header Section with Profile Info -->
-    <div class="flex items-start space-x-4 mb-8">
-        <div class="flex-shrink-0">
+<div class="max-w-7xl mx-auto px-6 py-8 space-y-10">
+
+    <!-- === BAGIAN ATAS === -->
+    <div class="flex justify-between items-center bg-white shadow rounded-lg p-6">
+        <div class="flex items-center space-x-5">
+            <!-- Profile Picture -->
             {% if organizer.profile_picture %}
-                <img src="{{ organizer.profile_picture }}" alt="Profile Picture" class="w-20 h-20 object-cover">
+                <img src="{{ organizer.profile_picture }}" class="w-20 h-20 object-cover rounded-full border">
             {% else %}
-                <img src="{% static 'images/logo-img.png' %}" alt="Default Profile" class="w-20 h-20 object-cover">
+                <img src="{% static 'images/logo-img.png' %}" class="w-20 h-20 object-cover rounded-full border">
             {% endif %}
+
+            <div>
+                <p class="text-sm text-gray-500">Event Organizer</p>
+                <h1 class="text-2xl font-semibold text-gray-800">{{ organizer.name }}</h1>
+
+                <div class="mt-2 text-sm text-gray-600 space-y-1">
+                    <p>📦 Total Events: <span class="font-medium">{{ total_events }}</span></p>
+                    <p>📅 Joined: <span class="font-medium">{{ organizer.created_at|date:"d M Y" }}</span></p>
+                    <p>📍 Base Location: <span class="font-medium">{{ organizer.base_location|default:"-" }}</span></p>
+                </div>
+            </div>
         </div>
-        <div class="flex-grow">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">{{ organizer.user.username }}</h1>
-                    <div class="text-sm text-gray-600 mt-1">Event Organizer</div>
-                </div>
-            </div>
-            <div class="mt-2 flex items-center text-sm text-gray-600">
-                <svg class="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                </svg>
-                {{ organizer.base_location|title }}
-            </div>
-            <div class="mt-2 grid grid-cols-3 gap-4 text-sm">
-                <div>
-                    <div class="font-medium">Total Events</div>
-                    <div class="mt-1 text-xl font-semibold">{{ total_events }}</div>
-                </div>
-                <div>
-                    <div class="font-medium">Joined</div>
-                    <div class="mt-1 text-xl font-semibold">{{ organizer.user.date_joined|date:"d M Y" }}</div>
-                </div>
-            </div>
+
+        <!-- Total Events Box -->
+        <div class="bg-gray-50 border rounded-lg w-32 h-24 flex flex-col justify-center items-center">
+            <p class="text-3xl font-bold">{{ total_events }}</p>
+            <p class="text-sm text-gray-600">Events</p>
         </div>
     </div>
 
-    <!-- Review & Rating Section -->
-    <div class="mb-8">
-        <h2 class="text-lg font-semibold mb-2">Review & Rating</h2>
 
-        <div class="flex items-center text-gray-800">
-            <!-- Icon Bintang -->
-            <svg class="w-6 h-6 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-            </svg>
 
-            <span class="text-xl font-bold">{{ avg_rating }}</span>
-            <span class="text-gray-500 ml-1">/ 5.0 rating</span>
-
-            <span class="text-gray-600 ml-2">({{ total_reviews }} responden)</span>
-        </div>
-    </div>
-
-    <!-- Your Events Section -->
-    <div class="mb-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold">Your Events</h2>
-            <a href="{% url 'event:create_event' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Create New Event
-                <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
+    <!-- === BAGIAN BAWAH === -->
+    <div>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Your Events</h2>
+            <a href="{% url 'event:create_event' %}"
+               class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition">
+                + Create Event
             </a>
         </div>
-    </div>
 
-    <!-- Event List -->
-    <div class="space-y-4">
-        {% for event in events %}
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-6">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ event.title }}</h3>
-                        <p class="text-sm text-gray-600 mt-1">{{ event.venue }}</p>
-                    </div>
-                    {% if event.status == 'ongoing' %}
-                        <span class="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">On Going</span>
-                    {% elif event.status == 'finished' %}
-                        <span class="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">Finished</span>
-                    {% elif event.status == 'canceled' %}
-                        <span class="px-3 py-1 text-sm rounded-full bg-red-100 text-red-800">Canceled</span>
-                    {% endif %}
-                </div>
+        {% if events %}
+        <div class="space-y-4">
 
-                <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="flex items-center text-sm text-gray-600">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        {{ event.current_participants }}/{{ event.max_participants }} participants
-                    </div>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        {{ event.date|date:"d M Y (D)" }}
-                    </div>
-                    <div class="flex items-center text-sm text-gray-600">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        {{ event.location }}
-                    </div>
-                </div>
+            {% for event in events %}
+            <div class="border rounded-lg p-5 bg-white shadow-sm hover:shadow-md transition">
+                <h3 class="text-lg font-semibold text-gray-800">{{ event.name }}</h3>
+                <p class="text-sm text-gray-500">{{ event.location }}</p>
+                <p class="text-sm text-gray-500">{{ event.event_date|date:"d M Y" }}</p>
 
-                <div class="mt-4">
-                    <div class="flex items-center space-x-2">
-                        {% for type in event.types %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {{ type }}
-                            </span>
-                        {% endfor %}
-                    </div>
-                </div>
+                <div class="mt-3 flex justify-between items-center">
+                    <span class="px-3 py-1 text-sm rounded 
+                        {% if event.event_status == 'ongoing' %} bg-blue-100 text-blue-600
+                        {% elif event.event_status == 'finished' %} bg-green-100 text-green-600
+                        {% else %} bg-red-100 text-red-600 {% endif %}">
+                        {{ event.event_status|title }}
+                    </span>
 
-                <div class="mt-4 flex justify-end">
-                    <a href="{% url 'event:detail' event.id %}" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
-                        View Details
-                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
+                    <a href="{% url 'event:detail_event' event.id %}" 
+                       class="text-sm text-blue-600 hover:underline">
+                        View Details →
                     </a>
                 </div>
             </div>
+            {% endfor %}
+
         </div>
-        {% empty %}
-        <div class="bg-white rounded-lg shadow p-6 text-center">
+
+        {% else %}
+
+        <div class="text-center py-16 bg-white rounded-lg border">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No events</h3>
-            <p class="mt-1 text-sm text-gray-500">Get started by creating a new event.</p>
-            <div class="mt-6">
-                <a href="{% url 'event:create_event' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Create New Event
-                </a>
-            </div>
+            <p class="text-gray-600 mb-4">No events available yet.</p>
+            <a href="{% url 'event:create_event' %}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+               Create Your First Event
+            </a>
         </div>
-        {% endfor %}
+
+        {% endif %}
     </div>
+
 </div>
-{% include 'footer.html' %}
 {% endblock %}
