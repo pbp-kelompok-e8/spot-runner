@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.event_organizer',
     'apps.merchandise',
     'apps.review',
+    'django.contrib.humanize',
 ]
 
 #kasih tau django kalo pake user custom
@@ -157,4 +158,5 @@ else:
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 

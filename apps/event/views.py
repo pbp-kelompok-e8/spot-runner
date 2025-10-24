@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.core.exceptions import PermissionDenied 
+from django.core.exceptions import PermissionDenied
 
 @login_required
 def create_event(request):
@@ -17,12 +17,27 @@ def create_event(request):
 
     if request.method == 'POST':
         form = EventForm(request.POST)
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         if form.is_valid():
             event_entry = form.save(commit=False)
             event_entry.user_eo = event_organizer 
             event_entry.save()
             form.save_m2m() 
-            return redirect('main:show_main')
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': reverse('main:show_main')
+                })
+            else:
+                return redirect('main:show_main')
+        else:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors.get_json_data()
+                })
+            else:
+                pass 
     else:
         form = EventForm()
 
@@ -34,22 +49,37 @@ def create_event(request):
 @login_required 
 def edit_event(request, id):
     event = get_object_or_404(Event, pk=id)
-
     if event.user_eo.user != request.user: 
         raise PermissionDenied("Anda tidak diizinkan mengedit event ini.")
 
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event) 
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         if form.is_valid():
             event_instance = form.save(commit=False) 
             event_instance.save() 
             form.save_m2m() 
-            return redirect('main:show_main')
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': reverse('main:show_main') 
+                })
+            else:
+                return redirect('main:show_main')
+        else:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors.get_json_data()
+                })
+            else:
+                pass 
     else: 
         form = EventForm(instance=event) 
         
     context = {
-        'form': form
+        'form': form,
+        'event': event 
     }
     return render(request, "edit_event.html", context)
 
@@ -85,7 +115,7 @@ def show_json(request):
             'name': event.name,
             'description': event.description,
             'location': event.get_location_display(), 
-            'event_status' : event.get_event_status_display(),
+            'event_status' : event.status,
             'image': event.image,
             'image2': event.image2,
             'image3': event.image3,
@@ -127,7 +157,7 @@ def show_json_by_id(request, event_id):
         'name': event.name,
         'description': event.description,
         'location': event.get_location_display(), 
-        'event_status' : event.get_event_status_display(),
+        'event_status' : event.status,
         'image': event.image,
         'image2': event.image2,
         'image3': event.image3,
