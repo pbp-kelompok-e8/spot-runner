@@ -14,6 +14,21 @@ class EventCategory(models.Model):
     def __str__(self):
         return self.get_category_display()
 
+import uuid
+
+class EventCategory(models.Model):
+    CATEGORY_CHOICES = [
+        ('fun_run', 'Fun Run'),
+        ('5k', '5K'),
+        ('10k', '10K'),
+        ('half_marathon', 'Half Marathon'),
+        ('full_marathon', 'Full Marathon'),
+    ]
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES,unique=True)
+    
+    def __str__(self):
+        return self.get_category_display()
+
 class Event(models.Model):
     user_eo = models.ForeignKey('event_organizer.EventOrganizer', on_delete=models.CASCADE, null=True)
     cities = [

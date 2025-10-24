@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Create New Event</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<main class="mt-16 py-8 bg-white text-gray-900">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="mb-4">
+            <a href="javascript:history.back()" class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                &lt; Back
+            </a>
+        </div>
+
+        <div class="bg-white p-6 sm:p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+            <form id="create-event-form" novalidate>
+                {% csrf_token %}
+                
+                <div class="text-center mb-1">
+                    <h1 class="text-2xl font-semibold text-gray-900">Create New Event</h1>
+                </div>
+                <div class="text-center mb-6">
+                    <p class="text-sm font-medium text-gray-500">Launch new marathon event</p>
+                </div>
+
+                <div id="form-errors-container" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded" style="display: none;">
+                    <p class="font-bold">Please correct the errors below</p>
+                    <ul id="form-errors-list" class="list-disc list-inside">
+                        </ul>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <div class="flex flex-wrap gap-3">
+                        {% for value, text in form.fields.event_status.choices %}
+                        <div>
+                            <input type="radio" id="status-{{ value }}" name="event_status" value="{{ value }}" 
+                                   class="sr-only peer" {% if form.event_status.value == value or not form.event_status.value and value == 'coming_soon' %}checked{% endif %}>
+                            <label for="status-{{ value }}" 
+                                   class="
+                                       py-1 px-4 rounded-full text-xs font-semibold cursor-pointer transition 
+                                       {% if value == 'coming_soon' %} bg-yellow-100 text-yellow-800 peer-checked:ring-yellow-500 {% endif %}
+                                       {% if value == 'finished' %} bg-green-100 text-green-800 peer-checked:ring-green-500 {% endif %}
+                                       {% if value == 'on_going' %} bg-blue-100 text-blue-800 peer-checked:ring-blue-500 {% endif %}
+                                       peer-checked:ring-2 peer-checked:ring-offset-2 
+                                   ">
+                                {{ text }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div id="error-event_status" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Event Name
+                    </label>
+                    {{ form.name }}
+                    <div id="error-name" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Description
+                    </label>
+                    {{ form.description }}
+                    <div id="error-description" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="{{ form.location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Location
+                    </label>
+                    {{ form.location }}
+                    <div id="error-location" class="mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div class="mb-5">
+                    <label for="{{ form.event_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Event Date
+                    </label>
+                    {{ form.event_date }}
+                    <div id="error-event_date" class="mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div class="mb-5">
+                    <label for="{{ form.regist_deadline.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Registration Deadline
+                    </label>
+                    {{ form.regist_deadline }}
+                    <div id="error-regist_deadline" class="mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div class="mb-5">
+                    <label for="{{ form.contact.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Contact Person
+                    </label>
+                    {{ form.contact }}
+                    <div id="error-contact" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="{{ form.capacity.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Max Participants
+                    </label>
+                    {{ form.capacity }}
+                    <div id="error-capacity" class="mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div class="mb-5">
+                    <label for="{{ form.coin.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Coin Reward
+                    </label>
+                    {{ form.coin }}
+                    <div id="error-coin" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Event Category</label>
+                    <div class="space-y-2">
+                        {% for choice in form.event_category %}
+                        <div class="flex items-center">
+                            {{ choice.tag }} 
+                            <label for="{{ choice.id_for_label }}" class="ml-2 block text-sm text-gray-900">
+                                {{ choice.choice_label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div id="error-event_category" class="mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div class="mb-5">
+                    <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Image URL 1
+                    </label>
+                    {{ form.image }}
+                    <div id="error-image" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="{{ form.image2.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Image URL 2
+                    </label>
+                    {{ form.image2 }}
+                    <div id="error-image2" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mb-5">
+                    <label for="{{ form.image3.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Image URL 3
+                    </label>
+                    {{ form.image3 }}
+                    <div id="error-image3" class="mt-1 text-xs text-red-600"></div>
+                </div>
+
+                <div class="mt-6">
+                    <button type="submit" id="submit-button"
+                            class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                        Create Event
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+
+{% include 'footer.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('create-event-form');
+    const submitButton = document.getElementById('submit-button');
+    const errorContainer = document.getElementById('form-errors-container');
+    const errorList = document.getElementById('form-errors-list');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creating...';
+        errorContainer.style.display = 'none';
+        errorList.innerHTML = '';
+        document.querySelectorAll('[id^="error-"]').forEach(el => {
+            el.innerHTML = '';
+        });
+        const formData = new FormData(form);
+        fetch(window.location.pathname, { 
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',                
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Event created successfully!');
+                window.location.href = data.redirect_url;
+            } else {
+                errorContainer.style.display = 'block';
+                if (data.errors['__all__']) {
+                    data.errors['__all__'].forEach(error => {
+                        const li = document.createElement('li');
+                        li.textContent = error.message;
+                        errorList.appendChild(li);
+                    });
+                }
+
+                Object.keys(data.errors).forEach(field => {
+                    if (field !== '__all__') {
+                        const errorDiv = document.getElementById(`error-${field}`);
+                        const fieldErrorList = document.createElement('ul');
+                        const li = document.createElement('li');
+                        li.textContent = `${field.replace('_', ' ')}: ${data.errors[field][0].message}`;
+                        errorList.appendChild(li);
+                        if (errorDiv) {
+                            data.errors[field].forEach(error => {
+                                const p = document.createElement('p');
+                                p.textContent = error.message;
+                                errorDiv.appendChild(p);
+                            });
+                        }
+                    }
+                });
+                submitButton.disabled = false;
+                submitButton.textContent = 'Create Event';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorContainer.style.display = 'block';
+            errorList.innerHTML = '<li>An unexpected error occurred. Please try again.</li>';
+            submitButton.disabled = false;
+            submitButton.textContent = 'Create Event';
+        });
+    });
+});
+</script>
+{% endblock content %}
