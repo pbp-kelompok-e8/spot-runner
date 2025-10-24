@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth import login, logout
@@ -49,18 +50,28 @@ def login_user(request):
     context = {'form': form}
     return render(request, 'login.html', context)
 
+@login_required(login_url='main:login')
 def show_user(request, username):
     user = get_object_or_404(User, username=username)
-    
+    if user != request.user:
+        messages.error(request, "You are not authorized to view this profile.")
+        return redirect('main:show_main')
+    if user.role != 'runner':
+        context = {
+            'user': user,
+        }
+        return render(request, "event_organizer_detail.html", context)
     context = {
-        'user':user
+        'user':user,
+        'events': user.attended_events.all()
     }
 
-    return render(request,"user_detail.html",context)
+    return render(request,"runner_detail.html",context)
 
 def logout_user(request):
     username = request.user.username
     logout(request)
     response = HttpResponseRedirect(reverse('main:login'))
     messages.success(request, f'See u later, {username}!')
+    response.delete_cookie('last_login')
     return response
