@@ -11,11 +11,7 @@ class EventOrganizer(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         primary_key=True,
-<<<<<<< HEAD
-        related_name="event_organizer_profile"
-=======
         related_name='event_organizer_profile'
->>>>>>> 94a101df09ea37bf24af45573c2cd0a6c34c119e
     )
 
     profile_picture = models.URLField(blank=True, null=True)
