@@ -79,11 +79,10 @@
                         class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
                          Edit Detail
                      </a>
-                     <a href="{% url 'event:delete_event' id=event.id %}" 
-                        onclick="return confirm('Are you sure you want to delete this event?');" 
-                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2 border border-red-300 text-sm font-medium rounded-md shadow-sm text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition">
-                         Delete Event
-                     </a>
+                    <form method="POST" action="{% url 'event:delete_event' id=event.id %}?next={% url 'main:show_main' %}" 
+                        onsubmit="return confirm('Are you sure you want to delete this event?');">{% csrf_token %}
+                        <button type="submit" class="btn-delete">Delete Event</button>
+                    </form>
                 </div>
                 {% endif %}
             </div>
@@ -210,6 +209,56 @@
 
 {% include 'footer.html' %}
 <script>
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+async function deleteEvent(eventId, source) {
+    if (!confirm('Are you sure you want to delete this event?')) {
+        return;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    
+    try {
+        const response = await fetch(`/event/delete/${eventId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showToast('Event deleted successfully!', 'success');
+            
+            setTimeout(() => {
+                if (source === 'dashboard') {
+                    window.location.reload();
+                } else if (source === 'detail') {
+                    window.location.href = "{% url 'main:show_main' %}";
+                }
+            }, 1000);
+        } else {
+            showToast('Failed to delete event', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('An error occurred', 'error');
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     
     const countdownDataEl = document.getElementById('countdown-data');
@@ -291,5 +340,4 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endif %}
 });
 </script>
-
 {% endblock content %}
