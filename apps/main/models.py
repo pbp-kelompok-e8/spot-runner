@@ -14,6 +14,40 @@ class User(AbstractUser):
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='runner')
 
+
+class Attendance(models.Model):
+
+    STATUS_CHOICES = [
+        ('attending', 'Attending'),
+        ('canceled', 'Canceled'),
+        ('finished', 'Finished'), 
+    ]
+
+
+    runner = models.ForeignKey(
+        'main.Runner', 
+        on_delete=models.CASCADE,
+        related_name='attendance_records'
+    )
+    
+    event = models.ForeignKey(
+        'event.Event',
+        on_delete=models.CASCADE,
+        related_name='attendance_records'
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='attending')
+    
+    participant_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    
+    registered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('runner', 'event') 
+
+    def __str__(self):
+        return f"{self.runner.user.username} @ {self.event.name} ({self.status})"
+
 class Runner(models.Model):
 
     user = models.OneToOneField(
@@ -23,8 +57,8 @@ class Runner(models.Model):
     )
 
     attended_events = models.ManyToManyField(
-        Event,
-        through='Attendance',
+        'event.Event',
+        through='main.Attendance',
         related_name='attendees',     
         blank=True                    
     )
@@ -46,46 +80,6 @@ class Runner(models.Model):
     coin = models.IntegerField(default=0)
 
 
-
-class Attendance(models.Model):
-
-    
-    # Pilihan status untuk PENDAFTARAN, bukan untuk Event
-    STATUS_CHOICES = [
-        ('attending', 'Attending'),
-        ('canceled', 'Canceled'),
-        ('finished', 'Finished'), 
-    ]
-    
-    # Hubungan ke Runner Anda
-    # Ganti 'runner.Runner' jika model Runner Anda ada di app lain
-    runner = models.ForeignKey(
-        Runner,  # <--- Bukan 'runner.Runner'
-        on_delete=models.CASCADE,
-        related_name='attendance_records'
-    )
-    
-    # Hubungan ke Event
-    event = models.ForeignKey(
-        Event,
-        on_delete=models.CASCADE,
-        related_name='attendance_records'
-    )
-    
-    # Status pendaftaran spesifik untuk user ini di event ini
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='attending')
-    
-    # Participant ID unik untuk pendaftaran ini
-    participant_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    
-    # Tanggal pendaftaran (opsional tapi sangat disarankan)
-    registered_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('runner', 'event') 
-
-    def __str__(self):
-        return f"{self.runner.user.username} @ {self.event.name} ({self.status})"
 
 
     

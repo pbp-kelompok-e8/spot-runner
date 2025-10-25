@@ -27,6 +27,8 @@ class Review(models.Model):
         EventOrganizer,
         on_delete=models.CASCADE,
         related_name='received_reviews',
+        null=True,
+        blank=True
     )
 
     # Rating dan konten review

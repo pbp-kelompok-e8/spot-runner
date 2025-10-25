@@ -2,7 +2,7 @@ from datetime import date
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
-from apps.main.models import User
+from apps.main.models import User, Attendance, Runner
 from apps.event.models import Event
 from apps.review.models import Review
 from django.http import JsonResponse
@@ -13,6 +13,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.db import transaction
 
 # Create your views here.
 
@@ -58,26 +59,37 @@ def show_user(request, username):
         }
         return render(request, "profile.html", context)
 
-    event_list = user.runner.attended_events.all()
+    attendance_list = user.runner.attendance_records.all().select_related('event')
     today = date.today()
     
     review_list = user.runner.reviews.all()
 
     # Update event statuses based on dates
-    for event in event_list:
-        event_date = event.event_date.date() # Convert datetime to date if needed
+    for record in attendance_list:
+        event = record.event  # Ambil objek event dari record attendance
         
-        if event_date == today:
-            event.status = "on_going"
-        elif event_date < today:
-            event.status = "finished"
-        else:  # event_date > today
-            event.status = "coming_soon"
-        event.save()
+        # Cek jika event_date tidak None
+        event_date = event.event_date.date()
+        
+        # Logika ini untuk mengubah status EVENT-nya
+        if event_date < today:
+            event.event_status = "finished"
+        elif event_date == today:
+            event.event_status = "on_going"
+        else:
+            event.event_status = "coming_soon"
+        event.save() # Simpan perubahan status di OBJEK EVENT
+
+        # Logika TAMBAHAN: Update status REGISTRASI-nya
+        # Jika event-nya sudah selesai DAN status pendaftarannya 
+        # masih 'attending', ubah jadi 'finished'.
+        if event.event_status == "finished" and record.status == 'attending':
+            record.status = 'finished'
+            record.save() # Simpan perubahan status di OBJEK ATTENDANCE
 
     context = {
         'user': user,
-        'event_list': event_list,  # Use the updated event_list
+        'attendance_list': attendance_list,  # Use the updated event_list
         'review_list': review_list
     }
 
@@ -137,9 +149,84 @@ def cancel_event(request, username, id):
         messages.error(request, "You are not authorized to perform this action.")
         return redirect('main:show_main')
     event = get_object_or_404(Event, pk=id)
-    event.event_status = "canceled"
-    event.save()
-    messages.success(request, f"You have successfully canceled your attendance for {event.name}.")
+    runner = user.runner
+
+    try:
+        # 1. Cari catatan pendaftaran (Attendance) yang spesifik
+        attendance = Attendance.objects.get(runner=runner, event=event)
+
+        # 2. Periksa status pendaftaran saat ini
+        if attendance.status == 'attending':
+            # 3. Gunakan transaction.atomic() untuk memastikan 
+            #    update status dan decrement terjadi bersamaan
+            with transaction.atomic():
+                # Ubah status pendaftaran, BUKAN status event
+                attendance.status = 'canceled'
+                attendance.save()
+                
+                # Panggil metode decrement dari model Event
+                event.decrement_participans() 
+            
+            messages.success(request, f"You have successfully canceled your attendance for {event.name}.")
+        
+        elif attendance.status == 'canceled':
+            messages.warning(request, "You have already canceled this event.")
+        
+        else: # Statusnya adalah 'finished'
+            messages.error(request, "You cannot cancel an event that is already finished.")
+
+    except Attendance.DoesNotExist:
+        # Ini terjadi jika user mencoba membatalkan event 
+        # yang tidak pernah mereka daftari
+        messages.error(request, "You are not registered for this event.")
+    except Exception as e:
+        # Menangkap error tak terduga lainnya
+        messages.error(request, f"An error occurred: {str(e)}")
+
+    # 4. Kembalikan user ke halaman profil mereka
+    return redirect('main:show_user', username=username)
+
+
+def participate_in_event(request, username, id):
+    user = get_object_or_404(User, username=username)
+    if user != request.user or user.role != 'runner':
+        messages.error(request, "You are not authorized to perform this action.")
+        return redirect('main:show_main')
+
+    event = get_object_or_404(Event, pk=id)
+    runner = user.runner
+
+    # Gunakan transaction agar increment dan pembuatan attendance terjadi bersamaan
+    try:
+        with transaction.atomic():
+            if event.full:
+                messages.error(request, f"Sorry, {event.name} is already full.")
+                return redirect('main:show_user', username=username)
+
+            attendance, created = Attendance.objects.get_or_create(
+                runner=runner,
+                event=event,
+                defaults={'status': 'attending'}
+            )
+
+            if created:
+                # Jika baru dibuat, increment partisipan
+                event.increment_participans()
+                messages.success(request, f"You are now registered for {event.name}.")
+            else:
+                # Jika sudah ada, mungkin dia mendaftar ulang setelah cancel?
+                if attendance.status == 'canceled':
+                    attendance.status = 'attending'
+                    attendance.save()
+                    event.increment_participans() # Jangan lupa increment lagi
+                    messages.success(request, f"You have re-registered for {event.name}.")
+                else:
+                    # Jika statusnya 'attending' atau 'finished', berarti sudah terdaftar
+                    messages.warning(request, f"You are already registered for {event.name}.")
+    
+    except Exception as e:
+        messages.error(request, f"An error occurred: {e}")
+
     return redirect('main:show_user', username=username)
 
 def participate_in_event(request, username, id):
