@@ -85,7 +85,7 @@ def edit_profile(request):
     if request.method == 'POST':
         new_username = request.POST.get('username')
         base_location = request.POST.get('base_location', '')
-        image_url = request.POST.get('profile_picture', '')  # ✅ name disamakan dengan form
+        image_url = request.POST.get('profile_picture', '')  
 
         # Update username
         if new_username and new_username != request.user.username:
@@ -94,7 +94,7 @@ def edit_profile(request):
 
         # Update EO fields
         organizer.base_location = base_location
-        organizer.profile_picture = image_url  # ✅ langsung update
+        organizer.profile_picture = image_url  #
         organizer.save()
 
         messages.success(request, "Profile updated successfully!")
