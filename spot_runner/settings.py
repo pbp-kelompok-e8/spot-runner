@@ -160,7 +160,7 @@ if DEBUG:
         BASE_DIR / 'static' # merujuk ke /static root project pada mode development
     ]
 else:
-    STATIC_ROOT = BASE_DIR / 'static' # merujuk ke /static root project pada mode production
+    STATIC_ROOT = BASE_DIR / 'staticfiles' # merujuk ke /static root project pada mode production
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
