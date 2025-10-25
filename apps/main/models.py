@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from apps.event.models import Event
+import uuid
 
 # Create your models here.
 
@@ -12,6 +13,40 @@ class User(AbstractUser):
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='runner')
 
+
+class Attendance(models.Model):
+
+    STATUS_CHOICES = [
+        ('attending', 'Attending'),
+        ('canceled', 'Canceled'),
+        ('finished', 'Finished'), 
+    ]
+
+
+    runner = models.ForeignKey(
+        'main.Runner', 
+        on_delete=models.CASCADE,
+        related_name='attendance_records'
+    )
+    
+    event = models.ForeignKey(
+        'event.Event',
+        on_delete=models.CASCADE,
+        related_name='attendance_records'
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='attending')
+    
+    participant_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    
+    registered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('runner', 'event') 
+
+    def __str__(self):
+        return f"{self.runner.user.username} @ {self.event.name} ({self.status})"
+
 class Runner(models.Model):
 
     user = models.OneToOneField(
@@ -21,7 +56,8 @@ class Runner(models.Model):
     )
 
     attended_events = models.ManyToManyField(
-        Event,           
+        'event.Event',
+        through='main.Attendance',
         related_name='attendees',     
         blank=True                    
     )
@@ -43,7 +79,6 @@ class Runner(models.Model):
     coin = models.IntegerField(default=0)
 
 
-    
 
 
     
