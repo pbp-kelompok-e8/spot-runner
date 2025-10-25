@@ -5,7 +5,7 @@ from django.urls import reverse
 from apps.main.models import User, Attendance, Runner
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from apps.event.models import Event
+from apps.event.models import Event, EventCategory
 from apps.review.models import Review
 from django.http import JsonResponse
 from apps.main.forms import CustomUserCreationForm
@@ -199,34 +199,50 @@ def participate_in_event(request, username, id):
     event = get_object_or_404(Event, pk=id)
     runner = user.runner
 
-    try:
-        with transaction.atomic():
-            if event.full:
-                messages.error(request, f"Sorry, {event.name} is already full.")
+    if request.method == 'POST':
+        try:
+            category_id = request.POST.get('selected_race') 
+            if not category_id:
+                messages.error(request, "You must select an event category.")
                 return redirect('main:show_user', username=username)
 
-            attendance, created = Attendance.objects.get_or_create(
-                runner=runner,
-                event=event,
-                defaults={'status': 'attending'}
-            )
+            chosen_category = get_object_or_404(EventCategory, pk=category_id)
+            if chosen_category not in event.event_category.all():
+                messages.error(request, "That is not a valid category for this event.")
+                return redirect('main:show_user', username=username)
 
-            if created:
-                event.increment_participans()
-                messages.success(request, f"You are now registered for {event.name}.")
-            else:
-                if attendance.status == 'canceled':
-                    attendance.status = 'attending'
-                    attendance.save()
-                    event.increment_participans() 
-                    messages.success(request, f"You have re-registered for {event.name}.")
+            with transaction.atomic():
+                if event.full:
+                    messages.error(request, f"Sorry, {event.name} is already full.")
+                    return redirect('main:show_user', username=username)
+
+                attendance, created = Attendance.objects.get_or_create(
+                    runner=runner,
+                    event=event,
+                    defaults={'status': 'attending', 'category': chosen_category}
+                )
+
+                if created:
+                    event.increment_participans()
+                    messages.success(request, f"You are now registered for {event.name} ({chosen_category}).")
                 else:
-                    messages.warning(request, f"You are already registered for {event.name}.")
-    
-    except Exception as e:
-        messages.error(request, f"An error occurred: {e}")
+                    if attendance.status == 'canceled':
+                        attendance.status = 'attending'
+                        attendance.category = chosen_category
+                        attendance.save()
+                        event.increment_participans() 
+                        messages.success(request, f"You have re-registered for {event.name} ({chosen_category}).")
+                    else:
+                        messages.warning(request, f"You are already registered for {event.name}.")
+        
+        except Exception as e:
+            messages.error(request, f"An error occurred: {e}")
 
-    return redirect('main:show_user', username=username)
+        return redirect('main:show_user', username=username)
+    
+    else:
+        messages.error(request, "Invalid request method to join event.")
+        return redirect('main:show_user', username=username)
 
 @login_required
 def change_password(request,username):

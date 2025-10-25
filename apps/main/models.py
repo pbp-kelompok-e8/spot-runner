@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-from apps.event.models import Event
+from apps.event.models import Event, EventCategory
 import uuid
 
 # Create your models here.
@@ -35,6 +35,12 @@ class Attendance(models.Model):
         'event.Event',
         on_delete=models.CASCADE,
         related_name='attendance_records'
+    )
+
+    category = models.ForeignKey(
+        'event.EventCategory',
+        on_delete=models.SET_NULL, # Agar jika kategori dihapus, attendance tetap ada
+        null=True
     )
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='attending')
