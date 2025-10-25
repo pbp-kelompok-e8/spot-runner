@@ -3,7 +3,7 @@ from .forms import EventForm
 from django.views.decorators.http import require_POST
 from .models import Event
 from apps.event_organizer.models import EventOrganizer
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -28,7 +28,7 @@ def create_event(request):
             if is_ajax:
                 return JsonResponse({
                     'success': True,
-                    'redirect_url': reverse('main:show_main')
+                    'redirect_url': reverse('event_organizer:dashboard')
                 })
             else:
                 return redirect('main:show_main')
@@ -52,8 +52,7 @@ def create_event(request):
 def edit_event(request, id):
     event = get_object_or_404(Event, pk=id)
     if event.user_eo.user != request.user: 
-        raise PermissionDenied("Anda tidak diizinkan mengedit event ini.")
-
+        raise PermissionDenied("Anda tidak diizinkan untuk mengedit event ini.")
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event) 
         is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
@@ -61,10 +60,11 @@ def edit_event(request, id):
             event_instance = form.save(commit=False) 
             event_instance.save() 
             form.save_m2m() 
+            detail_url = reverse('event:show_event', kwargs={'id': event.id})
             if is_ajax:
                 return JsonResponse({
                     'success': True,
-                    'redirect_url': reverse('main:show_main') 
+                    'redirect_url': detail_url
                 })
             else:
                 return redirect('main:show_main')
@@ -78,22 +78,30 @@ def edit_event(request, id):
                 pass 
     else: 
         form = EventForm(instance=event) 
-        
     context = {
         'form': form,
         'event': event 
     }
     return render(request, "edit_event.html", context)
 
+@login_required
 def delete_event(request, id):
-    event = get_object_or_404(Event, pk=id)
-    event.delete()
-    return HttpResponseRedirect(reverse('main:show_main'))
+    if request.method == 'POST':
+        try:
+            event = get_object_or_404(Event, pk=id)
+            if event.user_eo != request.user.event_organizer_profile:
+                return JsonResponse({'success': False, 'error': 'Not authorized'}, status=403)
+            event.delete()
+            return JsonResponse({'success': True, 'message': 'Event deleted successfully.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)   
+    return HttpResponseBadRequest("Invalid request method")
 
 
 @login_required(login_url='/login')
 def show_event(request, id):
     event = get_object_or_404(Event, pk=id)
+    reviews = Review.objects.filter(event=event).select_related('runner__user').order_by('-created_at')
     context = {
         'event': event
     }
