@@ -196,15 +196,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = form.action;
             const csrftoken = form.querySelector('[name=csrfmiddlewaretoken]').value;
             const eventCard = form.closest('.event-card');
-            
-            // --- SOLUSI DIMULAI DI SINI ---
-            // 1. Temukan tombol submit di dalam form yang ini
             const submitButton = form.querySelector('button[type="submit"]');
-            
-            // 2. Langsung nonaktifkan tombolnya
             submitButton.disabled = true;
-            // --- AKHIR SOLUSI ---
-
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -221,23 +214,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     setTimeout(() => {
                         eventCard.remove(); 
                         const remainingCards = document.querySelectorAll('.event-card');
-                        
-                        // 2. Jika tidak ada kartu tersisa...
                         if (remainingCards.length === 0) {
-                            
-                            // 3. Sembunyikan kontainer daftar (yang sekarang kosong)
                             const cardList = document.getElementById('event-card-list');
                             if (cardList) {
                                 cardList.classList.add('hidden');
                             }
-
-                            // 4. Tampilkan pesan "No events"
                             const noEventsMessage = document.getElementById('no-events-message');
                             if (noEventsMessage) {
                                 noEventsMessage.classList.remove('hidden');
                             }
                         }
-                        // --- LOGIKA BARU SELESAI ---
 
                     }, 400); 
                 } else {
@@ -248,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Fetch Error:', error);
                 alert('An error occurred while deleting the event.');
-                // 3. Aktifkan kembali tombol jika terjadi error
                 submitButton.disabled = false; 
             });
         });
