@@ -39,49 +39,62 @@
       </span>
       <span class="text-lg font-medium text-gray-800">{{ product.price_coins }} Coins</span>
 
-      {% if product.total_stock %}
-        <span class="ml-auto text-sm text-gray-500">Stock: <span class="font-medium text-gray-700">{{ product.total_stock }}</span></span>
-      {% endif %}
+      <span class="ml-auto text-sm text-gray-500">Stock: <span class="font-medium text-gray-700">{{ product.stock }}</span></span>
     </div>
 
     <!-- Actions -->
-    {% if user.is_authenticated and user.eventorganizer == product.organizer %}
-      <!-- Organizer actions -->
-      <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div class="flex items-center gap-2">
-          <!-- Edit -->
-          <a href="{% url 'merchandise:edit_merchandise' product.id %}"
-             class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-             title="Edit">
-            <!-- edit icon -->
+    {% if user.is_authenticated %}
+      {% comment %} Check if user is the organizer/owner of this product {% endcomment %}
+      {% if user.event_organizer_profile == product.organizer %}
+        <!-- Organizer actions -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div class="flex items-center gap-2">
+            <!-- Edit -->
+            <a href="{% url 'merchandise:edit_merchandise' product.id %}"
+               class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+               title="Edit">
+              <img src="{% static 'images/PencilSimpleLine.png' %}"
+                   alt="edit icon"
+                   class="w-[20px] h-[20px]" />
+            </a>
 
-            <img src="{% static 'images/PencilSimpleLine.png' %}"
-             alt="edit icon"
-             class="w-[20px] h-[20px]" />
-          </a>
+            <!-- Delete button (AJAX) -->
+            <button type="button" 
+                    data-action="delete-merch" 
+                    data-id="{{ product.id }}" 
+                    data-url="{% url 'merchandise:delete_merchandise' product.id %}"
+                    class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors" 
+                    title="Delete">
+              <img src="{% static 'images/Trash.png' %}"
+                   alt="delete icon"
+                   class="w-[20px] h-[20px]" />
+            </button>
+          </div>
 
-          <!-- Delete button (AJAX) -->
-          <button type="button" data-action="delete-merch" data-id="{{ product.id }}" data-url="{% url 'merchandise:delete_merchandise' product.id %}"
-                  class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors" title="Delete">
-            <img src="{% static 'images/Trash.png' %}"
-             alt="delete icon"
-             class="w-[20px] h-[20px]" />
-          </button>
+          <!-- View details button aligned right -->
+          <div>
+            <a href="{% url 'merchandise:product_detail' product.id %}"
+               class="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              View Details
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
         </div>
-
-        <!-- View details button aligned right -->
-        <div>
-          <a href="{% url 'merchandise:product_detail' product.id %}" class="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-            View Details
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
+      {% else %}
+        <!-- Runner or not owner: centered View Details -->
+        <div class="pt-4 border-t border-gray-100">
+          <div class="flex justify-center">
+            <a href="{% url 'merchandise:product_detail' product.id %}" 
+               class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              View Details →
+            </a>
+          </div>
         </div>
-      </div>
-
+      {% endif %}
     {% else %}
-      <!-- Runner or not owner: centered View Details -->
+      <!-- Not authenticated: centered View Details -->
       <div class="pt-4 border-t border-gray-100">
         <div class="flex justify-center">
           <a href="{% url 'merchandise:product_detail' product.id %}" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors">
