@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from apps.main.models import User
 from apps.event.models import Event
+from apps.review.models import Review
 from django.http import JsonResponse
 from apps.main.forms import CustomUserCreationForm
 from django.contrib import messages
@@ -60,9 +61,11 @@ def show_user(request, username):
     event_list = user.runner.attended_events.all()
     today = date.today()
     
+    review_list = user.runner.reviews.all()
+
     # Update event statuses based on dates
     for event in event_list:
-        event_date = event.date.date()  # Convert datetime to date if needed
+        event_date = event.event_date.date() # Convert datetime to date if needed
         
         if event_date == today:
             event.status = "on_going"
@@ -74,7 +77,8 @@ def show_user(request, username):
 
     context = {
         'user': user,
-        'event_list': event_list  # Use the updated event_list
+        'event_list': event_list,  # Use the updated event_list
+        'review_list': review_list
     }
 
     return render(request, "runner_detail.html", context)
@@ -96,23 +100,31 @@ def edit_profile_runner(request, username):
         return redirect('main:show_main')
 
     if request.method == 'POST':
-        new_username = request.POST.get('username')
-        base_location = request.POST.get('base_location', '')
-        image_url = request.POST.get('profile_photo', '')
+        try:
+            new_username = request.POST.get('username')
+            base_location = request.POST.get('base_location', '')
 
-        # Update username
-        if new_username and new_username != request.user.username:
-            request.user.username = new_username
-            request.user.save()
+            # Update username
+            if new_username and new_username != request.user.username:
+                if User.objects.filter(username=new_username).exists():
+                    return JsonResponse({"error": "Username already taken"}, status=400)
+                request.user.username = new_username
+                request.user.save()
 
-        # Update fields
-        user.base_location = base_location
-        if image_url:
-            user.profile_picture = image_url
-        user.save()
+            # Update fields
+            user.runner.base_location = base_location
+            user.runner.save()
 
-        messages.success(request, "Profile updated successfully!")
-        return redirect('event_organizer:profile')
+            return JsonResponse({
+                    "success": True,
+                    "username": user.username,
+                    "base_location": user.runner.get_base_location_display(),
+                    "message": "Profile updated successfully!"
+            })
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
     context = {
         'user': user,
@@ -125,8 +137,10 @@ def cancel_event(request, username, id):
         messages.error(request, "You are not authorized to perform this action.")
         return redirect('main:show_main')
     event = get_object_or_404(Event, pk=id)
-    user.runner.attended_events.remove(event)
+    event.event_status = "canceled"
+    event.save()
     messages.success(request, f"You have successfully canceled your attendance for {event.name}.")
+    return redirect('main:show_user', username=username)
 
 def participate_in_event(request, username, id):
     user = get_object_or_404(User, username=username)
