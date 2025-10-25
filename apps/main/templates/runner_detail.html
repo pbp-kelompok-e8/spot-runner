@@ -111,6 +111,8 @@
                                             On Going
                                         {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
                                             Coming Soon
+                                        {% else %}
+                                            {{ record.status|title }}
                                         {% endif %}
                                     </span>
                                     

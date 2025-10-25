@@ -146,44 +146,45 @@ def edit_profile_runner(request, username):
 def cancel_event(request, username, id):
     user = get_object_or_404(User, username=username)
     if user != request.user or user.role != 'runner':
+        print("You are not authorized to perform this action.")
         messages.error(request, "You are not authorized to perform this action.")
         return redirect('main:show_main')
+    
     event = get_object_or_404(Event, pk=id)
     runner = user.runner
 
     try:
-        # 1. Cari catatan pendaftaran (Attendance) yang spesifik
         attendance = Attendance.objects.get(runner=runner, event=event)
 
-        # 2. Periksa status pendaftaran saat ini
         if attendance.status == 'attending':
-            # 3. Gunakan transaction.atomic() untuk memastikan 
-            #    update status dan decrement terjadi bersamaan
             with transaction.atomic():
-                # Ubah status pendaftaran, BUKAN status event
                 attendance.status = 'canceled'
                 attendance.save()
                 
                 # Panggil metode decrement dari model Event
                 event.decrement_participans() 
             
+            print("You have successfully canceled your attendance for the event.")
             messages.success(request, f"You have successfully canceled your attendance for {event.name}.")
         
         elif attendance.status == 'canceled':
+            print("You have already canceled this event.")
             messages.warning(request, "You have already canceled this event.")
         
         else: # Statusnya adalah 'finished'
+            print("You cannot cancel an event that is already finished.")
             messages.error(request, "You cannot cancel an event that is already finished.")
 
     except Attendance.DoesNotExist:
-        # Ini terjadi jika user mencoba membatalkan event 
-        # yang tidak pernah mereka daftari
+        print("You are not registered for this event.")
         messages.error(request, "You are not registered for this event.")
+    
+    # PERUBAHAN UTAMA: 
+    # Tampilkan error yang sebenarnya jika terjadi kegagalan
     except Exception as e:
-        # Menangkap error tak terduga lainnya
-        messages.error(request, f"An error occurred: {str(e)}")
+        print(f"An error occurred while canceling: {str(e)}")
+        messages.error(request, f"An error occurred while canceling: {str(e)}")
 
-    # 4. Kembalikan user ke halaman profil mereka
     return redirect('main:show_user', username=username)
 
 
@@ -229,12 +230,3 @@ def participate_in_event(request, username, id):
 
     return redirect('main:show_user', username=username)
 
-def participate_in_event(request, username, id):
-    user = get_object_or_404(User, username=username)
-    if user != request.user or user.role != 'runner':
-        messages.error(request, "You are not authorized to perform this action.")
-        return redirect('main:show_main')
-    event = get_object_or_404(Event, pk=id)
-    user.runner.attended_events.add(event)
-    messages.success(request, f"You are now registered to attend {event.name}.")
-    return redirect('main:show_user', username=username)
