@@ -49,10 +49,9 @@
             </a>
         </div>
 
-        {% if events %}
-        <div class="space-y-4">
+        <div id="event-card-list" class="space-y-4 {% if not events %}hidden{% endif %}"></div>
                 {% for event in events %}
-                <div class="{% if event.event_status == 'on_going' %} border border-blue-500 
+                <div id="event-card-{{ event.id }}" class="event-card {% if event.event_status == 'on_going' %} border border-blue-500 
                             {% elif event.event_status == 'finished' %} border border-green-500 
                             {% else %} border border-yellow-500 {% endif %} 
                             rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition">
@@ -75,7 +74,7 @@
                             </span>
                             
                             <!-- Edit Button -->
-                            <a href="{% url 'event:edit_event' event.id %}" 
+                            <a href="{% url 'event:edit_event' event.id %}?next={{ request.path }}" 
                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -84,11 +83,11 @@
                             </a>
                             
                             <!-- Delete Button -->
-                            <form method="POST" action="{% url 'event:delete_event' id=event.id %}" onsubmit="return confirm('Are you sure you want to delete this event?');" class="inline-block">
-                                {% csrf_token %}
+                            <form method="POST" action="{% url 'event:delete_event' id=event.id %}" class="delete-event-form inline-block">                                {% csrf_token %}
                                 <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
                                 </button>
                             </form>
@@ -164,9 +163,8 @@
                 </div>
                 {% endfor %}
             </div>
-        {% else %}
 
-        <div class="text-center py-16 bg-white rounded-lg border">
+        <div id="no-events-message" class="text-center py-16 bg-white rounded-lg border {% if events %}hidden{% endif %}">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -177,10 +175,70 @@
                Create Your First Event
             </a>
         </div>
-
-        {% endif %}
     </div>
 
 </div>
 {% include 'footer.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForms = document.querySelectorAll('.delete-event-form');
+
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+
+            if (!confirm('Are you sure you want to delete this event?')) {
+                return;
+            }
+
+            const form = this;
+            const url = form.action;
+            const csrftoken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+            const eventCard = form.closest('.event-card');
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    eventCard.style.transition = 'opacity 0.4s ease';
+                    eventCard.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        eventCard.remove(); 
+                        const remainingCards = document.querySelectorAll('.event-card');
+                        if (remainingCards.length === 0) {
+                            const cardList = document.getElementById('event-card-list');
+                            if (cardList) {
+                                cardList.classList.add('hidden');
+                            }
+                            const noEventsMessage = document.getElementById('no-events-message');
+                            if (noEventsMessage) {
+                                noEventsMessage.classList.remove('hidden');
+                            }
+                        }
+
+                    }, 400); 
+                } else {
+                    alert('Error from server: ' + data.error);
+                    submitButton.disabled = false; 
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                alert('An error occurred while deleting the event.');
+                submitButton.disabled = false; 
+            });
+        });
+    });
+});
+</script>
+
 {% endblock %}
