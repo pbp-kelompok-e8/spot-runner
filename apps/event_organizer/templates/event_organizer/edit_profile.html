@@ -11,7 +11,7 @@
 
       <h2 class="text-center text-3xl font-bold text-gray-900 mb-6">Edit Profile</h2>
 
-      <form method="POST" action="{% url 'event_organizer:edit_profile' %}" class="space-y-6">
+      <form id="editProfileForm" class="space-y-6">
         {% csrf_token %}
 
         <!-- Profile Picture (URLField) -->
@@ -78,8 +78,97 @@
         </div>
       </form>
 
+      <!-- Toast Confirmation -->
+      <div id="confirmToast" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-[380px] text-center animate-fadeIn">
+          <h2 class="text-lg font-semibold text-gray-800 mb-2">Are you sure you want to save changes?</h2>
+          <p class="text-gray-500 mb-6 text-sm">
+            Please review your profile details before saving.
+          </p>
+          <div class="flex justify-center gap-3">
+            <button id="cancelToast" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
+              Cancel
+            </button>
+            <button id="confirmToastYes" class="px-4 py-2 rounded-lg bg-lime-500 hover:bg-lime-600 text-white font-medium">
+              Yes, I’m sure
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("editProfileForm");
+  const toast = document.getElementById("confirmToast");
+  const btnCancel = document.getElementById("cancelToast");
+  const btnYes = document.getElementById("confirmToastYes");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    toast.classList.remove("hidden");
+  });
+
+  btnCancel.addEventListener("click", () => {
+    toast.classList.add("hidden");
+  });
+
+  btnYes.addEventListener("click", async () => {
+    toast.classList.add("hidden");
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("{% url 'event_organizer:edit_profile' %}", {
+        method: "POST",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showToast("Profile updated successfully!", true);
+        setTimeout(() => {
+          window.location.href = "{% url 'event_organizer:profile' %}";
+        }, 1000);
+      } else {
+        showToast(data.message || "Failed to update profile.", false);
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("An error occurred. Please try again.", false);
+    }
+  });
+
+  // Function: Small toast notification (top right)
+  function showToast(message, success = true) {
+    const toast = document.createElement("div");
+    toast.className =
+      "fixed top-20 right-5 px-4 py-2 rounded-lg shadow-lg text-white text-sm z-50 transition-opacity duration-300 " +
+      (success ? "bg-green-500" : "bg-red-500");
+
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Animasi fade-in/out biar smooth
+    toast.style.opacity = 0;
+    setTimeout(() => (toast.style.opacity = 1), 50);
+    setTimeout(() => {
+      toast.style.opacity = 0;
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+});
+</script>
+
+
 {% include 'footer.html' %}
 {% endblock %}
