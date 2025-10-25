@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Navbar -->
+{% include 'partials/navbar.html' %}
+
+<div class="max-w-7xl mx-auto px-4 mt-10 mb-16">
+  <!-- Profile Section -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <!-- Profile Picture -->
+        {% if organizer.profile_picture %}
+        <img src="{{ organizer.profile_picture.url }}" alt="Profile" class="w-16 h-16 rounded-full object-cover">
+        {% else %}
+        <div class="w-16 h-16 rounded-full bg-lime-100 flex items-center justify-center text-lime-600 font-bold text-xl">
+          {{ user.username|slice:":1"|upper }}
+        </div>
+        {% endif %}
+        
+        <div>
+          <h2 class="text-2xl font-semibold text-gray-800">{{ user.username }}</h2>
+          <p class="text-gray-500 text-sm">Event Organizer</p>
+          {% if organizer.base_location %}
+          <p class="text-gray-500 text-sm">📍 {{ organizer.base_location }}</p>
+          {% endif %}
+          <p class="text-gray-400 text-xs">Joined {{ organizer.created_at|date:"d M Y" }}</p>
+        </div>
+      </div>
+      
+      <div class="flex space-x-2 mt-4 md:mt-0">
+        <a href="{% url 'event_organizer:edit_profile' %}" class="text-sm text-lime-600 hover:underline">Edit Profile</a>
+        <span class="text-gray-300">|</span>
+        <a href="{% url 'logout' %}" class="text-sm text-red-500 hover:underline">Log Out</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Section (Optional) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-2xl shadow-md p-5">
+      <h4 class="text-gray-500 text-sm">Total Events</h4>
+      <p class="text-2xl font-bold text-gray-800">{{ events.count }}</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-5">
+      <h4 class="text-gray-500 text-sm">Total Reviews</h4>
+      <p class="text-2xl font-bold text-gray-800">{{ reviews.count }}</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-5">
+      <h4 class="text-gray-500 text-sm">Average Rating</h4>
+      <div class="flex items-center">
+        <span class="text-lime-500 text-xl mr-1">★</span>
+        <p class="text-2xl font-bold text-gray-800">{{ avg_rating|default:"0.0" }}</p>
+        <span class="text-sm text-gray-500 ml-1">/ 5.0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review & Rating Section -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-semibold text-gray-800">Reviews from Runners</h3>
+      <div class="flex items-center">
+        <span class="text-lime-500 text-xl mr-1">★</span>
+        <span class="font-semibold text-gray-800 text-lg">{{ avg_rating|default:"0.0" }}</span>
+        <span class="text-sm text-gray-500 ml-1">/ 5.0 rating</span>
+      </div>
+    </div>
+
+    <div id="reviewContainer" class="space-y-4">
+      {% for review in reviews %}
+      <div class="bg-gray-50 rounded-xl shadow-sm p-5">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2">
+              <h4 class="text-base font-semibold text-gray-800">{{ review.runner.user.username }}</h4>
+              <span class="text-xs text-gray-400">•</span>
+              <span class="text-xs text-gray-500">{{ review.created_at|date:"d M Y" }}</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-1">For event: <span class="font-medium text-lime-600">{{ review.event.name }}</span></p>
+            {% if review.review_text %}
+            <p class="text-gray-700 mt-3">{{ review.review_text }}</p>
+            {% endif %}
+          </div>
+          <div class="flex items-center ml-4">
+            <span class="text-lime-500 text-lg mr-1">★</span>
+            <span class="font-semibold text-gray-800">{{ review.rating }}</span>
+            <span class="text-sm text-gray-500 ml-1">/ 5</span>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-gray-500 text-center py-8">No reviews yet for your events.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- All Event Section -->
+  <div class="bg-white rounded-2xl shadow-md p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-semibold text-gray-800">My Events</h3>
+      <a href="{% url 'event:create_event' %}" class="px-4 py-2 bg-lime-400 text-white text-sm rounded-lg hover:bg-lime-500 transition">
+        + Create Event
+      </a>
+    </div>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for event in events %}
+        {% include 'events/event_card.html' with event=event %}
+      {% empty %}
+        <div class="col-span-full text-center py-8">
+          <p class="text-gray-500 mb-4">You haven't created any events yet.</p>
+          <a href="{% url 'event:create_event' %}" class="text-lime-600 hover:underline">Create your first event →</a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+{% include 'partials/footer.html' %}
+{% endblock %}
