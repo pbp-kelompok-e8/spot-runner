@@ -1,6 +1,6 @@
+
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
 
 
 # EventOrganizer represents a user who can create and manage events.
@@ -10,11 +10,31 @@ class EventOrganizer(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        primary_key=True
+        primary_key=True,
+        related_name='event_organizer_profile'
     )
 
+    CITY_CHOICES = [
+        ('jakarta', 'Jakarta'),
+        ('surabaya', 'Surabaya'),
+        ('bandung', 'Bandung'),
+        ('medan', 'Medan'),
+        ('semarang', 'Semarang'),
+        ('makassar', 'Makassar'),
+        ('palembang', 'Palembang'),
+        ('denpasar', 'Denpasar'),
+        ('yogyakarta', 'Yogyakarta'),
+        ('surakarta', 'Surakarta'),
+        ('malang', 'Malang'),
+        ('pekanbaru', 'Pekanbaru'),
+        ('depok', 'Depok')
+    ]
+
     profile_picture = models.URLField(blank=True, null=True)
-    base_location = models.CharField(max_length=255, blank=True)
+    base_location = models.CharField(max_length=50, choices=CITY_CHOICES)
+    total_events = models.IntegerField(default=0)
+    rating = models.FloatField(default=0.0)
+    review_count = models.IntegerField(default=0)
     coin = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -22,3 +42,9 @@ class EventOrganizer(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+    @property
+    def name(self):
+        return f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username
+    
+

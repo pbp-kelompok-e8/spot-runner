@@ -8,7 +8,7 @@
 {% block content %}
 {% include 'navbar.html' %}
 
-{% comment %} Header/Banner Section {% endcomment %}
+<!-- Header Event  -->
 <header class="relative h-64 md:h-80 bg-gray-700 bg-cover bg-center text-white" 
         style="background-image: url('{% if event.image %}{{ event.image }}{% else %}{% static 'images/default_banner.jpg' %}{% endif %}');">
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -26,6 +26,7 @@
     </div>
 </header>
 
+<!-- Event Description -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
     <div class="lg:grid lg:grid-cols-3 lg:gap-8">
         <div class="lg:col-span-2 space-y-8">
@@ -39,11 +40,11 @@
                 </div>
             </div>
 
-            {% comment %} About Section {% endcomment %}
+
             <div class="bg-white shadow rounded-lg p-6 sm:p-8">
+
+                <!-- Event Information -->
                 <h2 class="text-2xl font-semibold text-gray-900 mb-6">About This Event</h2>
-                
-                {% comment %} Quick Info Grid {% endcomment %}
                 <div class="grid grid-cols-2 gap-x-4 gap-y-5 mb-6 text-sm text-gray-600">
                     <div class="flex items-center">
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -66,29 +67,28 @@
                          {% endfor %}
                     </div>
                 </div>
-                
-                {% comment %} Description Text {% endcomment %}
                 <div class="prose prose-sm sm:prose lg:prose-lg max-w-none text-gray-600">
                     {{ event.description|linebreaks }}
                 </div>
 
-                {% comment %} Action Buttons (Only for Owner) {% endcomment %}
+               
+                <!-- Edit and Delete Event -->
                 {% if user.is_authenticated and event.user_eo.user == user %}
                 <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
                      <a href="{% url 'event:edit_event' id=event.id %}" 
                         class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
                          Edit Detail
                      </a>
-                     <a href="{% url 'event:delete_event' id=event.id %}" 
-                        onclick="return confirm('Are you sure you want to delete this event?');" 
-                        class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2 border border-red-300 text-sm font-medium rounded-md shadow-sm text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition">
-                         Delete Event
-                     </a>
+                     <button type="button" 
+                            onclick="deleteEvent('{{ event.id }}', 'detail');" 
+                            class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2 border border-red-300 text-sm font-medium rounded-md shadow-sm text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition">
+                        Delete Event
+                    </button>
                 </div>
                 {% endif %}
             </div>
 
-            {% comment %} Organizer Section {% endcomment %}
+            <!-- Organizer Information -->
             <h2 class="text-xl font-semibold text-gray-900 mb-5">Organized By</h2>
                 <div class="flex items-start space-x-5">
                 {% if event.user_eo.profile_picture %}
@@ -110,39 +110,27 @@
                 </div>
             </div>
 
-            <!-- Review dan Rating (Hardcode)-->
+            <!-- Review dan Rating (Dinamis) -->
             <h2 class="text-xl font-semibold text-gray-900 mb-5">Rating & Review</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="border border-gray-200 rounded-lg p-4 space-y-2">
-                    <h4 class="font-medium text-gray-800">Leticia Kutch</h4>
-                    <p class="text-xs text-gray-500">Participant Summer Marathon</p>
-                    <p class="text-sm text-gray-600 leading-relaxed">Lorem ipsum dolor sit amet pretium consectetur adipiscing elit. Lorem consectetur adipiscing elit.</p>
-                    <div class="flex items-center space-x-1 pt-1">
-                        <span class="text-yellow-400">★★★★☆</span>
-                        <span class="text-sm font-semibold">4.75</span><span class="text-xs text-gray-500">/5.0 rating</span>
-                    </div>
-                </div>
 
-                <div class="border border-gray-200 rounded-lg p-4 space-y-2">
-                    <h4 class="font-medium text-gray-800">Another Reviewer</h4>
-                    <p class="text-xs text-gray-500">Participant Fun Run</p>
-                    <p class="text-sm text-gray-600 leading-relaxed">Adipiscing elit. Pretium consectetur adipiscing elit. Lorem consectetur adipiscing.</p>
-                    <div class="flex items-center space-x-1 pt-1">
-                        <span class="text-yellow-400">★★★★★</span>
-                        <span class="text-sm font-semibold">5.00</span><span class="text-xs text-gray-500">/5.0 rating</span>
+            {% if reviews %}
+            <div id="reviewContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for review in reviews %}
+                <div class="bg-white rounded-2xl shadow-md p-5 border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800">{{ review.runner.user.username }}</h3>
+                    <p class="text-sm text-gray-600 mt-2">{{ review.review_text|default:"No comment" }}</p>
+                    <div class="flex items-center mt-3">
+                        <span class="text-yellow-400 text-lg mr-1">★</span>
+                        <span class="font-semibold text-gray-800">{{ review.rating }}</span>
+                        <span class="text-sm text-gray-500 ml-1">/ 5</span>
+                        <span class="text-xs text-gray-400 ml-auto">{{ review.created_at|date:"d M Y" }}</span>
                     </div>
                 </div>
-
-                <div class="border border-gray-200 rounded-lg p-4 space-y-2">
-                        <h4 class="font-medium text-gray-800">Third Person</h4>
-                    <p class="text-xs text-gray-500">Spectator</p>
-                    <p class="text-sm text-gray-600 leading-relaxed">Consectetur adipiscing elit. Pretium consectetur adipiscing elit.</p>
-                    <div class="flex items-center space-x-1 pt-1">
-                        <span class="text-yellow-400">★★★★☆</span>
-                        <span class="text-sm font-semibold">4.00</span><span class="text-xs text-gray-500">/5.0 rating</span>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <p class="text-gray-500">No reviews yet.</p>
+            {% endif %}
         </div>
 
         <!-- Sidebar -->
@@ -177,26 +165,45 @@
                     
                     <!-- Booking Event -->
                     <div class="mt-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Races offered by this event</h3>
-                        <form id="booking-form">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            Races offered by this event
+                        </h3>
+
+                        <!-- Form untuk booking -->
+                        <form id="booking-form" 
+                            method="POST"
+                            action="{% url 'main:participate_event' username=request.user.username id=event.id %}">
+                            {% csrf_token %}
+
                             <div class="space-y-3">
                                 {% for category in event.event_category.all %}
-                                <label for="race_{{ category.pk }}" class="block border border-gray-300 rounded-lg p-4 hover:border-blue-500 cursor-pointer has-[:checked]:border-blue-600 has-[:checked]:ring-1 has-[:checked]:ring-blue-600 transition">
-                                    <div class="flex justify-between items-center">
-                                        <div class="flex flex-col">
-                                             <span class="font-medium text-gray-800">{{ category.get_category_display }}</span>
+                                    <label for="race_{{ category.pk }}" 
+                                        class="block border border-gray-300 rounded-lg p-4 hover:border-blue-500 cursor-pointer has-[:checked]:border-blue-600 has-[:checked]:ring-1 has-[:checked]:ring-blue-600 transition">
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex flex-col">
+                                                <span class="font-medium text-gray-800">
+                                                    {{ category.get_category_display }}
+                                                </span>
+                                            </div>
+                                            <input type="radio" id="race_{{ category.pk }}" 
+                                                name="selected_race" 
+                                                value="{{ category.pk }}" 
+                                                class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                         </div>
-                                        <input type="radio" id="race_{{ category.pk }}" name="selected_race" value="{{ category.pk }}" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                    </div>
-                                </label>
+                                    </label>
                                 {% empty %}
-                                 <p class="text-sm text-gray-500">No specific races listed for this event.</p>
+                                    <p class="text-sm text-gray-500">
+                                        No specific races listed for this event.
+                                    </p>
                                 {% endfor %}
                             </div>
-                            <button type="submit" id="book-button"
+
+                            <button type="button" id="book-button"
                                 class="mt-6 w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                {% if user.is_authenticated and user.role == 'event_organizer' or event.status != "finished"  %}disabled{% endif %}>
-                                    Book Now
+                                {% if user.is_authenticated and user.role == 'event_organizer' or event.status == "finished"  %}
+                                    disabled
+                                {% endif %}>
+                                Book Now
                             </button>
                         </form>
                     </div>
@@ -208,8 +215,212 @@
     </div>
 </div>
 
+<!-- Modal 1: Confirmation Modal -->
+<div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative animate-fade-in">
+        <!-- Close Button -->
+        <button onclick="closeConfirmModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Modal Content -->
+        <div class="text-center">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                Are you sure you want to book this event?
+            </h3>
+            <p class="text-sm text-gray-600 mb-6">
+                Please check the details, date, location, and your availability before booking.
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button onclick="closeConfirmModal()" 
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition">
+                    Cancel
+                </button>
+                <button onclick="confirmBooking()" 
+                    class="flex-1 px-4 py-2 bg-lime-400 text-gray-900 rounded-md font-semibold hover:bg-lime-500 transition">
+                    Yes, I'm sure
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Success Modal -->
+<div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative animate-fade-in">
+        <!-- Close Button -->
+        <button onclick="closeSuccessModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Success Content -->
+        <div class="text-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                You've Successfully Booked Your Spot!
+            </h3>
+        </div>
+
+        <!-- Booking Details -->
+        <div class="space-y-4 mb-6">
+            <!-- Name -->
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Name of Participant</p>
+                <p class="text-base font-semibold text-gray-900" id="participantName">{{ user.username }}</p>
+            </div>
+
+            <!-- Participant ID -->
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Participant ID</p>
+                <p class="text-base font-semibold text-gray-900" id="participantId">Will be generated</p>
+            </div>
+
+            <!-- Details Section -->
+            <div>
+                <p class="text-sm font-semibold text-gray-900 mb-3">Details</p>
+                
+                <!-- Date -->
+                <div class="flex items-start gap-3 mb-2">
+                    <svg class="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-xs text-gray-500">Date</p>
+                        <p class="text-sm text-gray-900" id="eventDate">{{ event.event_date|date:"d M Y" }}</p>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="flex items-start gap-3 mb-2">
+                    <svg class="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-xs text-gray-500">Location</p>
+                        <p class="text-sm text-gray-900" id="eventLocation">{{ event.get_location_display }}</p>
+                    </div>
+                </div>
+
+                <!-- Type -->
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-xs text-gray-500">Type</p>
+                        <p class="text-sm text-gray-900" id="eventType">{{ event.event_category.all.0.get_category_display }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Race Type Badge -->
+            <div>
+                <p class="text-sm font-semibold text-gray-900 mb-2">Type</p>
+                <div class="inline-block border-2 border-blue-500 rounded-lg px-4 py-2">
+                    <p class="text-base font-semibold text-gray-900" id="raceType">Selected Race</p>
+                    <p class="text-xs text-gray-500">Check your ticket for details</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <button onclick="closeSuccessModal()" 
+            class="w-full px-4 py-3 bg-lime-400 text-gray-900 rounded-lg font-semibold hover:bg-lime-500 transition">
+            Close
+        </button>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.2s ease-out;
+    }
+</style>
+
 {% include 'footer.html' %}
+
 <script>
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+async function deleteEvent(eventId, source) {
+    if (!confirm('Are you sure you want to delete this event?')) {
+        return;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    
+    try {
+        const response = await fetch(`/event/${eventId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showToast('Event deleted successfully!', 'success');
+            
+            setTimeout(() => {
+                if (source === 'dashboard') {
+                    window.location.reload();
+                } else if (source === 'detail') {
+                    window.location.href = "{% url 'main:show_main' %}";
+                }
+            }, 1000);
+        } else {
+            showToast('Failed to delete event', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('An error occurred', 'error');
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     
     const countdownDataEl = document.getElementById('countdown-data');
@@ -281,6 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCountdown();
     
     countdownInterval = setInterval(updateCountdown, 1000);
+    
     {% if event.full %}
     if (bookButton) {
         bookButton.disabled = true;
@@ -289,7 +501,76 @@ document.addEventListener('DOMContentLoaded', function() {
         bookButton.classList.add('bg-gray-400', 'cursor-not-allowed');
     }
     {% endif %}
+
+    // Modal Functions
+    function openConfirmModal() {
+        const selectedRace = document.querySelector('input[name="selected_race"]:checked');
+        if (!selectedRace) {
+            alert('Please select a race category first!');
+            return;
+        }
+        document.getElementById('confirmModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    window.closeConfirmModal = function() {
+        document.getElementById('confirmModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    window.confirmBooking = function() {
+        closeConfirmModal();
+        
+        const selectedRace = document.querySelector('input[name="selected_race"]:checked');
+        if (selectedRace) {
+            const raceLabel = selectedRace.closest('label').querySelector('.font-medium').textContent.trim();
+            document.getElementById('raceType').textContent = raceLabel;
+        }
+        
+        // Submit the form
+        const form = document.getElementById('booking-form');
+        form.submit();
+        
+        // Show success modal after form submission
+        setTimeout(() => {
+            openSuccessModal();
+        }, 300);
+    }
+
+    function openSuccessModal() {
+        document.getElementById('successModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    window.closeSuccessModal = function() {
+        document.getElementById('successModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Book button click event
+    if (bookButton) {
+        bookButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            openConfirmModal();
+        });
+    }
+
+    // Close modals when clicking outside
+    document.getElementById('confirmModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeConfirmModal();
+    });
+
+    document.getElementById('successModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeSuccessModal();
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeConfirmModal();
+            closeSuccessModal();
+        }
+    });
 });
 </script>
-
 {% endblock content %}

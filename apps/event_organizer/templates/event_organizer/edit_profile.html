@@ -1,69 +1,174 @@
 {% extends 'base.html' %}
-{% load static %}
+
+{% block meta %}
+<title>Edit Profile - Spot Runner</title>
+{% endblock meta %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h2 class="card-title mb-4">Edit Profile</h2>
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-lg">
+    <div class="bg-white py-8 px-6 shadow-lg sm:rounded-lg">
 
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
+      <h2 class="text-center text-3xl font-bold text-gray-900 mb-6">Edit Profile</h2>
 
-                        <div class="mb-4">
-                            <label class="form-label">Profile Picture</label>
-                            <div class="profile-img-preview mb-3">
-                                {% if organizer.profile_picture %}
-                                    <img src="{{ organizer.profile_picture.url }}" alt="Current Profile Picture" class="img-fluid rounded">
-                                {% else %}
-                                    <div class="placeholder-img rounded d-flex align-items-center justify-content-center bg-light">
-                                        <i class="fas fa-user fa-3x text-secondary"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <input type="file" name="profile_picture" class="form-control" accept="image/*">
-                        </div>
+      <form id="editProfileForm" class="space-y-6">
+        {% csrf_token %}
 
-                        <div class="mb-3">
-                            <label class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Base Location</label>
-                            <input type="text" name="base_location" class="form-control" value="{{ organizer.base_location }}" placeholder="Enter your base location">
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'event_organizer:profile' %}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
+        <!-- Profile Picture (URLField) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Profile Picture (URL)</label>
+          {% if organizer.profile_picture %}
+            <img src="{{ organizer.profile_picture }}" alt="Profile Picture"
+                 class="w-32 h-32 rounded-full object-cover mt-2 mx-auto shadow">
+          {% else %}
+            <div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center mx-auto mt-2">
+              <i class="fas fa-user text-gray-500 text-4xl"></i>
             </div>
+          {% endif %}
+          <input type="url" name="profile_picture" 
+                 value="{{ organizer.profile_picture|default_if_none:'' }}" 
+                 placeholder="Enter image URL"
+                 class="mt-3 block w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
         </div>
+
+        <!-- Username (from Django user) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Username</label>
+          <input type="text" name="username" 
+                 value="{{ user.username }}" 
+                 required
+                 class="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <!-- Base Location (from EventOrganizer model) -->
+        <div>
+          <label for="base_location" class="block text-sm font-medium text-gray-700">Location</label>
+          <div class="mt-1">
+              <select id="base_location" name="base_location"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-500">
+                  <option value="" disabled selected>Select your location</option>
+                  <option value="jakarta">Jakarta</option>
+                  <option value="surabaya">Surabaya</option>
+                  <option value="bandung">Bandung</option>
+                  <option value="medan">Medan</option>
+                  <option value="semarang">Semarang</option>
+                  <option value="makassar">Makassar</option>
+                  <option value="palembang">Palembang</option>
+                  <option value="denpasar">Denpasar</option>
+                  <option value="yogyakarta">Yogyakarta</option>
+                  <option value="surakarta">Surakarta</option>
+                  <option value="malang">Malang</option>
+                  <option value="pekanbaru">Pekanbaru</option>
+                  <option value="depok">Depok</option>
+              </select>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-3 mt-8">
+          <a href="{% url 'event_organizer:profile' %}" 
+             class="px-5 py-2 rounded-lg bg-gray-300 text-gray-700 hover:bg-gray-400">
+            Cancel
+          </a>
+
+          <button type="submit"
+             class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+            Save Changes
+          </button>
+        </div>
+      </form>
+
+      <!-- Toast Confirmation -->
+      <div id="confirmToast" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-[380px] text-center animate-fadeIn">
+          <h2 class="text-lg font-semibold text-gray-800 mb-2">Are you sure you want to save changes?</h2>
+          <p class="text-gray-500 mb-6 text-sm">
+            Please review your profile details before saving.
+          </p>
+          <div class="flex justify-center gap-3">
+            <button id="cancelToast" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
+              Cancel
+            </button>
+            <button id="confirmToastYes" class="px-4 py-2 rounded-lg bg-lime-500 hover:bg-lime-600 text-white font-medium">
+              Yes, I’m sure
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 </div>
 
-<style>
-.profile-img-preview {
-    aspect-ratio: 1;
-    max-width: 200px;
-    overflow: hidden;
-}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("editProfileForm");
+  const toast = document.getElementById("confirmToast");
+  const btnCancel = document.getElementById("cancelToast");
+  const btnYes = document.getElementById("confirmToastYes");
 
-.profile-img-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    toast.classList.remove("hidden");
+  });
 
-.placeholder-img {
-    width: 100%;
-    height: 100%;
-    background-color: #f8f9fa;
-}
-</style>
+  btnCancel.addEventListener("click", () => {
+    toast.classList.add("hidden");
+  });
+
+  btnYes.addEventListener("click", async () => {
+    toast.classList.add("hidden");
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("{% url 'event_organizer:edit_profile' %}", {
+        method: "POST",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showToast("Profile updated successfully!", true);
+        setTimeout(() => {
+          window.location.href = "{% url 'event_organizer:profile' %}";
+        }, 1000);
+      } else {
+        showToast(data.message || "Failed to update profile.", false);
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("An error occurred. Please try again.", false);
+    }
+  });
+
+  // Function: Small toast notification (top right)
+  function showToast(message, success = true) {
+    const toast = document.createElement("div");
+    toast.className =
+      "fixed top-20 right-5 px-4 py-2 rounded-lg shadow-lg text-white text-sm z-50 transition-opacity duration-300 " +
+      (success ? "bg-green-500" : "bg-red-500");
+
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Animasi fade-in/out biar smooth
+    toast.style.opacity = 0;
+    setTimeout(() => (toast.style.opacity = 1), 50);
+    setTimeout(() => {
+      toast.style.opacity = 0;
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+});
+</script>
+
+
+{% include 'footer.html' %}
 {% endblock %}

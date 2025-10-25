@@ -1,81 +1,87 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block meta %}
+<title>{{ user.username }} - Spot Runner</title>
+{% endblock meta %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="card-title mb-0">Your Profile</h2>
-                        <span class="badge bg-primary">Event Organizer</span>
-                    </div>
 
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="profile-img-container">
-                                {% if organizer.profile_picture %}
-                                    <img src="{{ organizer.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded">
-                                {% else %}
-                                    <div class="placeholder-img rounded d-flex align-items-center justify-content-center bg-light">
-                                        <i class="fas fa-user fa-3x text-secondary"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="profile-info">
-                                <div class="mb-3">
-                                    <label class="text-muted">Username</label>
-                                    <p class="lead mb-1">{{ user.username }}</p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="text-muted">Base Location</label>
-                                    <p class="lead mb-1">{{ organizer.base_location|default:"Not set" }}</p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="text-muted">Joined</label>
-                                    <p class="lead mb-1">{{ user.date_joined|date:"d M Y" }}</p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="text-muted">Last Login</label>
-                                    <p class="lead mb-1">{{ user.last_login|date:"H:i A, d M Y" }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div class="max-w-4xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
+    <!-- Profile Section -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold text-gray-900">Your Profile</h1>
+                <span class="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-full">Event Organizer</span>
+            </div>
+            <div id="lastLogin" class="text-sm text-gray-500"></div>
+        </div>
 
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{% url 'event_organizer:change_password' %}" class="btn btn-secondary">
-                            Change Password
-                        </a>
-                        <a href="{% url 'event_organizer:edit_profile' %}" class="btn btn-primary">
-                            Edit Profile
-                        </a>
-                    </div>
-                </div>
+        <div class="space-y-6">
+            <!-- Profile Photo -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
+                {% if organizer.profile_picture %}
+                    <img src="{{ organizer.profile_picture }}" class="w-32 h-32 rounded-xl object-cover shadow">
+                {% else %}
+                    <p class="text-gray-400">No profile photo uploaded</p>
+                {% endif %}
+            </div>
+            
+            <!-- Username -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" value="{{ user.username }}" disabled
+                       class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
+
+            <!-- Base Location -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Base Location</label>
+                <input type="text" value="{{ organizer.get_base_location_display|default:'Not set' }}" disabled
+                       class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value="********" disabled
+                       class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
+                <span class="text-gray-500">Forgot your password?</span>
+                <a href="{% url 'event_organizer:change_password' %}" class="text-blue-600 text-sm hover:text-blue-700">
+                    Change password
+                </a>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-4 mt-6">
+                <a href="{% url 'main:logout' %}">
+                    <button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                        Log out
+                    </button>
+                </a>
+                <a href="{% url 'event_organizer:edit_profile' %}">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Edit Profile
+                    </button>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-.profile-img-container {
-    aspect-ratio: 1;
-    overflow: hidden;
-}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    {% if user.last_login %}
+        const lastLogin = new Date("{{ user.last_login|date:'c' }}");
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('lastLogin').innerText = `Last login: ${lastLogin.toLocaleDateString('en-US', options)}`;
+    {% else %}
+        document.getElementById('lastLogin').innerText = 'Last login: Never';
+    {% endif %}
+});
+</script>
 
-.profile-img-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.placeholder-img {
-    width: 100%;
-    height: 100%;
-    background-color: #f8f9fa;
-}
-</style>
-{% endblock %}
+{% include 'footer.html' %}
+{% endblock content %}

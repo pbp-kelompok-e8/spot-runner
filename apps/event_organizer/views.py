@@ -1,80 +1,111 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from django.http import HttpResponse
 from django.db.models import Avg, Count
-from .models import EventOrganizer
 from apps.event.models import Event
+from apps.main.models import User
+from .models import EventOrganizer
 from apps.review.models import Review
+from django.http import JsonResponse
 
-# Create your views here.
+
 @login_required
-def index(request):
-    try:
-        organizer = request.user.event_organizer_profile
-    except EventOrganizer.DoesNotExist:
-        messages.error(request, "You don't have an event organizer profile")
-        return redirect('home')
-    
-    # Get events for this organizer
-    events = Event.objects.filter(organizer=organizer).order_by('-date')
-    
-    # Calculate statistics
+def dashboard_view(request):
+    if request.user.role != 'event_organizer':
+        messages.error(request, "Access denied. Only Event Organizers can access this page.")
+        return redirect('main:show_main')
+
+    organizer, _ = EventOrganizer.objects.get_or_create(
+        user=request.user,
+        defaults={'base_location': ''}
+    )
+
+    events = Event.objects.filter(user_eo=organizer).order_by('-event_date')
     total_events = events.count()
-    reviews = Review.objects.filter(organizer=organizer)
-    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
-    total_reviews = reviews.count()
-    
+
+    # Grouping Status
+    ongoing_events = events.filter(event_status='on_going')
+    finished_events = events.filter(event_status='finished')
+    coming_soon_events = events.filter(event_status='coming_soon')
+
+    stats = Review.objects.filter(event__user_eo=organizer).aggregate(
+        avg=Avg('rating'),
+        count=Count('rating')
+    )
+
+    avg_rating = round(stats['avg'] or 0, 2)
+    review_count = stats['count'] or 0
+
     context = {
         'organizer': organizer,
         'events': events,
+        'ongoing_events': ongoing_events,
+        'finished_events': finished_events,
+        'coming_soon_events': coming_soon_events,
         'total_events': total_events,
-        'avg_rating': avg_rating,
-        'total_reviews': total_reviews,
+        'avg_rating': avg_rating,     
+        'review_count': review_count, 
     }
     return render(request, 'event_organizer/dashboard.html', context)
 
+
 @login_required
 def profile_view(request):
+    """Profile page for Event Organizer"""
+    if request.user.role != 'event_organizer':
+        messages.error(request, "Access denied. Only Event Organizers can access this page.")
+        return redirect('main:show_main')
+
     try:
         organizer = request.user.event_organizer_profile
     except EventOrganizer.DoesNotExist:
-        # Handle case where user is not an event organizer
-        messages.error(request, "You don't have an event organizer profile")
-        return redirect('home')  # or wherever you want to redirect
-    
+        messages.error(request, "You don't have an event organizer profile.")
+        return redirect('main:show_main')
+
     context = {
         'organizer': organizer,
         'user': request.user,
+        'joined_date': organizer.created_at.strftime('%d %b %Y') if organizer.created_at else '-',
+        'last_login': request.user.last_login.strftime('%I:%M %p, %d %b %Y') if request.user.last_login else 'Never',
     }
     return render(request, 'event_organizer/profile.html', context)
 
+
 @login_required
 def edit_profile(request):
+    """Edit Event Organizer Profile"""
+
     try:
         organizer = request.user.event_organizer_profile
     except EventOrganizer.DoesNotExist:
-        messages.error(request, "You don't have an event organizer profile")
-        return redirect('home')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': "You don't have an event organizer profile."})
+        messages.error(request, "You don't have an event organizer profile.")
+        return redirect('event_organizer:profile')
 
     if request.method == 'POST':
-        # Handle profile picture update
-        if request.FILES.get('profile_picture'):
-            organizer.profile_picture = request.FILES['profile_picture']
-        
-        # Update base location
-        organizer.base_location = request.POST.get('base_location', '')
-        
-        # Update username if changed
         new_username = request.POST.get('username')
+        base_location = request.POST.get('base_location', '')
+        image_url = request.POST.get('profile_picture', '')  
+
+        # Update username
         if new_username and new_username != request.user.username:
             request.user.username = new_username
             request.user.save()
-        
+
+        # Update EO fields
+        organizer.base_location = base_location
+        organizer.profile_picture = image_url
         organizer.save()
-        messages.success(request, 'Profile updated successfully!')
+
+        # Jika request AJAX → kembalikan JSON
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': "Profile updated successfully!"})
+
+        # Jika bukan AJAX → redirect biasa
+        messages.success(request, "Profile updated successfully!")
         return redirect('event_organizer:profile')
 
     context = {
@@ -83,19 +114,35 @@ def edit_profile(request):
     }
     return render(request, 'event_organizer/edit_profile.html', context)
 
+
+
 @login_required
 def change_password(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = PasswordChangeForm(request.user, request.POST)
+
+        # Kalau request dari fetch (AJAX)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({
+                    "success": False,
+                    "message": list(form.errors.values())[0][0]  # Ambil error pertama
+                })
+
+        # Kalau request normal (tanpa fetch)
         if form.is_valid():
             user = form.save()
-            # Keep the user logged in after password change
             update_session_auth_hash(request, user)
-            messages.success(request, 'Your password was successfully updated!')
+            messages.success(request, "Your password has been updated successfully!")
             return redirect('event_organizer:profile')
         else:
-            messages.error(request, 'Please correct the error below.')
+            messages.error(request, "Please correct the errors below.")
+
     else:
         form = PasswordChangeForm(request.user)
-    
-    return render(request, 'event_organizer/change_password.html', {'form': form})
+
+    return render(request, "event_organizer/change_password.html", {"form": form})

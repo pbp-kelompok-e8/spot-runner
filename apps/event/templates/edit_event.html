@@ -15,11 +15,11 @@
                 &lt; Back
             </a>
         </div>
-
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
         <div class="bg-white p-6 sm:p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
             <form id="create-event-form" novalidate>
                 {% csrf_token %}
-                
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
                 <div class="text-center mb-1">
                     <h1 class="text-2xl font-semibold text-gray-900">Edit Your Event</h1>
                 </div>
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(event) {
         event.preventDefault();
         submitButton.disabled = true;
-        submitButton.textContent = 'Creating...';
+        submitButton.textContent = 'Edting...';
         errorContainer.style.display = 'none';
         errorList.innerHTML = '';
         document.querySelectorAll('[id^="error-"]').forEach(el => {

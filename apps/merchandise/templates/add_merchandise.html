@@ -1,12 +1,24 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{% comment %} # test {% endcomment %}
 {% block meta %}
 <title>{{ title|default:"Add New Product" }} - Merchandise</title>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar.html' %}
+
+<!-- Toast Messages -->
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags == 'success' %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          showToast('toast-success', '{{ message }}');
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
 
 <body class="bg-gray-50 text-gray-800 mt-16">
   <div class="max-w-4xl mx-auto px-6 py-10">
@@ -20,7 +32,6 @@
           Back to Merchandise
         </a>
       </div>
-      <h1 class="text-3xl font-bold text-gray-900">{{ title|default:"Add New Product" }}</h1>
     </div>
 
     <!-- Form -->
@@ -29,7 +40,10 @@
       
       <!-- Basic Product Information -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-6">Product Information</h2>
+        <div class="grid grid-row gap-2 text-center">
+          <h1 class="text-2xl font-bold text-gray-900">Create New Merchandise</h1>
+          <h2 class="text-m text-gray-500 mb-6">Launch new merchandise for your event</h2>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2">

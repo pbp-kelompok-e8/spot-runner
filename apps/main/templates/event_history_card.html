@@ -1,0 +1,100 @@
+<!-- Event Card -->
+<div class="
+    rounded-lg p-6 relative border
+    {% if event.status == 'on_going' %} bg-blue-50 border-blue-200
+    {% elif event.status == 'finished' %} bg-green-50 border-green-200
+    {% elif event.status == 'canceled' %} bg-red-50 border-red-200
+    {% else %} bg-gray-50 border-gray-200
+    {% endif %}
+">
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-4">
+        <div>
+            <h3 class="font-semibold text-gray-900">{{ event.name }}</h3>
+            <p class="text-gray-600">{{ event.location }}</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Status badge -->
+            {% if event.status == 'on_going' %}
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">On Going</span>
+            {% elif event.status == 'finished' %}
+                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                    Finished
+                    {% if event.review and event.review.rating %}
+                        ({{ event.review.rating }})
+                    {% endif %}
+                </span>
+            {% elif event.status == 'canceled' %}
+                <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">Canceled</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="grid grid-cols-3 gap-4 mb-4">
+        <!-- Date -->
+        <div>
+            <div class="flex items-center gap-2 text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="text-sm">Date</span>
+            </div>
+            <p class="text-gray-900">{{ event.date|date:"d M Y" }}</p>
+        </div>
+
+        <!-- Location -->
+        <div>
+            <div class="flex items-center gap-2 text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span class="text-sm">Location</span>
+            </div>
+            <p class="text-gray-900">{{ event.location }}</p>
+        </div>
+
+        <!-- Type -->
+        <div>
+            <div class="flex items-center gap-2 text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                <span class="text-sm">Type</span>
+            </div>
+            <p class="text-gray-900">{{ event.type }}</p>
+        </div>
+    </div>
+
+    <!-- Participant ID -->
+    <div>
+        <div class="flex items-center gap-2 text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+            </svg>
+            <span class="text-sm">Participant ID</span>
+        </div>
+        <p class="text-gray-900">DFR-{{ event.id }}</p>
+    </div>
+
+    <!-- Action Button -->
+    {% if event.status == 'on_going' %}
+        <button class="absolute bottom-6 right-6 text-red-600 hover:text-red-700 text-sm font-medium">
+            Cancel Booking
+        </button>
+    {% elif event.status == 'finished' and not event.review %}
+        <button class="absolute bottom-6 right-6 text-green-700 hover:text-green-800 text-sm font-medium flex items-center gap-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+            Rate this event
+        </button>
+    {% endif %}
+</div>

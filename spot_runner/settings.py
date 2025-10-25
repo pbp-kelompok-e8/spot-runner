@@ -32,6 +32,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "william-jonnatan-spotrunner.pbp.cs.ui.ac.id"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://william-jonnatan-spotrunner.pbp.cs.ui.ac.id"
+]
+
 
 # Application definition
 
@@ -145,6 +149,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
+# Authentication settings
+LOGIN_URL = 'main:login'  # URL name where users will be redirected to log in
+LOGIN_REDIRECT_URL = 'main:show_main'  # URL name where users will be redirected after login
+LOGOUT_REDIRECT_URL = 'main:show_main'  # URL name where users will be redirected after logout
 
 STATIC_URL = '/static/'
 if DEBUG:

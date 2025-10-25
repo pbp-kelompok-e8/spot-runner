@@ -26,7 +26,9 @@ class Review(models.Model):
     event_organizer = models.ForeignKey(
         EventOrganizer,
         on_delete=models.CASCADE,
-        related_name='received_reviews'
+        related_name='received_reviews',
+        null=True,
+        blank=True
     )
 
     # Rating dan konten review

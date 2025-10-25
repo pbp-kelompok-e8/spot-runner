@@ -2,24 +2,25 @@
 {% load static %}
 
 {% block meta %}
-<title>Merchandise</title>
+<title>Spot Runner - Home</title>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar.html' %}
 
-<main class="min-h-screen bg-gray-50" style="/* fallback kalau navbar fixed set --nav-h di navbar */ --nav-h:64px;">
-  {# jika navbar fixed, gunakan pt-[var(--nav-h)] agar content terdorong ke bawah #}
+<main class="min-h-screen bg-gray-50">
   <div class="pt-[var(--nav-h)] md:pt-[var(--nav-h)]">
+
+    {% comment %} tambahin sesuatu test lalal {% endcomment %}
+
     <!-- HERO -->
     <section class="relative">
       <!-- hero wrapper: responsive height (clamp => min 340px, ideal 60vh, max 820px) -->
       <div class="relative w-full h-[clamp(340px,60vh,820px)] overflow-hidden">
         <!-- background image: selalu full-width & responsive.
-             object-position disesuaikan per breakpoint agar cropping bagus (fokus ke kanan). -->
+            object-position disesuaikan per breakpoint agar cropping bagus (fokus ke kanan). -->
         <img src="{% static 'images/banner-hero.png' %}"
-             alt="Banner hero"
-             class="absolute inset-0 w-full h-full object-cover
+            alt="Banner hero"
+            class="absolute inset-0 w-full h-full object-cover
                     object-[85%_50%] sm:object-[75%_50%] md:object-[65%_50%] lg:object-[55%_50%]" />
 
         <!-- overlay untuk kontras teks -->
@@ -36,7 +37,7 @@
 
             <div class="flex flex-wrap gap-3 pt-4">
               <a href="#events"
-                 class="inline-flex items-center gap-2 px-5 py-3 bg-lime-400 hover:bg-lime-500 text-black rounded-full shadow-md font-medium transition">
+                class="inline-flex items-center gap-2 px-5 py-3 bg-lime-400 hover:bg-lime-500 text-black rounded-full shadow-md font-medium transition">
                 Explore Now
               </a>
             </div>
@@ -49,79 +50,75 @@
     <section id="events" class="max-w-7xl mx-auto px-6 md:px-8 lg:px-12 mt-10 md:mt-16">
       <h2 class="text-2xl md:text-3xl font-bold text-slate-800 text-center mb-6">Discover Marathon Events</h2>
       <div class="bg-white rounded-xl shadow-sm p-5 ">
-        <!-- Search + Filters (tambahan spacing) -->
+        <!-- Search + Filters -->
         <div class="overflow-x-auto">
-            <!-- flex-nowrap supaya semua item paksa 1 baris -->
             <div class="flex gap-3 items-center px-2 flex-nowrap">
-                <button class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full bg-blue-700 text-white border border-blue-700 border-[2px] font-semibold text-sm">
-                All
-                </button>
+                <!-- All Events -->
+                <a href="{% url 'main:show_main' %}" 
+                   class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full border border-blue-700 border-[2px] font-semibold text-sm transition-colors
+                          {% if not current_category and not current_location and not current_status %}bg-blue-700 text-white{% else %}bg-white text-blue-700 hover:bg-blue-50{% endif %}">
+                   All
+                </a>
 
-                <button class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full bg-white text-blue-700 border border-blue-700 border-[2px] font-semibold text-sm">
-                Near me
-                </button>
+                <!-- Fun Run -->
+                <a href="{% url 'main:show_main' %}?category=fun_run" 
+                   class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full border border-blue-700 border-[2px] font-semibold text-sm transition-colors
+                          {% if current_category == 'fun_run' %}bg-blue-700 text-white{% else %}bg-white text-blue-700 hover:bg-blue-50{% endif %}">
+                   Fun Run (3K)
+                </a>
 
-                <button class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full bg-white text-blue-700 border border-blue-700 border-[2px] font-semibold text-sm">
-                Fun Run (3K)
-                </button>
+                <!-- 5K Race -->
+                <a href="{% url 'main:show_main' %}?category=5k" 
+                   class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full border border-blue-700 border-[2px] font-semibold text-sm transition-colors
+                          {% if current_category == '5k' %}bg-blue-700 text-white{% else %}bg-white text-blue-700 hover:bg-blue-50{% endif %}">
+                   5K Race
+                </a>
 
-                <button class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full bg-white text-blue-700 border border-blue-700 border-[2px] font-semibold text-sm">
-                5K Race
-                </button>
+                <!-- 10K Race -->
+                <a href="{% url 'main:show_main' %}?category=10k" 
+                   class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full border border-blue-700 border-[2px] font-semibold text-sm transition-colors
+                          {% if current_category == '10k' %}bg-blue-700 text-white{% else %}bg-white text-blue-700 hover:bg-blue-50{% endif %}">
+                   10K Race
+                </a>
 
-                <button class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full bg-white text-blue-700 border border-blue-700 border-[2px] font-semibold text-sm">
-                10K Race
-                </button>
+                <!-- Half Marathon -->
+                <a href="{% url 'main:show_main' %}?category=half_marathon" 
+                   class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full border border-blue-700 border-[2px] font-semibold text-sm transition-colors
+                          {% if current_category == 'half_marathon' %}bg-blue-700 text-white{% else %}bg-white text-blue-700 hover:bg-blue-50{% endif %}">
+                   Half Marathon (21K)
+                </a>
 
-                <button class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full bg-white text-blue-700 border border-blue-700 border-[2px] font-semibold text-sm">
-                Half Marathon (21K)
-                </button>
-
-                <button class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full bg-white text-blue-700 border border-blue-700 border-[2px] font-semibold text-sm">
-                Full Marathon (42K)
-                </button>
+                <!-- Full Marathon -->
+                <a href="{% url 'main:show_main' %}?category=full_marathon" 
+                   class="flex-shrink-0 whitespace-nowrap px-4 py-2 rounded-full border border-blue-700 border-[2px] font-semibold text-sm transition-colors
+                          {% if current_category == 'full_marathon' %}bg-blue-700 text-white{% else %}bg-white text-blue-700 hover:bg-blue-50{% endif %}">
+                   Full Marathon (42K)
+                </a>
             </div>
         </div>
 
       </div>
 
-      <!-- Event Cards Grid: beri margin-top yang nyaman -->
-      <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- contoh card -->
-        <article class="bg-white rounded-xl shadow overflow-hidden">
-          <div class="h-44 bg-gray-200">
-            <img src="{% static 'images/event-sample-1.jpg' %}" alt="event" class="w-full h-full object-cover" />
+      <!-- Event Cards Grid -->
+      <div class="mt-8">
+        {% if events %}
+          <div class="event-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for event in events %}
+              {% include 'card_event.html' with event=event %}
+            {% endfor %}
           </div>
-          <div class="p-4">
-            <div class="flex items-start justify-between">
-              <h3 class="font-semibold text-lg text-slate-800">City Run 2025</h3>
-              <span class="text-sm text-amber-600 bg-amber-100 px-2 py-1 rounded-full">Top Run</span>
+        {% else %}
+          <!-- No events found -->
+          <div class="text-center py-12">
+            <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <svg class="w-12 h-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
             </div>
-            <p class="text-sm text-slate-500 mt-2">10K run through the city with live music and refreshment stations.</p>
-            <div class="mt-4 flex items-center justify-between">
-              <div class="text-sm text-slate-700 font-medium">Date: 28 Sep</div>
-              <a href="#" class="text-emerald-600 font-semibold">View Details →</a>
-            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No events found</h3>
+            <p class="text-gray-500">Try adjusting your filters or check back later for new events.</p>
           </div>
-        </article>
-
-        <!-- duplicate sample card -->
-        <article class="bg-white rounded-xl shadow overflow-hidden">
-          <div class="h-44 bg-gray-200">
-            <img src="{% static 'images/event-sample-2.jpg' %}" alt="event" class="w-full h-full object-cover" />
-          </div>
-          <div class="p-4">
-            <div class="flex items-start justify-between">
-              <h3 class="font-semibold text-lg text-slate-800">Sunset Marathon</h3>
-              <span class="text-sm text-amber-600 bg-amber-100 px-2 py-1 rounded-full">Top Run</span>
-            </div>
-            <p class="text-sm text-slate-500 mt-2">An evening marathon along the coast — perfect for sunset lovers.</p>
-            <div class="mt-4 flex items-center justify-between">
-              <div class="text-sm text-slate-700 font-medium">Date: 12 Oct</div>
-              <a href="#" class="text-emerald-600 font-semibold">View Details →</a>
-            </div>
-          </div>
-        </article>
+        {% endif %}
       </div>
     </section>
 
