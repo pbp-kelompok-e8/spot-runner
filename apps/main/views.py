@@ -14,7 +14,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 
 # Create your views here.
-# test
+
 def show_main(request):
     """
     View untuk menampilkan halaman utama dengan daftar event.

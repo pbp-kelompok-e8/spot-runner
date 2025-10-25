@@ -43,7 +43,6 @@ class Event(models.Model):
     image3 = models.URLField(blank=True, null=True)
     event_date = models.DateTimeField(null=True, blank=True) 
     regist_deadline = models.DateTimeField(null=True, blank=True) 
-    distance = models.PositiveIntegerField(default=0)
     contact = models.CharField(max_length=20, null=True)  
     capacity = models.PositiveIntegerField(default=0)
     total_participans = models.PositiveIntegerField(default=0)

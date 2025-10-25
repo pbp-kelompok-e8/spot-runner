@@ -7,8 +7,6 @@ from apps.event.views import create_event
 
 app_name = 'event_organizer'
 
-app_name = 'event_organizer'
-
 urlpatterns = [
     path('', show_main, name='show_main'),
 

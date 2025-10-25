@@ -2,7 +2,7 @@ from django.urls import path
 from apps.main.views import register, show_main, login_user, show_user, logout_user, edit_profile_runner, cancel_event, participate_in_event
 
 app_name = "main"
-# test
+
 urlpatterns = [
     path('', show_main, name='show_main'),
     path('register/', register, name='register'),
