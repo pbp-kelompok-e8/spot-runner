@@ -20,7 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('', include('apps.main.urls')),  # Routing ke app main
     path('admin/', admin.site.urls),
-    path('', include('apps.main.urls')),
     path('event/', include('apps.event.urls')),  # Routing ke app event
     path('event-organizer/', include('apps.event_organizer.urls')),  # Routing ke app event_organizer
     path('merchandise/', include('apps.merchandise.urls')),  # Routing ke app merchandise
