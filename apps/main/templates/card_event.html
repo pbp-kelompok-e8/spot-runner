@@ -25,9 +25,6 @@
   <!-- CONTENT -->
   <div class="p-5 flex-1 flex flex-col">
     <div class="flex items-start justify-between gap-4">
-      <h3 class="text-lg md:text-xl font-semibold text-slate-800 leading-tight">
-        <a href="{% url 'event:show_event' event.id %}" class="hover:underline">{{ event.title|default:event.name }}</a>
-      </h3>
 
       <!-- ACTION BUTTONS (only for owner) -->
     {% if request.user.is_authenticated %}
