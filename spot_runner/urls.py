@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', include('apps.main.urls')),  # Routing ke app main
@@ -25,3 +27,7 @@ urlpatterns = [
     path('merchandise/', include('apps.merchandise.urls')),  # Routing ke app merchandise
     path('review/', include('apps.review.urls')),  # Routing ke app review
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
