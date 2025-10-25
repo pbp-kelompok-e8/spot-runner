@@ -3,6 +3,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from apps.main.models import User, Attendance, Runner
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from apps.event.models import Event
 from apps.review.models import Review
 from django.http import JsonResponse
@@ -230,3 +232,37 @@ def participate_in_event(request, username, id):
 
     return redirect('main:show_user', username=username)
 
+@login_required
+def change_password(request,username):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+
+        # Kalau request dari fetch (AJAX)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({
+                    "success": False,
+                    "message": list(form.errors.values())[0][0]  # Ambil error pertama
+                })
+
+        # Kalau request normal (tanpa fetch)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Your password has been updated successfully!")
+            return redirect('main:logout')
+        else:
+            messages.error(request, "Please correct the errors below.")
+
+    else:
+        form = PasswordChangeForm(request.user)
+        context = {
+            'form':form,
+            'user': request.user
+        }
+
+    return render(request, "change_password.html", context)
