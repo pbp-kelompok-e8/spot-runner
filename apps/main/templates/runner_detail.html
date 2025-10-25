@@ -7,13 +7,13 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar.html' %}{% include 'confirmation_modal.html' %}{% include 'rate_review_modal.html' %}
+{% include 'navbar.html' %}{% include 'confirmation_modal.html' %}{% include 'rate_review_modal.html' %} {% include 'edit_profile_modal.html' %}
 
 <div class="max-w-4xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
 	<div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
 		<div class="flex justify-between items-center mb-6">
 			<div class="flex items-center gap-3">
-				<h1 class="text-2xl font-bold text-gray-900">Your Profile</h1>
+				<h1 id="display-username-header" class="text-2xl font-bold text-gray-900">Your Profile</h1>
 				<span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
 			</div>
 			<div id="lastLogin" class="text-sm text-gray-500">
@@ -22,15 +22,15 @@
 		</div>
 
 		<div class="space-y-6">
-			<div>
+			<div >
 				<label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-				<input type="text" value="{{ user.username }}" disabled
+				<input type="text" id="display-username-input" value="{{ user.username }}" disabled
 					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
 			</div>
 
 			<div id="location">
 				<label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-				<input type="text" value="{{ user.runner.base_location|default:'Not set' }}" disabled
+				<input type="text" id="display-location-input" value="{{ user.runner.base_location|default:'Not set' }}" disabled
 					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
 			</div>
 
@@ -40,7 +40,7 @@
 					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
 				<div class="flex items-center text-sm">
 					<span class="text-gray-500">Forgot your password?</span>
-					<a href="{% url 'main:change_password' user.username %}" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
+					<a id="change-password-link" href="{% url 'main:change_password' user.username %}" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
 				</div>
 			</div>
 
@@ -50,11 +50,10 @@
 					Log out
 				</button>
 				</a>
-				<a href="{% url 'main:edit_profile' user.username %}">
-					<button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-						Edit Profile
-					</button>
-				</a>
+				<button type="button" onclick="openEditModal()"
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+					Edit Profile
+				</button>
 			</div>
 		</div>
 	</div>
@@ -225,6 +224,149 @@
 		
 		cancelModal.classList.remove('hidden');
 	}
+
+	const editModal = document.getElementById('edit-profile-modal');
+	const editModalContent = document.getElementById('edit-modal-content');
+	const editForm = document.getElementById('edit-profile-form');
+	const editError = document.getElementById('edit-profile-error');
+	const saveButton = document.getElementById('edit-profile-save-button');
+	const saveButtonText = document.getElementById('save-button-text');
+	const saveSpinner = document.getElementById('save-spinner');
+
+	const displayUsernameHeader = document.getElementById('display-username-header');
+	const displayUsernameInput = document.getElementById('display-username-input');
+	const displayLocationInput = document.getElementById('display-location-input');
+	const changePasswordLink = document.getElementById('change-password-link');
+
+
+	function openEditModal() {
+		if (!editModal) return;
+		
+		// 1. Reset form ke nilai saat ini (jika user edit lalu cancel)
+		document.getElementById('edit-username').value = displayUsernameInput.value;
+		// Cari display text dari location input
+		const currentLocDisplay = displayLocationInput.value; 
+		const locationSelect = document.getElementById('edit-location');
+		// Loop <option> untuk menemukan value yang cocok dengan display text
+		for (let i = 0; i < locationSelect.options.length; i++) {
+			if (locationSelect.options[i].text === currentLocDisplay) {
+				locationSelect.value = locationSelect.options[i].value;
+				break;
+			}
+		}
+
+		// 2. Tampilkan modal
+		editModal.classList.remove('hidden');
+		setTimeout(() => { // Untuk animasi
+			editModalContent.classList.remove('scale-95', 'opacity-0');
+			editModalContent.classList.add('scale-100', 'opacity-100');
+		}, 10);
+	}
+
+	function closeEditModal() {
+		if (!editModal) return;
+
+		editError.classList.add('hidden'); // Sembunyikan error
+		editError.textContent = '';
+		
+		editModalContent.classList.add('scale-95', 'opacity-0');
+		editModalContent.classList.remove('scale-100', 'opacity-100');
+		
+		setTimeout(() => { // Tunggu animasi selesai
+			editModal.classList.add('hidden');
+		}, 300); // Sesuaikan dengan durasi transisi
+	}
+
+
+	editForm.addEventListener('submit', async (e) => {
+		e.preventDefault(); // Hentikan submit form standar
+
+		// Tampilkan loading
+		saveButton.disabled = true;
+		saveButtonText.classList.add('hidden');
+		saveSpinner.classList.remove('hidden');
+		editError.classList.add('hidden');
+
+		const formData = new FormData(editForm);
+		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+		try {
+			const response = await fetch(editForm.action, {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-CSRFToken': csrfToken,
+					'X-Requested-With': 'XMLHttpRequest' // Opsional, tapi bagus
+				}
+			});
+
+			const data = await response.json();
+
+			if (response.ok && data.success) {
+				// 1. Update teks di halaman
+				displayUsernameHeader.textContent = `${data.username}'s Profile`;
+				displayUsernameInput.value = data.username;
+				displayLocationInput.value = data.base_location;
+
+				// 2. Update URL (PENTING!)
+				editForm.action = data.new_urls.edit_profile;
+				changePasswordLink.href = data.new_urls.change_password;
+
+				// 3. Update URL untuk semua tombol "Cancel Booking"
+				const newCancelUrls = data.new_urls.cancel_event_urls;
+				for (const eventId in newCancelUrls) {
+					const cancelBtn = document.getElementById(`cancel-btn-${eventId}`);
+					if (cancelBtn) {
+						// Ambil nama event dari onclick yang lama
+						const oldOnClick = cancelBtn.getAttribute('onclick');
+						const eventName = oldOnClick.split(',\'')[1].replace(/'\)$/, ''); // Ambil nama
+						
+						// Set onclick baru
+						const newOnClick = `openCancelModal('${newCancelUrls[eventId]}', '${eventName}')`;
+						cancelBtn.setAttribute('onclick', newOnClick);
+					}
+				}
+				
+				// 4. Tutup modal
+				closeEditModal();
+				
+				// Optional: Tampilkan notifikasi sukses
+				// (Anda bisa pakai library toast atau logic messages Django)
+				
+			} else {
+				// Tampilkan error
+				editError.textContent = data.error || 'An unknown error occurred.';
+				editError.classList.remove('hidden');
+			}
+
+		} catch (error) {
+			editError.textContent = 'A network error occurred. Please try again.';
+			editError.classList.remove('hidden');
+		} finally {
+			// Sembunyikan loading
+			saveButton.disabled = false;
+			saveButtonText.classList.remove('hidden');
+			saveSpinner.classList.add('hidden');
+		}
+	});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	function toggleDropdown(dropdownId) {
 	const dropdown = document.getElementById(dropdownId);

@@ -66,33 +66,31 @@ def show_user(request, username):
     
     review_list = user.runner.reviews.all()
 
-    # Update event statuses based on dates
+    # update semua status event
     for record in attendance_list:
-        event = record.event  # Ambil objek event dari record attendance
+        event = record.event  # ambil objek event dari record attendance
         
-        # Cek jika event_date tidak None
         event_date = event.event_date.date()
         
-        # Logika ini untuk mengubah status EVENT-nya
+        # bandingin
         if event_date < today:
             event.event_status = "finished"
         elif event_date == today:
             event.event_status = "on_going"
         else:
             event.event_status = "coming_soon"
-        event.save() # Simpan perubahan status di OBJEK EVENT
+        event.save() # save perubahan status event
 
-        # Logika TAMBAHAN: Update status REGISTRASI-nya
-        # Jika event-nya sudah selesai DAN status pendaftarannya 
-        # masih 'attending', ubah jadi 'finished'.
+        # fitur extra ga dipake lol
         if event.event_status == "finished" and record.status == 'attending':
             record.status = 'finished'
-            record.save() # Simpan perubahan status di OBJEK ATTENDANCE
+            record.save()
 
     context = {
         'user': user,
-        'attendance_list': attendance_list,  # Use the updated event_list
-        'review_list': review_list
+        'attendance_list': attendance_list, 
+        'review_list': review_list,
+        'location_choices': Runner.LOCATION_CHOICES,
     }
 
     return render(request, "runner_detail.html", context)
@@ -110,40 +108,45 @@ def logout_user(request):
 def edit_profile_runner(request, username):
     user = get_object_or_404(User, username=username)
     if user != request.user or user.role != 'runner':
-        messages.error(request, "You are not authorized to edit this profile.")
-        return redirect('main:show_main')
+        return JsonResponse({"error": "You are not authorized to edit this profile."}, status=403)
 
     if request.method == 'POST':
         try:
-            new_username = request.POST.get('username')
+            new_username = request.POST.get('username').strip()
             base_location = request.POST.get('base_location', '')
 
-            # Update username
-            if new_username and new_username != request.user.username:
+            if not new_username:
+                return JsonResponse({"error": "Username cannot be empty"}, status=400)
+
+            if new_username and new_username != user.username:
                 if User.objects.filter(username=new_username).exists():
                     return JsonResponse({"error": "Username already taken"}, status=400)
-                request.user.username = new_username
-                request.user.save()
+                user.username = new_username
+                user.save()
 
-            # Update fields
             user.runner.base_location = base_location
             user.runner.save()
+            
+            new_urls = {
+                "edit_profile": reverse('main:edit_profile', args=[user.username]),
+                "change_password": reverse('main:change_password', args=[user.username]),
+                "cancel_event_urls": {
+                    record.event.id: reverse('main:cancel_event', args=[user.username, record.event.id])
+                    for record in user.runner.attendance_records.filter(status='attending')
+                }
+            }
 
             return JsonResponse({
                     "success": True,
                     "username": user.username,
                     "base_location": user.runner.get_base_location_display(),
-                    "message": "Profile updated successfully!"
+                    "message": "Profile updated successfully!",
+                    "new_urls": new_urls 
             })
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
-    return JsonResponse({"error": "Invalid request"}, status=400)
-
-    context = {
-        'user': user,
-    }
-    return render(request, 'edit_profile.html', context)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def cancel_event(request, username, id):
     user = get_object_or_404(User, username=username)
@@ -163,7 +166,6 @@ def cancel_event(request, username, id):
                 attendance.status = 'canceled'
                 attendance.save()
                 
-                # Panggil metode decrement dari model Event
                 event.decrement_participans() 
             
             print("You have successfully canceled your attendance for the event.")
@@ -173,7 +175,7 @@ def cancel_event(request, username, id):
             print("You have already canceled this event.")
             messages.warning(request, "You have already canceled this event.")
         
-        else: # Statusnya adalah 'finished'
+        else:
             print("You cannot cancel an event that is already finished.")
             messages.error(request, "You cannot cancel an event that is already finished.")
 
@@ -181,8 +183,6 @@ def cancel_event(request, username, id):
         print("You are not registered for this event.")
         messages.error(request, "You are not registered for this event.")
     
-    # PERUBAHAN UTAMA: 
-    # Tampilkan error yang sebenarnya jika terjadi kegagalan
     except Exception as e:
         print(f"An error occurred while canceling: {str(e)}")
         messages.error(request, f"An error occurred while canceling: {str(e)}")
@@ -199,7 +199,6 @@ def participate_in_event(request, username, id):
     event = get_object_or_404(Event, pk=id)
     runner = user.runner
 
-    # Gunakan transaction agar increment dan pembuatan attendance terjadi bersamaan
     try:
         with transaction.atomic():
             if event.full:
@@ -213,18 +212,15 @@ def participate_in_event(request, username, id):
             )
 
             if created:
-                # Jika baru dibuat, increment partisipan
                 event.increment_participans()
                 messages.success(request, f"You are now registered for {event.name}.")
             else:
-                # Jika sudah ada, mungkin dia mendaftar ulang setelah cancel?
                 if attendance.status == 'canceled':
                     attendance.status = 'attending'
                     attendance.save()
-                    event.increment_participans() # Jangan lupa increment lagi
+                    event.increment_participans() 
                     messages.success(request, f"You have re-registered for {event.name}.")
                 else:
-                    # Jika statusnya 'attending' atau 'finished', berarti sudah terdaftar
                     messages.warning(request, f"You are already registered for {event.name}.")
     
     except Exception as e:
@@ -237,7 +233,6 @@ def change_password(request,username):
     if request.method == "POST":
         form = PasswordChangeForm(request.user, request.POST)
 
-        # Kalau request dari fetch (AJAX)
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             if form.is_valid():
                 user = form.save()
@@ -246,10 +241,9 @@ def change_password(request,username):
             else:
                 return JsonResponse({
                     "success": False,
-                    "message": list(form.errors.values())[0][0]  # Ambil error pertama
+                    "message": list(form.errors.values())[0][0]
                 })
 
-        # Kalau request normal (tanpa fetch)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)

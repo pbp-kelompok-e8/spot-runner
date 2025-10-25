@@ -21,9 +21,6 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('username', 'email')
     ordering = ('username',)
     
-    # Tambahkan inline hanya untuk user dengan role runner
-    inlines = [RunnerInline]
-    
     def get_inlines(self, request, obj=None):
         if obj and obj.role == 'runner':
             return [RunnerInline]
@@ -31,21 +28,26 @@ class CustomUserAdmin(UserAdmin):
     
     def has_runner_profile(self, obj):
         if obj.role == 'runner':
-            return hasattr(obj, 'runner')
+            return Runner.objects.filter(user=obj).exists() 
         return None
     has_runner_profile.short_description = 'Has Runner Profile'
     has_runner_profile.boolean = True
 
 @admin.register(Runner)
 class RunnerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'get_username', 'email', 'base_location', 'coin')
+    list_display = ('user', 'get_username', 'get_email', 'base_location', 'coin')
     list_filter = ('base_location',)
-    search_fields = ('user__username', 'email', 'base_location')
+    
+    search_fields = ('user__username', 'user__email', 'base_location') 
     raw_id_fields = ('user',)
     
     def get_username(self, obj):
         return obj.user.username
     get_username.short_description = 'Username'
+    
+    @admin.display(description='Email', ordering='user__email')
+    def get_email(self, obj):
+        return obj.user.email
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user')

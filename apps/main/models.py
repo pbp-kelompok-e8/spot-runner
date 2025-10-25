@@ -12,6 +12,7 @@ class User(AbstractUser):
         ('runner', 'Runner'),
         ('event_organizer', 'Event Organizer'),
     )
+    email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='runner')
 
 
@@ -75,7 +76,6 @@ class Runner(models.Model):
         ('tangerang', 'Tangerang')
     ]
 
-    email = models.EmailField(unique=True)
     base_location = models.CharField(max_length=50, choices=LOCATION_CHOICES, default='depok')
     coin = models.IntegerField(default=0)
 
