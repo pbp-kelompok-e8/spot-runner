@@ -127,6 +127,9 @@
                 </div>
                 
                 <div class="space-y-2">
+                    <div class="block text-sm font-medium text-gray-700 mb-1">
+                        Event Category
+                    </div>
                     {% for choice in form.event_category %}
                     <div class="flex items-center">
                         {{ choice.tag }} 
@@ -135,6 +138,8 @@
                         </label>
                     </div>
                     {% endfor %}
+                    <div class="space-y-2">
+                    </div>
                 </div>
                 
                 <div class="mb-5">

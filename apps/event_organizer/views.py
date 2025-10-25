@@ -8,6 +8,7 @@ from apps.event.models import Event
 from apps.main.models import User
 from .models import EventOrganizer
 from apps.review.models import Review
+from django.http import JsonResponse
 
 
 @login_required
@@ -79,6 +80,8 @@ def edit_profile(request):
     try:
         organizer = request.user.event_organizer_profile
     except EventOrganizer.DoesNotExist:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': "You don't have an event organizer profile."})
         messages.error(request, "You don't have an event organizer profile.")
         return redirect('event_organizer:profile')
 
@@ -94,9 +97,14 @@ def edit_profile(request):
 
         # Update EO fields
         organizer.base_location = base_location
-        organizer.profile_picture = image_url  #
+        organizer.profile_picture = image_url
         organizer.save()
 
+        # Jika request AJAX → kembalikan JSON
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': "Profile updated successfully!"})
+
+        # Jika bukan AJAX → redirect biasa
         messages.success(request, "Profile updated successfully!")
         return redirect('event_organizer:profile')
 
@@ -110,17 +118,31 @@ def edit_profile(request):
 
 @login_required
 def change_password(request):
-    """Change password page"""
-    if request.method == 'POST':
+    if request.method == "POST":
         form = PasswordChangeForm(request.user, request.POST)
+
+        # Kalau request dari fetch (AJAX)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({
+                    "success": False,
+                    "message": list(form.errors.values())[0][0]  # Ambil error pertama
+                })
+
+        # Kalau request normal (tanpa fetch)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            messages.success(request, 'Your password has been updated successfully!')
+            messages.success(request, "Your password has been updated successfully!")
             return redirect('event_organizer:profile')
         else:
-            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, "Please correct the errors below.")
+
     else:
         form = PasswordChangeForm(request.user)
 
-    return render(request, 'event_organizer/change_password.html', {'form': form})
+    return render(request, "event_organizer/change_password.html", {"form": form})
