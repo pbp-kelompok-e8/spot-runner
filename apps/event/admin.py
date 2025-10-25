@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import EventCategory, Event
-
+# Test
 @admin.register(EventCategory)
 class EventCategoryAdmin(admin.ModelAdmin):
     list_display = ('get_category_display', 'category')

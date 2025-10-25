@@ -7,21 +7,6 @@ class EventCategory(models.Model):
         ('5k', '5K'),
         ('10k', '10K'),
         ('half_marathon', 'Half Marathon'),
-        ('full_marathon', 'Full Marathon'),
-    ]
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES,unique=True)
-    
-    def __str__(self):
-        return self.get_category_display()
-
-import uuid
-
-class EventCategory(models.Model):
-    CATEGORY_CHOICES = [
-        ('fun_run', 'Fun Run'),
-        ('5k', '5K'),
-        ('10k', '10K'),
-        ('half_marathon', 'Half Marathon'),
         ('full_marathon', 'Full Marathon')
     ]
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES,unique=True)
@@ -41,12 +26,6 @@ class Event(models.Model):
         ('bogor', 'Bogor'),
         ('depok', 'Depok'),
         ('tangerang', 'Tangerang')
-    ]
-
-    status = [
-        ('coming_soon', 'Coming Soon'),
-        ('on_going', 'On Going'),
-        ('finished', 'Finished'),
     ]
 
     status = [
@@ -85,8 +64,15 @@ class Event(models.Model):
         self.save()
         
     def decrement_participans(self):
-        if self.total_participans <= self.capacity:
+    # PERBAIKAN: Hanya kurangi jika jumlahnya lebih besar dari 0
+        if self.total_participans > 0:
             self.total_participans -= 1
+            
+            # Logika 'full' Anda
             if self.full:
                 self.full = False
+        
+        # else:
+        # Jika sudah 0, jangan lakukan apa-apa
+        
         self.save()

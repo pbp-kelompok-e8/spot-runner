@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User, Runner
-
+# test
 class RunnerInline(admin.StackedInline):
     model = Runner
     can_delete = False

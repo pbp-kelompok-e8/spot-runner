@@ -17,7 +17,7 @@
                 <h1 class="text-2xl font-bold text-gray-900">Your Profile</h1>
                 <span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
             </div>
-            <div id="lastLogin"class="text-sm text-gray-500">
+            <div id="lastLogin" class="text-sm text-gray-500">
                 
             </div>
         </div>
@@ -44,7 +44,7 @@
                     class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
                 <div class="flex items-center text-sm">
                     <span class="text-gray-500">Forgot your password?</span>
-                    <a href="#" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
+                    <a href="{% url 'main:logout' %}" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
                 </div>
             </div>
 
@@ -66,397 +66,180 @@
 
 
     <!-- Event History Section -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
-            <a href="{% url 'main:show_main' %}">
-                <button
-                    class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    <span>Join new event</span>
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                </button>
-            </a>
-        </div>
+    <div class="bg-white rounded-lg shadow-lg p-6">
+            {% if attendance_list %}
+                <div class="space-y-6">
+                    {% for record in attendance_list %}
+                    <div class="bg-white border rounded-lg p-6 relative mb-4
+                        {% if record.status == 'canceled' %}
+                            border-red-200 bg-red-50
+                        {% elif record.status == 'finished' %}
+                            border-green-200 bg-green-50
+                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                            border-blue-200 bg-blue-50
+                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                            border-yellow-200 bg-yellow-50
+                        {% else %}
+                            border-gray-200 bg-gray-50
+                        {% endif %}">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ record.event.name }}</h3>
+                                <p class="text-gray-600">{{ record.event.get_location_display }}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-2">
 
-        <!-- Loading State -->
-        <div id="loading" class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
-        <svg class="animate-spin h-8 w-8 text-orange-400 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-        </svg>
-        <p class="text-gray-600 mt-3">Loading events...</p>
-        </div>
+                                    <span class="px-3 py-1 rounded-full text-sm 
+                                        {% if record.status == 'canceled' %}
+                                            bg-red-100 text-red-800
+                                        {% elif record.status == 'finished' %}
+                                            bg-green-100 text-green-800
+                                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                                            bg-blue-100 text-blue-800
+                                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% else %}
+                                            bg-gray-100 text-gray-800
+                                        {% endif %}">
+                                        {% if record.status == 'canceled' %}
+                                            Canceled
+                                        {% elif record.status == 'finished' %}
+                                            Finished
+                                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                                            On Going
+                                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                                            Coming Soon
+                                        {% else %}
+                                            {{ record.status|title }}
+                                        {% endif %}
+                                    </span>
+                                    
+                                    {% if record.status == 'finished' and record.review %}
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                        <span class="text-gray-600 ml-1">({{ record.review.rating }})</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
 
-        <!-- Error State -->
-        <div id="error" class="hidden"></div>
-
-        <!-- Event Grid -->
-        <div id="grid" class="hidden"></div>
-
-        <!-- Empty State -->
-        <div id="empty" class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4 text-center hidden">
-        <div class="w-32 h-32 mx-auto mb-4">
-            <img src="{% static 'image/no-event-found.png' %}" alt="No event found" class="w-full h-full object-contain">
-        </div>
-
-
-
-
-
-
-    </div>
-
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10 mr-4">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">Your Reviews</h2>
-    
-    <div id="loading-reviews" class="text-center">
-        <svg class="animate-spin h-8 w-8 text-orange-400 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-        </svg>
-        <p class="text-gray-600 mt-3">Loading reviews...</p>
-    </div>
-
-    <div id="error-reviews" class="hidden"></div>
-
-    <div id="grid-reviews" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
-    <div id="empty-reviews" class="text-center hidden">
-        <p class="text-gray-600">You haven't written any reviews yet.</p>
-    </div>
-</div>
-
-</div>
-<script>
-    // ===================================================================
-    // DOM Elements
-    // ===================================================================
-    const loadingSpinner = document.getElementById('loading');
-    const errorMessage = document.getElementById('error');
-    const emptyStateDisplay = document.getElementById('empty');
-    const eventGridContainer = document.getElementById('grid');
-
-    // const loadingReviews = document.getElementById('loading-reviews');
-    // const errorReviews = document.getElementById('error-reviews');
-    // const emptyReviews = document.getElementById('empty-reviews');
-    // const reviewGrid = document.getElementById('grid-reviews');
-
-
-    // ===================================================================
-    // Helper Functions (Display Logic)
-    // ===================================================================
-    function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
-        loadingSpinner.classList.toggle('hidden', !showLoading);
-        errorMessage.classList.toggle('hidden', !showError);
-        emptyStateDisplay.classList.toggle('hidden', !showEmpty);
-        eventGridContainer.classList.toggle('hidden', !showGrid);
-
-        if (showGrid) {
-            eventGridContainer.className = 'grid grid-cols-1 gap-6';
-        }
-    }
-    
-    // function displayReviewSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
-    //     loadingReviews.classList.toggle('hidden', !showLoading);
-    //     errorReviews.classList.toggle('hidden', !showError);
-    //     emptyReviews.classList.toggle('hidden', !showEmpty);
-    //     reviewGrid.classList.toggle('hidden', !showGrid);
-    // }
-
-    // ===================================================================
-    // Helper Functions (Navigation)
-    // ===================================================================
-    function logout() {
-        window.location.href = "{% url 'main:logout' %}";
-    }
-
-    // function editProfile() {
-    //     window.location.href = "{% url 'main:edit_profile' user.username %}";
-    // }
-
-    // ===================================================================
-    // AJAX: Fetch Event History
-    // ===================================================================
-    async function fetchEventData() {
-        try {
-            // Ganti URL ini dengan URL endpoint Anda yang sebenarnya
-            const response = await fetch( "{% url 'main:events_attended' %}" ); 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const events = await response.json();
-
-            if (events.length === 0) {
-                displayPageSection({ showEmpty: true });
-            } else {
-                eventGridContainer.innerHTML = ''; // Hapus kartu lama
-                events.forEach(event => {
-                    const eventCard = buildEventCardElement(event);
-                    eventGridContainer.innerHTML += eventCard;
-                });
-                displayPageSection({ showGrid: true });
-            }
-        } catch (e) {
-            console.error("Failed to fetch events:", e);
-            errorMessage.innerHTML = `<p class="text-red-500 text-center">Failed to load event data.</p>`;
-            displayPageSection({ showError: true });
-        }
-    }
-
-    // ===================================================================
-    // AJAX: Fetch User Reviews
-    // ===================================================================
-    // async function fetchUserReviews() {
-    //     try {
-    //         // Ganti URL ini dengan URL endpoint Anda
-    //         const response = await fetch(`/get_user_reviews/{{ user.username }}/`); 
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP error! status: ${response.status}`);
-    //         }
-    //         const reviews = await response.json();
-
-    //         if (reviews.length === 0) {
-    //             displayReviewSection({ showEmpty: true });
-    //         } else {
-    //             reviewGrid.innerHTML = ''; // Hapus kartu lama
-    //             reviews.forEach(review => {
-    //                 const reviewCard = buildReviewCardElement(review);
-    //                 reviewGrid.innerHTML += reviewCard;
-    //             });
-    //             displayReviewSection({ showGrid: true });
-    //         }
-    //     } catch (e) {
-    //         console.error("Failed to fetch reviews:", e);
-    //         errorReviews.innerHTML = `<p class="text-red-500 text-center">Failed to load review data.</p>`;
-    //         displayReviewSection({ showError: true });
-    //     }
-    // }
-
-    // ===================================================================
-    // KODE UTAMA: Build Event Card (Tugas 1 & 2)
-    // ===================================================================
-    function buildEventCardElement(event) {
-        // Sanitasi semua data
-        const name = DOMPurify.sanitize(event.name);
-        const location = DOMPurify.sanitize(event.location);
-        const type = DOMPurify.sanitize(event.type);
-        const participantId = DOMPurify.sanitize(event.participant_id);
-        const status = DOMPurify.sanitize(event.status); // 'coming_soon', 'finished', 'on_going'
-        const rating = DOMPurify.sanitize(event.rating); // null or float
-        const eventId = DOMPurify.sanitize(event.id);
-        
-        const date = new Date(event.date);
-        const formattedDate = date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-        
-        // URL untuk actions
-        // const cancelUrl = `{% url 'main:cancel_booking' '0000' %}`.replace('0000', eventId);
-        // const reviewUrl = `{% url 'main:rate_event' '0000' %}`.replace('0000', eventId);
-
-        let cardBgColor = 'bg-gray-50';
-        let cardBorderColor = 'border-gray-200';
-        let headerContent = ''; // Untuk badge dan tombol
-
-        // --- Logika Varian Kartu ---
-
-        if (status === 'ongoing') {
-            cardBgColor = 'bg-blue-50';
-            cardBorderColor = 'border-blue-400';
-            headerContent = `
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">On Going</span>
-                <div class="relative inline-block text-left dropdown">
-                    <button type="button" class="text-gray-400 hover:text-gray-600 dropdown-toggle">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.75a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM12 13a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM12 19.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/></svg>
-                    </button>
-                    <div class="dropdown-menu hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                        <div class="py-1">
-                            <a href="#" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100" 
-                            onclick="openCancelModal('${cancelUrl}', '${name}')">
-                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
-                                Cancel Booking
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (status === 'finished') {
-            cardBgColor = 'bg-green-50';
-            cardBorderColor = 'border-green-400';
-            if (rating) {
-                // Sudah dirate
-                headerContent = `
-                    <span class="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                        Finished 
-                        <svg class="w-4 h-4 ml-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                        (${rating})
-                    </span>
-                `;
-            } else {
-                // Belum dirate (Tugas 4)
-                headerContent = `
-                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Finished</span>
-                    <button class="px-4 py-2 bg-yellow-400 text-yellow-900 rounded-md hover:bg-yellow-500 text-sm font-medium flex items-center"
-                            onclick="openRateModal('${reviewUrl}', '${eventId}', '${name}')">
-                        Rate this event
-                        <svg class="w-4 h-4 ml-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    </button>
-                `;
-            }
-        } else if (status === 'canceled') {
-            cardBgColor = 'bg-red-50';
-            cardBorderColor = 'border-red-400';
-            headerContent = `
-                <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">Canceled</span>
-            `;
-        }
-
-        // --- Gabungkan HTML Card ---
-        return `
-            <article class="${cardBgColor} ${cardBorderColor} border rounded-lg p-6 relative flex flex-col h-full shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h3 class="font-semibold text-gray-900">${name}</h3>
-                        <p class="text-gray-600">${location}</p>
-                    </div>
-                    <div class="flex items-center gap-3 flex-shrink-0">
-                        ${headerContent}
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <div class="flex items-center gap-2 text-gray-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            <span class="text-sm">Date</span>
-                        </div>
-                        <p class="text-gray-900">${formattedDate}</p>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2 text-gray-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            <span class="text-sm">Location</span>
-                        </div>
-                        <p class="text-gray-900">${location}</p>
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2 text-gray-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                            <span class="text-sm">Type</span>
-                        </div>
-                        <p class="text-gray-900">${type}</p>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex items-center gap-2 text-gray-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                        <span class="text-sm">Participant ID</span>
-                    </div>
-                    <p class="text-gray-900">${participantId}</p>
-                </div>
-            </article>
-        `;
-    }
-
-    // ===================================================================
-    // KODE UTAMA: Build Review Card (Tugas 5)
-    // ===================================================================
-    function buildReviewCardElement(review) {
-        const title = DOMPurify.sanitize(review.event_name);
-        const participant = DOMPurify.sanitize(review.participant_name);
-        const text = DOMPurify.sanitize(review.text);
-        const rating = DOMPurify.sanitize(review.rating);
-        const reviewId = DOMPurify.sanitize(review.id);
-        
-        const editUrl = `{% url 'main:edit_review' '0000' %}`.replace('0000', reviewId);
-        const deleteUrl = `{% url 'main:delete_review' '0000' %}`.replace('0000', reviewId);
-
-        return `
-            <article class="bg-white rounded-lg shadow p-6 relative border">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <h4 class="font-semibold text-gray-900">${title}</h4>
-                        <p class="text-sm text-gray-600">by ${participant}</p>
-                    </div>
-                    <div class="relative inline-block text-left dropdown">
-                        <button type="button" class="text-gray-400 hover:text-gray-600 dropdown-toggle">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 6.75a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM12 13a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM12 19.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/></svg>
-                        </button>
-                        <div class="dropdown-menu hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                            <div class="py-1">
-                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" 
-                                onclick="openEditReviewModal('${editUrl}', ${rating}, '${text}')">
-                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
-                                    Edit
-                                </a>
-                                <a href="#" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                onclick="openCancelModal('${deleteUrl}', 'this review')">
-                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                                    Delete
-                                </a>
+                                {% if record.status == 'attending' %}
+                                <div class="relative">
+                                    <button class="text-gray-400 hover:text-gray-600" onclick="toggleDropdown('dropdown-{{ record.event.id }}')">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                                        </svg>
+                                    </button>
+                                    <div id="dropdown-{{ record.event.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                                        <button onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
+                                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                            <span class="flex items-center">
+                                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Cancel Booking
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <p class="text-gray-700 text-sm mb-4">${text}</p>
-                
-                <div class="flex items-center gap-1 text-yellow-500">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    <span class="text-gray-900 font-bold text-lg">${rating}</span>
-                    <span class="text-gray-600 text-sm">/ 5.0 rating</span>
-                </div>
-            </article>
-        `;
-    }
 
-    // ===================================================================
-    // KODE UTAMA: Modal Handlers (Tugas 3, 4, 5)
-    // ===================================================================
-    
+                        <div class="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-2 mb-4">
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Date</span>
+                            <p class="text-gray-900">{{ record.event.event_date|date:"d M Y" }}</p>
+
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Location</span>
+                            <p class="text-gray-900">{{ record.event.get_location_display }}</p>
+
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Type</span>
+                            <p class="text-gray-900">
+                                {% for cat in record.event.event_category.all %}
+                                    {{ cat }}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Participant ID</span>
+                            <p class="text-gray-900">{{ record.participant_id }}</p>
+
+                        </div>
+
+                        {% if record.status == 'finished' and not record.review %} <div class="flex justify-end mt-4">
+                            <button
+                                class="bg-[#CDFA5D] text-gray-700 px-4 py-2 rounded-md hover:bg-[#bfe754] flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"></svg>
+                                Rate this event
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <p class="text-gray-600">You haven't joined any events yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+<!-- review disini wak -->
+<script>
+
+
+
     // --- Logika untuk Cancel Modal (Tugas 3) ---
     const cancelModal = document.getElementById('confirmation-modal'); // Asumsi dari 'confirmation_modal.html'
     const cancelModalTitle = document.getElementById('modal-title');
     const cancelModalText = document.getElementById('modal-text');
     const cancelModalConfirmButton = document.getElementById('modal-confirm-button');
 
+    function closeModal() {
+            if (cancelModal) { // Cek dulu apakah elemennya ada
+                cancelModal.classList.add('hidden');
+            }
+        }
+
     function openCancelModal(actionUrl, itemName) {
         cancelModalTitle.textContent = `Are you sure you want to cancel?`;
         cancelModalText.textContent = `You'll lose your spot in ${itemName}.`;
-        
         // Ini adalah form di dalam modal Anda
-        cancelModalConfirmButton.parentElement.action = actionUrl; 
+        cancelModalConfirmButton.form.action = actionUrl; 
         
         cancelModal.classList.remove('hidden');
     }
 
-    // --- Logika untuk Rate Modal (Tugas 4) ---
-    const rateModal = document.getElementById('rate-review-modal'); // Asumsi dari 'rate_review_modal.html'
-    const rateModalForm = document.getElementById('rate-review-form');
-    const rateModalEventName = document.getElementById('modal-event-name');
+    function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(d => {
+        if (d.id !== dropdownId) {
+            d.classList.add('hidden');
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('hidden');
+}
 
-    function openRateModal(actionUrl, eventId, eventName) {
-        rateModalForm.action = actionUrl;
-        rateModalEventName.value = eventName; // Set nama event di input
-        rateModal.classList.remove('hidden');
-    }
-
-    // --- Logika untuk Edit Review Modal (Tugas 5) ---
-    const editReviewModal = document.getElementById('rate-review-modal'); // Kita bisa pakai modal yg sama
-    const editReviewForm = document.getElementById('rate-review-form');
-    const editReviewEventName = document.getElementById('modal-event-name');
-    const editReviewRating = document.getElementById('modal-rating');
-    const editReviewText = document.getElementById('modal-review-text');
-
-    function openEditReviewModal(actionUrl, rating, text) {
-        editReviewForm.action = actionUrl;
-        editReviewEventName.value = "Editing your review"; // Judul
-        editReviewRating.value = rating;
-        editReviewText.value = text;
-        
-        editReviewModal.classList.remove('hidden');
-    }
 
     // ===================================================================
     // KODE UTAMA: Inisialisasi
@@ -472,27 +255,13 @@
             document.getElementById('lastLogin').innerText = 'Last login: Never';
         {% endif %}
 
-        // --- Fetch Data ---
-        fetchEventData();
-        fetchUserReviews();
-
-        // --- Event Listener untuk Dropdown (Menu 3 titik) ---
-        // Ini mendelegasikan klik ke seluruh dokumen
-        document.body.addEventListener('click', function(event) {
-            // Cek apakah yang diklik adalah toggle dropdown
-            const dropdownToggle = event.target.closest('.dropdown-toggle');
-            if (dropdownToggle) {
-                // Temukan menu di sebelahnya dan toggle
-                dropdownToggle.nextElementSibling.classList.toggle('hidden');
-            } else {
-                // Jika klik di luar, tutup semua dropdown
-                document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                    if (!menu.parentElement.contains(event.target)) {
-                        menu.classList.add('hidden');
-                    }
-                });
-            }
-        });
+    });
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.relative')) {
+            const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+            allDropdowns.forEach(d => d.classList.add('hidden'));
+        }
     });
 </script>
 

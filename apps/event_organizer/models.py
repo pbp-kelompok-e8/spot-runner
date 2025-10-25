@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
 
 
 # EventOrganizer represents a user who can create and manage events.
@@ -31,4 +30,4 @@ class EventOrganizer(models.Model):
     def name(self):
         return f"{self.user.first_name} {self.user.last_name}".strip() or self.user.username
     
-    
+
