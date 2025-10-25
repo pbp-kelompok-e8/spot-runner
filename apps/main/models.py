@@ -5,7 +5,6 @@ from apps.event.models import Event
 
 # Create your models here.
 
-
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('runner', 'Runner'),

@@ -1,8 +1,11 @@
+# apps/event_organizer/urls.py
 from django.urls import path
 from apps.main.views import show_main, logout_user
 from apps.event_organizer.views import dashboard_view , profile_view, edit_profile, change_password
 from apps.event.views import create_event
 
+
+app_name = 'event_organizer'
 
 app_name = 'event_organizer'
 
