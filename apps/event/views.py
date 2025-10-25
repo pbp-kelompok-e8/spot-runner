@@ -187,4 +187,3 @@ def show_json_by_id(request, event_id):
     }
     return JsonResponse(data)
 
-
