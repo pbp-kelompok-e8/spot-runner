@@ -1,6 +1,7 @@
 name: Push to PWS
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
 
