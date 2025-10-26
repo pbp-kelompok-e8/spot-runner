@@ -1,14 +1,15 @@
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Prefetch
 from apps.event.models import Event
 from apps.main.models import User
 from .models import EventOrganizer
 from apps.review.models import Review
-from django.http import JsonResponse
 
 
 @login_required
@@ -26,11 +27,19 @@ def dashboard_view(request):
     total_events = events.count()
 
     # Grouping Status
-    ongoing_events = events.filter(event_status='on_going')
+    ongoing_events = events.filter(event_status='ongoing')
     finished_events = events.filter(event_status='finished')
-    coming_soon_events = events.filter(event_status='coming_soon')
+    cancelled_events = events.filter(event_status='cancelled')
 
-    stats = Review.objects.filter(event__user_eo=organizer).aggregate(
+
+    reviews = Review.objects.filter(
+        event__user_eo=organizer
+    ).select_related(
+        'runner__user',
+        'event'
+    ).order_by('-created_at')
+
+    stats = reviews.aggregate(
         avg=Avg('rating'),
         count=Count('rating')
     )
@@ -43,33 +52,69 @@ def dashboard_view(request):
         'events': events,
         'ongoing_events': ongoing_events,
         'finished_events': finished_events,
-        'coming_soon_events': coming_soon_events,
+        'cancelled_events': cancelled_events,
         'total_events': total_events,
-        'avg_rating': avg_rating,     
-        'review_count': review_count, 
+        'reviews': reviews,  # TAMBAHKAN INI
+        'organizer_average_rating': avg_rating,  # UBAH NAMA VARIABEL INI
+        'organizer_total_reviews': review_count,  # UBAH NAMA VARIABEL INI
     }
     return render(request, 'event_organizer/dashboard.html', context)
 
 
-@login_required
-def profile_view(request):
-    """Profile page for Event Organizer"""
-    if request.user.role != 'event_organizer':
+@login_required(login_url='main:login')
+def show_profile(request, username=None):
+    """Show Event Organizer profile with their events and reviews"""
+    
+    if username:
+        user = get_object_or_404(User, username=username)
+    else:
+        user = request.user
+    
+    if user.role != 'event_organizer':
         messages.error(request, "Access denied. Only Event Organizers can access this page.")
         return redirect('main:show_main')
-
+    
     try:
-        organizer = request.user.event_organizer_profile
-    except EventOrganizer.DoesNotExist:
+        organizer = user.event_organizer_profile
+    except AttributeError:
         messages.error(request, "You don't have an event organizer profile.")
         return redirect('main:show_main')
-
+    
+    # Ambil semua events dari organizer
+    events = Event.objects.filter(
+        user_eo=organizer
+    ).prefetch_related(
+        'event_category'
+    ).order_by('-event_date')
+    
+    # Ambil semua reviews dari semua event organizer (sama seperti event detail)
+    reviews = Review.objects.filter(
+        event__user_eo=organizer
+    ).select_related(
+        'runner__user',
+        'event'
+    ).order_by('-created_at')
+    
+    # Hitung average rating dan total review count
+    review_stats = reviews.aggregate(
+        avg_rating=Avg('rating'),
+        total_reviews=Count('id')
+    )
+    
+    overall_avg_rating = round(review_stats['avg_rating'] or 0, 1)
+    overall_review_count = review_stats['total_reviews'] or 0
+    
     context = {
         'organizer': organizer,
-        'user': request.user,
+        'user': user,
+        'events': events,
+        'reviews': reviews,  # Menggunakan 'reviews' seperti di event detail
+        'overall_avg_rating': overall_avg_rating,
+        'overall_review_count': overall_review_count,
         'joined_date': organizer.created_at.strftime('%d %b %Y') if organizer.created_at else '-',
-        'last_login': request.user.last_login.strftime('%I:%M %p, %d %b %Y') if request.user.last_login else 'Never',
+        'last_login': user.last_login.strftime('%I:%M %p, %d %b %Y') if user.last_login else 'Never',
     }
+    
     return render(request, 'event_organizer/profile.html', context)
 
 
@@ -80,15 +125,13 @@ def edit_profile(request):
     try:
         organizer = request.user.event_organizer_profile
     except EventOrganizer.DoesNotExist:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': False, 'message': "You don't have an event organizer profile."})
         messages.error(request, "You don't have an event organizer profile.")
         return redirect('event_organizer:profile')
 
     if request.method == 'POST':
         new_username = request.POST.get('username')
         base_location = request.POST.get('base_location', '')
-        image_url = request.POST.get('profile_picture', '')  
+        image_url = request.POST.get('profile_picture', '')
 
         # Update username
         if new_username and new_username != request.user.username:
@@ -100,11 +143,6 @@ def edit_profile(request):
         organizer.profile_picture = image_url
         organizer.save()
 
-        # Jika request AJAX → kembalikan JSON
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': True, 'message': "Profile updated successfully!"})
-
-        # Jika bukan AJAX → redirect biasa
         messages.success(request, "Profile updated successfully!")
         return redirect('event_organizer:profile')
 
@@ -115,34 +153,19 @@ def edit_profile(request):
     return render(request, 'event_organizer/edit_profile.html', context)
 
 
-
 @login_required
 def change_password(request):
-    if request.method == "POST":
+    """Change password page"""
+    if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
-
-        # Kalau request dari fetch (AJAX)
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            if form.is_valid():
-                user = form.save()
-                update_session_auth_hash(request, user)
-                return JsonResponse({"success": True})
-            else:
-                return JsonResponse({
-                    "success": False,
-                    "message": list(form.errors.values())[0][0]  # Ambil error pertama
-                })
-
-        # Kalau request normal (tanpa fetch)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            messages.success(request, "Your password has been updated successfully!")
+            messages.success(request, 'Your password has been updated successfully!')
             return redirect('event_organizer:profile')
         else:
-            messages.error(request, "Please correct the errors below.")
-
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = PasswordChangeForm(request.user)
 
-    return render(request, "event_organizer/change_password.html", {"form": form})
+    return render(request, 'event_organizer/change_password.html', {'form': form})

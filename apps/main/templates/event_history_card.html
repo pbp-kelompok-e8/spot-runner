@@ -85,16 +85,15 @@
     </div>
 
     <!-- Action Button -->
-    {% if event.status == 'on_going' %}
-        <button class="absolute bottom-6 right-6 text-red-600 hover:text-red-700 text-sm font-medium">
-            Cancel Booking
-        </button>
-    {% elif event.status == 'finished' and not event.review %}
-        <button class="absolute bottom-6 right-6 text-green-700 hover:text-green-800 text-sm font-medium flex items-center gap-1">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            Rate this event
-        </button>
+    {% if event.status == 'finished' and not event.review %}
+    <button 
+        class="rate-event-btn absolute bottom-6 right-6 text-green-700 hover:text-green-800 text-sm font-medium flex items-center gap-1"
+        data-event-id="{{ event.id }}" 
+        data-event-name="{{ event.name }}">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+        Rate this event
+    </button>
     {% endif %}
-</div>
+</div> 

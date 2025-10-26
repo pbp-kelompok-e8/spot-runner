@@ -61,11 +61,26 @@ def register(request):
 
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
+
         if form.is_valid():
+            email = form.cleaned_data.get('email')
+
+            # Cek apakah email sudah digunakan
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email sudah digunakan. Silakan gunakan email lain.")
+                return redirect('main:register')
+
+            # Kalau belum ada, buat user baru
             form.save()
-            messages.success(request, 'Your account has been successfully created!')
+            messages.success(request, "Akun berhasil dibuat! Silakan login.")
             return redirect('main:login')
-    context = {'form':form}
+
+        else:
+            # Kalau form tidak valid (misalnya password tidak cocok, dll)
+            messages.error(request, "Pendaftaran gagal. Periksa kembali data yang kamu masukkan.")
+            return redirect('main:register')
+
+    context = {'form': form}
     return render(request, 'register.html', context)
 
 def login_user(request):
@@ -89,41 +104,49 @@ def show_user(request, username):
     if user != request.user:
         messages.error(request, "You are not authorized to view this profile.")
         return redirect('main:show_main')
+    
     if user.role != 'runner':
         context = {
             'user': user,
         }
         return render(request, "profile.html", context)
 
-    attendance_list = user.runner.attendance_records.all().select_related('event')
+    attendance_list = user.runner.attendance_records.all().select_related('event').prefetch_related('event__event_category')
     today = date.today()
     
-    review_list = user.runner.reviews.all()
+    # 🔹 Ambil semua review runner ini dalam 1 query
+    reviews = Review.objects.filter(runner=user.runner).select_related('event')
+    review_dict = {review.event_id: review for review in reviews}
 
     # update semua status event
     for record in attendance_list:
-        event = record.event  # ambil objek event dari record attendance
+        event = record.event  # Ambil objek event dari record attendance
         
+        # Cek jika event_date tidak None
         event_date = event.event_date.date()
         
-        # bandingin
+        # Logika ini untuk mengubah status EVENT-nya
         if event_date < today:
             event.event_status = "finished"
         elif event_date == today:
             event.event_status = "on_going"
         else:
             event.event_status = "coming_soon"
-        event.save() # save perubahan status event
+        event.save() # Simpan perubahan status di OBJEK EVENT
 
-        # fitur extra ga dipake lol
+        # Logika TAMBAHAN: Update status REGISTRASI-nya
+        # Jika event-nya sudah selesai DAN status pendaftarannya 
+        # masih 'attending', ubah jadi 'finished'.
         if event.event_status == "finished" and record.status == 'attending':
             record.status = 'finished'
             record.save()
+        
+        # 🔹 Attach review ke record berdasarkan event_id
+        record.review = review_dict.get(event.id)
 
     context = {
         'user': user,
-        'attendance_list': attendance_list, 
-        'review_list': review_list,
+        'attendance_list': attendance_list,
         'location_choices': Runner.LOCATION_CHOICES,
     }
 
