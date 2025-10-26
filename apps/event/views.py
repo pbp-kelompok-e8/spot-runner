@@ -92,7 +92,7 @@ def delete_event(request, id):
             if event.user_eo != request.user.event_organizer_profile:
                 return JsonResponse({'success': False, 'error': 'Not authorized'}, status=403)
             event.delete()
-            return JsonResponse({'success': True, 'message': 'Event deleted successfully.'})
+            return redirect('main:show_main')
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)   
     return HttpResponseBadRequest("Invalid request method")
