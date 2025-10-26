@@ -188,11 +188,6 @@ def edit_profile_runner(request, username):
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 
-    context = {
-        'user': user,
-    }
-    return render(request, 'edit_profile.html', context)
-
 def cancel_event(request, username, id):
     user = get_object_or_404(User, username=username)
     if user != request.user or user.role != 'runner':

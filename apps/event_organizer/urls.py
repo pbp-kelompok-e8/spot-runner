@@ -2,7 +2,6 @@
 from django.urls import path
 from apps.main.views import show_main, logout_user
 from apps.event_organizer.views import dashboard_view , show_profile, edit_profile, change_password
-from apps.event.views import create_event
 
 
 app_name = 'event_organizer'
@@ -16,5 +15,4 @@ urlpatterns = [
     path('dashboard/', dashboard_view, name='dashboard'),
     path('change-password/', change_password, name='change_password'),
 
-    path('create-event/', create_event, name='create_event'),
 ]
