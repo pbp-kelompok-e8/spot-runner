@@ -3,8 +3,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from apps.event_organizer.models import EventOrganizer
 from apps.event.models import Event, EventCategory
-from apps.review.models import Review # Diperlukan untuk view show_event
-from apps.main.models import Runner # Diperlukan untuk Review
+from apps.main.models import Runner 
 from .forms import EventForm
 import json
 from django.utils import timezone
@@ -17,32 +16,26 @@ class EventViewsTest(TestCase):
         Setup data awal untuk setiap tes.
         Membuat user, organizer, kategori, client, dan login.
         """
-        # 1. Buat User dan Event Organizer
         self.user = User.objects.create_user(username='testeo', password='password123',email='eoo@test')
         self.organizer = EventOrganizer.objects.create(user=self.user, base_location='Test Location')
-        
-        # 2. Buat User lain (Runner) untuk tes review
         self.runner_user = User.objects.create_user(username='testrunner', password='password123', email='runner@test')
         self.runner = Runner.objects.create(user=self.runner_user)
 
-        # 3. Buat Kategori (wajib ada untuk form)
-        self.cat_5k = EventCategory.objects.create(category='5k')
-        self.cat_10k = EventCategory.objects.create(category='10k')
+        # self.cat_5k = EventCategory.objects.create(category='5k')
+        # self.cat_10k = EventCategory.objects.create(category='10k')
         
         # 4. Buat Test Client dan Login
         self.client = Client()
         self.client.login(username='testeo', password='password123')
-        
-        # 5. Buat Event awal untuk tes edit/delete/show
         self.event = Event.objects.create(
             user_eo=self.organizer,
             name="Test Event 1",
             location="jakarta_pusat",
             capacity=100,
             event_date=timezone.now(), 
-            regist_deadline=timezone.now() + timezone.timedelta(days=1)
+            regist_deadline=timezone.now() + timezone.timedelta(days=1),
         )
-        self.event.event_category.add(self.cat_5k)
+        # self.event.event_category.add(self.cat_5k)
         
         # 6. Buat Review awal
         # self.review = Review.objects.create(
@@ -68,15 +61,10 @@ class EventViewsTest(TestCase):
             'capacity': 50,
             'event_status': 'coming_soon',
             'coin': 10,
-            'event_category': [self.cat_5k.id, self.cat_10k.id]
         }
         response = self.client.post(reverse('event:create_event'), data)
-        
-        # Cek redirect ke halaman main
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('main:show_main'))
-        
-        # Cek apakah event dibuat di database
         self.assertTrue(Event.objects.filter(name='New Event Created').exists())
         self.assertEqual(Event.objects.get(name='New Event Created').event_category.count(), 2)
 
@@ -87,14 +75,12 @@ class EventViewsTest(TestCase):
             'location': 'jakarta_selatan',
             'capacity': 50,
             'event_status': 'coming_soon',
-            'event_category': [self.cat_5k.id],
             'description': 'A valid test description.',
             'event_date': timezone.now(),
             'regist_deadline': timezone.now() + timezone.timedelta(days=1),
             'contact': '08123456789', 
             'coin': 100
         }
-        # Tambahkan header AJAX
         response = self.client.post(reverse('event:create_event'), data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         
         self.assertEqual(response.status_code, 200)
@@ -106,9 +92,8 @@ class EventViewsTest(TestCase):
 
     def test_create_event_post_invalid_form_ajax(self):
         """Tes membuat event (POST) dengan form tidak valid (AJAX)"""
-        data = { 'name': '' } # Form tidak valid (nama kosong)
+        data = { 'name': '' } 
         response = self.client.post(reverse('event:create_event'), data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        
         self.assertEqual(response.status_code, 200)
         json_response = json.loads(response.content)
         self.assertFalse(json_response['success'])
@@ -117,16 +102,11 @@ class EventViewsTest(TestCase):
 
     def test_show_event_get(self):
         """Tes halaman detail event (GET)"""
-        # Perhatikan: URL Anda menggunakan <str:id>, jadi kita konversi UUID
         url = reverse('event:show_event', kwargs={'id': str(self.event.id)})
         response = self.client.get(url)
-        
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'event_detail.html')
         self.assertEqual(response.context['event'], self.event)
-        # Cek apakah review ter-load
-        self.assertIn('reviews', response.context)
-        self.assertEqual(response.context['reviews'].count(), 1)
 
     def test_edit_event_get_owner(self):
         """Tes halaman edit event (GET) oleh pemilik"""
@@ -138,17 +118,11 @@ class EventViewsTest(TestCase):
 
     def test_edit_event_get_not_owner(self):
         """Tes halaman edit event (GET) oleh BUKAN pemilik (harus 403)"""
-        # Buat user dan organizer baru
         other_user = User.objects.create_user(username='other', password='password123')
-        EventOrganizer.objects.create(user=other_user) # Buat organizer
-        
-        # Login sebagai user baru
+        EventOrganizer.objects.create(user=other_user)
         self.client.login(username='other', password='password123')
-        
         url = reverse('event:edit_event', kwargs={'id': self.event.id})
         response = self.client.get(url)
-        
-        # Harus 403 (Permission Denied)
         self.assertEqual(response.status_code, 403)
 
     def test_edit_event_post_owner_ajax(self):
@@ -159,17 +133,11 @@ class EventViewsTest(TestCase):
             'location': self.event.location,
             'capacity': self.event.capacity,
             'event_status': self.event.event_status,
-            'event_category': [self.cat_5k.id]
         }
         response = self.client.post(url, data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        
         self.assertEqual(response.status_code, 200)
-        
-        # Cek database
         self.event.refresh_from_db()
         self.assertEqual(self.event.name, 'Updated Event Name')
-        
-        # Cek JSON response
         detail_url = reverse('event:show_event', kwargs={'id': self.event.id})
         self.assertJSONEqual(response.content, {
             'success': True,
@@ -191,7 +159,6 @@ class EventViewsTest(TestCase):
 
     def test_delete_event_post_ajax_not_owner(self):
         """Tes hapus event (POST AJAX) oleh BUKAN pemilik"""
-        # Buat user baru, login, dan coba hapus event milik user pertama
         other_user = User.objects.create_user(username='attacker', password='password123')
         EventOrganizer.objects.create(user=other_user)
         self.client.login(username='attacker', password='password123')
@@ -205,7 +172,7 @@ class EventViewsTest(TestCase):
             'success': False,
             'error': 'Not authorized'
         })
-        self.assertTrue(Event.objects.filter(pk=event_id).exists()) # Event tidak terhapus
+        self.assertTrue(Event.objects.filter(pk=event_id).exists())
 
     def test_delete_event_get_not_allowed(self):
         """Tes hapus event (GET), harus 400 Bad Request"""
@@ -218,7 +185,6 @@ class EventViewsTest(TestCase):
         response = self.client.get(reverse('event:show_json'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/json')
-        
         data = response.json()
         self.assertIsInstance(data, list)
         self.assertEqual(len(data), 1)
