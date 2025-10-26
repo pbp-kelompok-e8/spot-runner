@@ -71,7 +71,6 @@
                     {{ event.description|linebreaks }}
                 </div>
 
-               
                 <!-- Edit and Delete Event -->
                 {% if user.is_authenticated and event.user_eo.user == user %}
                 <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
@@ -111,30 +110,23 @@
             </div>
 
             <!-- Review dan Rating (Dinamis) -->
-            <h2 class="text-xl font-semibold text-gray-900 mb-5">Rating & Review</h2>
+            <div class="bg-white shadow rounded-lg p-6 sm:p-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-5">Rating & Review</h2>
 
-            {% if reviews %}
-            <div id="reviewContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for review in reviews %}
-                <div class="bg-white rounded-2xl shadow-md p-5 border border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-800">{{ review.runner.user.username }}</h3>
-                    <p class="text-sm text-gray-600 mt-2">{{ review.review_text|default:"No comment" }}</p>
-                    <div class="flex items-center mt-3">
-                        <span class="text-lime-400 text-lg mr-1">★</span>
-                        <span class="font-semibold text-gray-800">{{ review.rating }}</span>
-                        <span class="text-sm text-gray-500 ml-1">/ 5</span>
-                        <span class="text-xs text-gray-400 ml-auto">{{ review.created_at|date:"d M Y" }}</span>
-                    </div>
+                {% if reviews %}
+                <div id="reviewContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for review in reviews %}
+                        {% include 'review_card.html' with review=review event=event %}
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                {% else %}
+                <p class="text-gray-500">No reviews yet.</p>
+                {% endif %}
             </div>
-            {% else %}
-            <p class="text-gray-500">No reviews yet.</p>
-            {% endif %}
         </div>
 
-        <!-- Sidebar -->
-        <aside class="lg:col-span-1">
+        <!-- Sidebar (Right Side - 1 column) -->
+        <aside class="md:col-span-1 mt-8 md:mt-0">
             <div class="sticky top-24 space-y-8">                
                 <div class="bg-white shadow rounded-lg p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">Registration Open until</h3>                    
@@ -171,8 +163,7 @@
 
                         <!-- Form untuk booking -->
                         <form id="booking-form" 
-                            method="POST"
-                            action="{% url 'main:participate_event' username=request.user.username id=event.id %}">
+                            method="POST">
                             {% csrf_token %}
 
                             <div class="space-y-3">
@@ -186,8 +177,8 @@
                                                 </span>
                                             </div>
                                             <input type="radio" id="race_{{ category.pk }}" 
-                                                name="selected_race" 
-                                                value="{{ category.pk }}" 
+                                                name="category_key_selector" 
+                                                value="{{ category.category }}" 
                                                 class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                                         </div>
                                     </label>
@@ -443,8 +434,11 @@ async function deleteEvent() {
             showToast('Event deleted successfully!', 'success');
             
             setTimeout(() => {
-                // Redirect to main.html after successful deletion
-                window.location.href = "{% url 'main:show_main' %}";
+                if (source === 'dashboard') {
+                    window.location.reload();
+                } else if (source === 'detail') {
+                    window.location.href = "{% url 'main:show_main' %}";
+                }
             }, 1000);
         } else {
             showToast('Failed to delete event', 'error');
@@ -567,8 +561,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Modal Functions (existing)
     function openConfirmModal() {
-        const selectedRace = document.querySelector('input[name="selected_race"]:checked');
-        if (!selectedRace) {
+        const selectedCategory = document.querySelector('input[name="category_key_selector"]:checked');
+        if (!selectedCategory) {
             alert('Please select a race category first!');
             return;
         }
@@ -582,23 +576,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.confirmBooking = function() {
-        closeConfirmModal();
-        
-        const selectedRace = document.querySelector('input[name="selected_race"]:checked');
-        if (selectedRace) {
-            const raceLabel = selectedRace.closest('label').querySelector('.font-medium').textContent.trim();
-            document.getElementById('raceType').textContent = raceLabel;
-        }
-        
-        // Submit the form
-        const form = document.getElementById('booking-form');
-        form.submit();
-        
-        // Show success modal after form submission
-        setTimeout(() => {
-            openSuccessModal();
-        }, 300);
+    closeConfirmModal();
+    
+    const form = document.getElementById('booking-form');
+    
+    // 1. Dapatkan kategori yang dipilih (dari Perubahan 2)
+    const selectedCategory = document.querySelector('input[name="category_key_selector"]:checked');
+    
+    // Seharusnya ini tidak terjadi karena tombol "Book Now" sudah mengecek, tapi
+    // ini adalah pengaman tambahan.
+    if (!selectedCategory) {
+        alert('Please select a category first!');
+        return;
     }
+
+    // 2. Dapatkan key-nya (misal: "5k", "10k")
+    const categoryKey = selectedCategory.value;
+
+    // 3. Bangun URL action yang baru
+    // Kita gunakan tag URL Django untuk membuat template
+    let urlTemplate = "{% url 'main:participate_event' user.username event.id "PLACEHOLDER" %}";
+    
+    // Ganti "PLACEHOLDER" dengan key yang dipilih
+    const newActionUrl = urlTemplate.replace("PLACEHOLDER", categoryKey);
+    
+    // 4. Set action form dan kirimkan
+    form.action = newActionUrl;
+    form.submit();
+    
+    // (Logika success modal Anda tetap berjalan seperti sebelumnya)
+    const raceLabel = selectedCategory.closest('label').querySelector('.font-medium').textContent.trim();
+    document.getElementById('raceType').textContent = raceLabel;
+
+    setTimeout(() => {
+        openSuccessModal();
+    }, 300);
+}
 
     function openSuccessModal() {
         document.getElementById('successModal').classList.remove('hidden');

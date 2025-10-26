@@ -15,7 +15,7 @@ urlpatterns = [
     path('user/<str:username>/edit', edit_profile_runner, name='edit_profile'),
     path('user/<str:username>/change-password', change_password, name='change_password'),
     path('user/<str:username>/cancel-event/<str:id>/', cancel_event, name='cancel_event'),
-    path('user/<str:username>/participate-event/<str:id>/', participate_in_event, name='participate_event'),
+    path('user/<str:username>/participate-event/<str:id>/<str:category_key>/', participate_in_event, name='participate_event'),
 
     # path('create-event/', create_event, name='create_event'),
     # path('xml/', show_xml, name='show_xml'),

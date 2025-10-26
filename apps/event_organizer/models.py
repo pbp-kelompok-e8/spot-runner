@@ -15,19 +15,15 @@ class EventOrganizer(models.Model):
     )
 
     CITY_CHOICES = [
-        ('jakarta', 'Jakarta'),
-        ('surabaya', 'Surabaya'),
-        ('bandung', 'Bandung'),
-        ('medan', 'Medan'),
-        ('semarang', 'Semarang'),
-        ('makassar', 'Makassar'),
-        ('palembang', 'Palembang'),
-        ('denpasar', 'Denpasar'),
-        ('yogyakarta', 'Yogyakarta'),
-        ('surakarta', 'Surakarta'),
-        ('malang', 'Malang'),
-        ('pekanbaru', 'Pekanbaru'),
-        ('depok', 'Depok')
+        ('jakarta_barat', 'Jakarta Barat'),
+        ('jakarta_pusat', 'Jakarta Pusat'),
+        ('jakarta_selatan', 'Jakarta Selatan'),
+        ('jakarta_timur', 'Jakarta Timur'),
+        ('jakarta_utara', 'Jakarta Utara'),
+        ('bekasi', 'Bekasi'),
+        ('bogor', 'Bogor'),
+        ('depok', 'Depok'),
+        ('tangerang', 'Tangerang')
     ]
 
     profile_picture = models.URLField(blank=True, null=True)

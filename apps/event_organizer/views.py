@@ -10,6 +10,7 @@ from apps.event.models import Event
 from apps.main.models import User
 from .models import EventOrganizer
 from apps.review.models import Review
+from datetime import date
 
 
 @login_required
@@ -23,15 +24,29 @@ def dashboard_view(request):
         defaults={'base_location': ''}
     )
 
-    events = Event.objects.filter(user_eo=organizer).order_by('-event_date')
-    total_events = events.count()
+    events = Event.objects.filter(user_eo=organizer)
+    today = date.today()
+    updated_events = []
+    
+    for event in events:
+        if event.event_status not in ['finished', 'cancelled']:
+            event_date = event.event_date.date()
+            new_status = event.event_status
+            if event_date < today:
+                new_status = "finished"
+            elif event_date == today:
+                new_status = "on_going"
+            elif event.regist_deadline.date() < today:
+                 pass
+            if new_status != event.event_status:
+                event.event_status = new_status
+                event.save()
+        updated_events.append(event)
 
-    # Grouping Status
-    ongoing_events = events.filter(event_status='ongoing')
-    finished_events = events.filter(event_status='finished')
-    cancelled_events = events.filter(event_status='cancelled')
-
-
+    total_events = len(updated_events)
+    ongoing_events = [e for e in updated_events if e.event_status == 'on_going'] 
+    finished_events = [e for e in updated_events if e.event_status == 'finished']
+    cancelled_events = [e for e in updated_events if e.event_status == 'cancelled']
     reviews = Review.objects.filter(
         event__user_eo=organizer
     ).select_related(
@@ -49,17 +64,16 @@ def dashboard_view(request):
 
     context = {
         'organizer': organizer,
-        'events': events,
+        'events': updated_events,
         'ongoing_events': ongoing_events,
         'finished_events': finished_events,
         'cancelled_events': cancelled_events,
         'total_events': total_events,
-        'reviews': reviews,  # TAMBAHKAN INI
-        'organizer_average_rating': avg_rating,  # UBAH NAMA VARIABEL INI
-        'organizer_total_reviews': review_count,  # UBAH NAMA VARIABEL INI
+        'reviews': reviews,
+        'organizer_average_rating': avg_rating,
+        'organizer_total_reviews': review_count,
     }
     return render(request, 'event_organizer/dashboard.html', context)
-
 
 @login_required(login_url='main:login')
 def show_profile(request, username=None):
@@ -120,11 +134,11 @@ def show_profile(request, username=None):
 
 @login_required
 def edit_profile(request):
-    """Edit Event Organizer Profile"""
-
     try:
         organizer = request.user.event_organizer_profile
     except EventOrganizer.DoesNotExist:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": False, "message": "Organizer profile not found."})
         messages.error(request, "You don't have an event organizer profile.")
         return redirect('event_organizer:profile')
 
@@ -143,6 +157,11 @@ def edit_profile(request):
         organizer.profile_picture = image_url
         organizer.save()
 
+        # ✅ RETURN JSON kalau AJAX
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": True})
+
+        # jika bukan AJAX → redirect biasa
         messages.success(request, "Profile updated successfully!")
         return redirect('event_organizer:profile')
 

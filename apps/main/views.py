@@ -114,11 +114,10 @@ def show_user(request, username):
     attendance_list = user.runner.attendance_records.all().select_related('event').prefetch_related('event__event_category')
     today = date.today()
     
-    # 🔹 Ambil semua review runner ini dalam 1 query
     reviews = Review.objects.filter(runner=user.runner).select_related('event')
     review_dict = {review.event_id: review for review in reviews}
 
-    # update semua status event
+
     for record in attendance_list:
         event = record.event
         event_date = event.event_date.date()
@@ -136,14 +135,12 @@ def show_user(request, username):
         if event.event_status == "finished" and record.status == 'attending':
             record.status = 'finished'
             record.save()
-        
-        # 🔹 Attach review ke record berdasarkan event_id
         record.review = review_dict.get(event.id)
 
     context = {
         'user': user,
         'attendance_list': attendance_list,
-        # 'location_choices': Runner.LOCATION_CHOICES,
+        'location_choices': Runner.LOCATION_CHOICES,
     }
 
     return render(request, "runner_detail.html", context)
@@ -184,7 +181,7 @@ def edit_profile_runner(request, username):
                 "edit_profile": reverse('main:edit_profile', args=[user.username]),
                 "change_password": reverse('main:change_password', args=[user.username]),
                 "cancel_event_urls": {
-                    record.event.id: reverse('main:cancel_event', args=[user.username, record.event.id])
+                    str(record.event.id): reverse('main:cancel_event', args=[user.username, record.event.id])
                     for record in user.runner.attendance_records.filter(status='attending')
                 }
             }
@@ -243,7 +240,7 @@ def cancel_event(request, username, id):
     return redirect('main:show_user', username=username)
 
 
-def participate_in_event(request, username, id):
+def participate_in_event(request, username, id, category_key):
     user = get_object_or_404(User, username=username)
     if user != request.user or user.role != 'runner':
         messages.error(request, "You are not authorized to perform this action.")
@@ -252,44 +249,47 @@ def participate_in_event(request, username, id):
     event = get_object_or_404(Event, pk=id)
     runner = user.runner
 
-    if request.method == 'POST':
-        try:
-            category_id = request.POST.get('selected_race') 
-            if not category_id:
-                messages.error(request, "You must select an event category.")
+    try:
+
+        selected_category = EventCategory.objects.get(
+            category=category_key, 
+            events=event
+        )
+    except EventCategory.DoesNotExist:
+        messages.error(request, "Invalid category selected for this event.")
+        return redirect('event:event_detail', pk=id)
+
+    try:
+        with transaction.atomic():
+            if event.full:
+                messages.error(request, f"Sorry, {event.name} is already full.")
                 return redirect('main:show_user', username=username)
 
-            chosen_category = get_object_or_404(EventCategory, pk=category_id)
-            if chosen_category not in event.event_category.all():
-                messages.error(request, "That is not a valid category for this event.")
-                return redirect('main:show_user', username=username)
+            attendance, created = Attendance.objects.get_or_create(
+                runner=runner,
+                event=event,
+                defaults={
+                        'status': 'attending',
+                        'category': selected_category
+                        }
+                
+            )
 
-            with transaction.atomic():
-                if event.full:
-                    messages.error(request, f"Sorry, {event.name} is already full.")
-                    return redirect('main:show_user', username=username)
-
-                attendance, created = Attendance.objects.get_or_create(
-                    runner=runner,
-                    event=event,
-                    defaults={'status': 'attending', 'category': chosen_category}
-                )
-
-                if created:
-                    event.increment_participans()
-                    messages.success(request, f"You are now registered for {event.name} ({chosen_category}).")
+            if created:
+                event.increment_participans()
+                messages.success(request, f"You are now registered for {event.name}.")
+            else:
+                if attendance.status == 'canceled':
+                    attendance.status = 'attending'
+                    attendance.category = selected_category
+                    attendance.save()
+                    event.increment_participans() 
+                    messages.success(request, f"You have re-registered for {event.name}.")
                 else:
-                    if attendance.status == 'canceled':
-                        attendance.status = 'attending'
-                        attendance.category = chosen_category
-                        attendance.save()
-                        event.increment_participans() 
-                        messages.success(request, f"You have re-registered for {event.name} ({chosen_category}).")
-                    else:
-                        messages.warning(request, f"You are already registered for {event.name}.")
-        
-        except Exception as e:
-            messages.error(request, f"An error occurred: {e}")
+                    messages.warning(request, f"You are already registered for {event.name}.")
+    
+    except Exception as e:
+        messages.error(request, f"An error occurred: {e}")
 
         return redirect('main:show_user', username=username)
     

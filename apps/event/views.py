@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from apps.review.models import Review
+from django.contrib import messages
 
 @login_required
 def create_event(request):
@@ -87,14 +88,30 @@ def edit_event(request, id):
 @login_required
 def delete_event(request, id):
     if request.method == 'POST':
-        try:
-            event = get_object_or_404(Event, pk=id)
-            if event.user_eo != request.user.event_organizer_profile:
-                return JsonResponse({'success': False, 'error': 'Not authorized'}, status=403)
-            event.delete()
-            return redirect('main:show_main')
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)   
+        event = get_object_or_404(Event, pk=id)
+        
+        # Check permission
+        if event.user_eo != request.user.event_organizer_profile:
+            messages.error(request, 'You are not authorized to delete this event.')
+            return redirect('event:show_event', id=id)
+        
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        
+        # Delete the event
+        event.delete()
+        
+        if is_ajax:
+            # Return JSON for AJAX requests
+            return JsonResponse({
+                'success': True, 
+                'message': 'Event deleted successfully.'
+            })
+        else:
+            # Return redirect for normal form submissions
+            messages.success(request, 'Event deleted successfully!')
+            return redirect('main:show_main')  # atau 'event_organizer:dashboard'
+    
     return HttpResponseBadRequest("Invalid request method")
 
 
@@ -186,4 +203,3 @@ def show_json_by_id(request, event_id):
         'event_categories': category_names 
     }
     return JsonResponse(data)
-
