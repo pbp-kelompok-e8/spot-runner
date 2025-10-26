@@ -174,9 +174,21 @@ def edit_profile(request):
 
 @login_required
 def change_password(request):
-    """Change password page"""
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
+
+        # Kalau request dari AJAX, balikan JSON
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                return JsonResponse({'success': True, 'message': 'Password updated successfully!'})
+            else:
+                # Ambil error pertama yang muncul
+                error_message = list(form.errors.values())[0][0]
+                return JsonResponse({'success': False, 'message': error_message})
+
+        # Kalau request bukan AJAX (misalnya fallback)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
@@ -184,6 +196,7 @@ def change_password(request):
             return redirect('event_organizer:profile')
         else:
             messages.error(request, 'Please correct the errors below.')
+
     else:
         form = PasswordChangeForm(request.user)
 

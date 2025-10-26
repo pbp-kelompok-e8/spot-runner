@@ -25,6 +25,9 @@
       {% include 'toast.html' %}
     </div>
 
+    <!-- Include Review Modal - SAMA SEPERTI DI event_detail.html -->
+    {% include 'review_modal.html' %}
+
     <!-- Scripts -->
     <script src="{% static 'js/toast.js' %}"></script>
     
@@ -41,6 +44,10 @@
         const form = document.getElementById('reviewForm');
         const modalEventId = document.getElementById('modal_event_id');
         const modalEventName = document.getElementById('modal_event_name');
+        const modalReviewId = document.getElementById('modal_review_id');
+        const modalMode = document.getElementById('modal_mode');
+        const modalTitle = document.getElementById('modalTitle');
+        const submitBtn = document.getElementById('submitBtn');
         const modalReviewId = document.getElementById('modal_review_id');
         const modalMode = document.getElementById('modal_mode');
         const modalTitle = document.getElementById('modalTitle');
@@ -68,75 +75,78 @@
         });
 
         // Submit form - SUPPORT CREATE & EDIT
-        form.addEventListener('submit', async function (e) {
-          e.preventDefault();
-          if (errorMessage) errorMessage.classList.add('hidden');
+        if (form) {
+          form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (errorMessage) errorMessage.classList.add('hidden');
 
-          const formData = new FormData(form);
-          const eventId = modalEventId.value;
-          const rating = document.getElementById('rating').value;
-          const reviewText = document.getElementById('review_text').value;
-          const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const mode = modalMode ? modalMode.value : 'create';
+            const reviewId = modalReviewId ? modalReviewId.value : null;
+            const eventId = modalEventId.value;
+            const rating = document.getElementById('rating').value;
+            const reviewText = document.getElementById('review_text').value;
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-          // Validate
-          if (!rating || rating < 1 || rating > 5) {
-            showError('Please enter a valid rating (1-5)');
-            return;
-          }
-
-          console.log(`Submitting ${mode} for ${mode === 'edit' ? 'review' : 'event'}:`, mode === 'edit' ? reviewId : eventId);
-
-          try {
-            let url, body;
-            
-            if (mode === 'edit' && reviewId) {
-              // EDIT review
-              url = `/review/${reviewId}/edit/`;
-              body = JSON.stringify({
-                rating: parseInt(rating),
-                review_text: reviewText
-              });
-            } else {
-              // CREATE review
-              url = `/review/create/${eventId}/`;
-              body = JSON.stringify({
-                rating: parseInt(rating),
-                review_text: reviewText
-              });
+            // Validate
+            if (!rating || rating < 1 || rating > 5) {
+              showError('Please enter a valid rating (1-5)');
+              return;
             }
 
-            const response = await fetch(url, {
-              method: 'POST',
-              headers: {
-                'X-CSRFToken': csrftoken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-              },
-              body: body
-            });
+            console.log(`Submitting ${mode} for ${mode === 'edit' ? 'review' : 'event'}:`, mode === 'edit' ? reviewId : eventId);
 
-            const data = await response.json();
-            console.log('Response:', data);
-
-            if (data.success) {
-              // Gunakan toast jika fungsi ada
-              const successMessage = mode === 'edit' ? 'Review updated successfully!' : 'Review posted successfully!';
-              if (typeof showToast === 'function') {
-                showToast('toast-success', successMessage);
-              } else {
-                alert(successMessage);
-              }
+            try {
+              let url, body;
               
-              closeReviewModal();
-              setTimeout(() => location.reload(), 500);
-            } else {
-              showError(data.message || 'Failed to save review');
+              if (mode === 'edit' && reviewId) {
+                // EDIT review
+                url = `/review/${reviewId}/edit/`;
+                body = JSON.stringify({
+                  rating: parseInt(rating),
+                  review_text: reviewText
+                });
+              } else {
+                // CREATE review
+                url = `/review/create/${eventId}/`;
+                body = JSON.stringify({
+                  rating: parseInt(rating),
+                  review_text: reviewText
+                });
+              }
+
+              const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                  'X-CSRFToken': csrftoken,
+                  'Content-Type': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: body
+              });
+
+              const data = await response.json();
+              console.log('Response:', data);
+
+              if (data.success) {
+                // Gunakan toast jika fungsi ada
+                const successMessage = mode === 'edit' ? 'Review updated successfully!' : 'Review posted successfully!';
+                if (typeof showToast === 'function') {
+                  showToast(successMessage, 'success');
+                } else {
+                  alert(successMessage);
+                }
+                
+                closeReviewModal();
+                setTimeout(() => location.reload(), 500);
+              } else {
+                showError(data.message || 'Failed to save review');
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              showError('An error occurred. Please try again.');
             }
-          } catch (error) {
-            console.error('Error:', error);
-            showError('An error occurred. Please try again.');
-          }
-        });
+          });
+        }
 
         // Show error message
         function showError(message) {
@@ -155,10 +165,17 @@
       window.openReviewModal = function(eventId, eventName) {
         console.log('Opening CREATE modal for event:', eventId, eventName);
         
+        const modal = document.getElementById('reviewModal');
         const modalReviewId = document.getElementById('modal_review_id');
         const modalMode = document.getElementById('modal_mode');
         const modalTitle = document.getElementById('modalTitle');
         const submitBtn = document.getElementById('submitBtn');
+        
+        if (!modal) {
+          console.error('Modal not found!');
+          alert('Modal not found! Please refresh the page.');
+          return;
+        }
         
         if (modalReviewId) modalReviewId.value = '';
         document.getElementById('modal_event_id').value = eventId;
@@ -172,7 +189,6 @@
         if (submitBtn) submitBtn.textContent = 'Post';
         
         // Show modal
-        const modal = document.getElementById('reviewModal');
         modal.style.display = 'flex';
         modal.classList.remove('hidden');
         
@@ -182,10 +198,17 @@
       window.openEditReview = function(reviewId, eventId, eventName, rating, reviewText) {
         console.log('Opening EDIT modal for review:', reviewId);
         
+        const modal = document.getElementById('reviewModal');
         const modalReviewId = document.getElementById('modal_review_id');
         const modalMode = document.getElementById('modal_mode');
         const modalTitle = document.getElementById('modalTitle');
         const submitBtn = document.getElementById('submitBtn');
+        
+        if (!modal) {
+          console.error('Modal not found!');
+          alert('Modal not found! Please refresh the page.');
+          return;
+        }
         
         if (modalReviewId) modalReviewId.value = reviewId;
         document.getElementById('modal_event_id').value = eventId;
@@ -199,7 +222,6 @@
         if (submitBtn) submitBtn.textContent = 'Update';
         
         // Show modal
-        const modal = document.getElementById('reviewModal');
         modal.style.display = 'flex';
         modal.classList.remove('hidden');
         
@@ -212,8 +234,10 @@
         const errorMessage = document.getElementById('errorMessage');
         const form = document.getElementById('reviewForm');
         
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
+        if (modal) {
+          modal.style.display = 'none';
+          modal.classList.add('hidden');
+        }
         if (errorMessage) errorMessage.classList.add('hidden');
         if (form) form.reset();
         
@@ -276,7 +300,7 @@
           
           if (data.success) {
             if (typeof showToast === 'function') {
-              showToast('toast-success', 'Review deleted successfully!');
+              showToast('Review deleted successfully!', 'success');
             } else {
               alert('Review deleted successfully!');
             }

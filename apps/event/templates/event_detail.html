@@ -28,8 +28,11 @@
 
 <!-- Event Description -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
-        <div class="lg:col-span-2 space-y-8">
+    <!-- FIXED: Changed from lg:grid to md:grid for better responsive behavior -->
+    <div class="md:grid md:grid-cols-3 md:gap-8">
+        <!-- Main Content (Left Side - 2 columns) -->
+        <div class="md:col-span-2 space-y-8">
+            <!-- Event Image -->
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="relative bg-gray-200 h-64 md:h-96 flex items-center justify-center">
                     {% if event.image %}
@@ -40,10 +43,8 @@
                 </div>
             </div>
 
-
+            <!-- About Event -->
             <div class="bg-white shadow rounded-lg p-6 sm:p-8">
-
-                <!-- Event Information -->
                 <h2 class="text-2xl font-semibold text-gray-900 mb-6">About This Event</h2>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-5 mb-6 text-sm text-gray-600">
                     <div class="flex items-center">
@@ -88,23 +89,25 @@
             </div>
 
             <!-- Organizer Information -->
-            <h2 class="text-xl font-semibold text-gray-900 mb-5">Organized By</h2>
+            <div class="bg-white shadow rounded-lg p-6 sm:p-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-5">Organized By</h2>
                 <div class="flex items-start space-x-5">
-                {% if event.user_eo.profile_picture %}
-                <img href="#" class="h-16 w-16 rounded-full object-cover ring-2 ring-offset-2 ring-blue-600" src="{{ event.user_eo.profile_picture }}" alt="{{ event.user_eo.user.username }}">
-                {% else %}
-                <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-gray-100">
-                    <svg class="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                </span>
-                {% endif %}
-                <div>
-                    <h3 class="text-lg font-medium text-gray-900">{{ event.user_eo.user.username }}</h3>
-                    <div class="mt-2 grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-2 text-sm text-gray-500">
-                            <div>Total Events: {{ event.user_eo.event_set.count }} </div>
-                            <div>Joined: {{ event.user_eo.created_at|date:"d M Y" }}</div>
-                            {% if event.user_eo.base_location %}<div>Base Location: {{ event.user_eo.base_location }}</div>{% endif %}
+                    {% if event.user_eo.profile_picture %}
+                    <img class="h-16 w-16 rounded-full object-cover ring-2 ring-offset-2 ring-blue-600" src="{{ event.user_eo.profile_picture }}" alt="{{ event.user_eo.user.username }}">
+                    {% else %}
+                    <span class="inline-block h-16 w-16 rounded-full overflow-hidden bg-gray-100">
+                        <svg class="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </span>
+                    {% endif %}
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">{{ event.user_eo.user.username }}</h3>
+                        <div class="mt-2 grid grid-cols-2 sm:grid-cols-1 gap-x-4 gap-y-2 text-sm text-gray-500">
+                                <div>Total Events: {{ event.user_eo.event_set.count }} </div>
+                                <div>Joined: {{ event.user_eo.created_at|date:"d M Y" }}</div>
+                                {% if event.user_eo.base_location %}<div>Base Location: {{ event.user_eo.base_location }}</div>{% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -199,24 +202,20 @@
                         </form>
                     </div>
                 </div>
-
             </div>
         </aside>
-
     </div>
 </div>
 
 <!-- Modal 1: Confirmation Modal -->
 <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative animate-fade-in">
-        <!-- Close Button -->
         <button onclick="closeConfirmModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
 
-        <!-- Modal Content -->
         <div class="text-center">
             <h3 class="text-xl font-semibold text-gray-900 mb-4">
                 Are you sure you want to book this event?
@@ -225,7 +224,6 @@
                 Please check the details, date, location, and your availability before booking.
             </p>
 
-            <!-- Action Buttons -->
             <div class="flex gap-3">
                 <button onclick="closeConfirmModal()" 
                     class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition">
@@ -243,39 +241,32 @@
 <!-- Modal 2: Success Modal -->
 <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative animate-fade-in">
-        <!-- Close Button -->
         <button onclick="closeSuccessModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
 
-        <!-- Success Content -->
         <div class="text-center mb-6">
             <h3 class="text-2xl font-bold text-gray-900 mb-2">
                 You've Successfully Booked Your Spot!
             </h3>
         </div>
 
-        <!-- Booking Details -->
         <div class="space-y-4 mb-6">
-            <!-- Name -->
             <div>
                 <p class="text-xs text-gray-500 mb-1">Name of Participant</p>
                 <p class="text-base font-semibold text-gray-900" id="participantName">{{ user.username }}</p>
             </div>
 
-            <!-- Participant ID -->
             <div>
                 <p class="text-xs text-gray-500 mb-1">Participant ID</p>
                 <p class="text-base font-semibold text-gray-900" id="participantId">Will be generated</p>
             </div>
 
-            <!-- Details Section -->
             <div>
                 <p class="text-sm font-semibold text-gray-900 mb-3">Details</p>
                 
-                <!-- Date -->
                 <div class="flex items-start gap-3 mb-2">
                     <svg class="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -286,7 +277,6 @@
                     </div>
                 </div>
 
-                <!-- Location -->
                 <div class="flex items-start gap-3 mb-2">
                     <svg class="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -298,7 +288,6 @@
                     </div>
                 </div>
 
-                <!-- Type -->
                 <div class="flex items-start gap-3">
                     <svg class="w-5 h-5 text-gray-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
@@ -310,7 +299,6 @@
                 </div>
             </div>
 
-            <!-- Race Type Badge -->
             <div>
                 <p class="text-sm font-semibold text-gray-900 mb-2">Type</p>
                 <div class="inline-block border-2 border-blue-500 rounded-lg px-4 py-2">
@@ -320,7 +308,6 @@
             </div>
         </div>
 
-        <!-- Close Button -->
         <button onclick="closeSuccessModal()" 
             class="w-full px-4 py-3 bg-lime-400 text-gray-900 rounded-lg font-semibold hover:bg-lime-500 transition">
             Close
