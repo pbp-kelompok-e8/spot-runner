@@ -1,48 +1,84 @@
 from django.contrib import admin
-from .models import EventCategory, Event
-# Test
+from .models import Event, EventCategory
+
+
 @admin.register(EventCategory)
 class EventCategoryAdmin(admin.ModelAdmin):
-    list_display = ('get_category_display', 'category')
+    list_display = ('id', 'category', 'get_category_display_name')
     search_fields = ('category',)
-    
-    def get_category_display(self, obj):
-        return obj.get_category_display()
-    get_category_display.short_description = 'Category Name'
+    ordering = ('category',)
 
-class EventCategoryInline(admin.TabularInline):
-    model = Event.event_category.through
-    extra = 1
+    def get_category_display_name(self, obj):
+        return obj.get_category_display()
+    get_category_display_name.short_description = 'Category Name'
+
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user_eo', 'location', 'event_date', 'event_status', 'full', 'capacity', 'total_participans')
-    list_filter = ('event_status', 'location', 'event_date', 'full')
-    search_fields = ('name', 'description', 'user_eo__user__username')
-    readonly_fields = ('id', 'total_participans', 'full')
-    date_hierarchy = 'event_date'
-    
+    list_display = (
+        'name',
+        'user_eo',
+        'location',
+        'event_date',
+        'regist_deadline',
+        'event_status',
+        'capacity',
+        'total_participans',
+        'full',
+    )
+    list_filter = (
+        'event_status',
+        'location',
+        'event_category',
+        'user_eo',
+    )
+    search_fields = (
+        'name',
+        'description',
+        'user_eo__user__username',
+    )
+    readonly_fields = ('id', 'full',)
+    filter_horizontal = ('event_category',)
+    ordering = ('-event_date',)
+
     fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'name', 'description', 'user_eo')
+        ('Event Information', {
+            'fields': (
+                'id',
+                'name',
+                'description',
+                'user_eo',
+                'event_category',
+                'location',
+                'event_status',
+            )
         }),
-        ('Event Details', {
-            'fields': ('location', 'event_date', 'regist_deadline', 'distance', 'contact')
+        ('Media', {
+            'fields': ('image', 'image2', 'image3')
         }),
-        ('Capacity & Status', {
-            'fields': ('capacity', 'total_participans', 'full', 'event_status')
+        ('Schedule & Capacity', {
+            'fields': (
+                'event_date',
+                'regist_deadline',
+                'capacity',
+                'total_participans',
+                'full',
+            )
         }),
-        ('Media & Rewards', {
-            'fields': ('image', 'image2', 'image3', 'coin')
+        ('Contact & Rewards', {
+            'fields': ('contact', 'coin')
         }),
     )
-    
-    inlines = [EventCategoryInline]
-    
-    def save_model(self, request, obj, form, change):
-        # Auto-update full status based on capacity
-        if obj.total_participans >= obj.capacity:
-            obj.full = True
-        else:
-            obj.full = False
-        super().save_model(request, obj, form, change)
+
+    # Tambahkan aksi cepat di admin
+    actions = ['mark_as_finished', 'mark_as_ongoing']
+
+    def mark_as_finished(self, request, queryset):
+        updated = queryset.update(event_status='finished')
+        self.message_user(request, f"{updated} event(s) marked as Finished.")
+    mark_as_finished.short_description = "Mark selected events as Finished"
+
+    def mark_as_ongoing(self, request, queryset):
+        updated = queryset.update(event_status='on_going')
+        self.message_user(request, f"{updated} event(s) marked as On Going.")
+    mark_as_ongoing.short_description = "Mark selected events as On Going"

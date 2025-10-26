@@ -32,6 +32,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "william-jonnatan-spotrunner.pbp.cs.ui.ac.id"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://william-jonnatan-spotrunner.pbp.cs.ui.ac.id"
+]
+
 
 # Application definition
 
@@ -50,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
 ]
 
+#kasih tau django kalo pake user custom
 AUTH_USER_MODEL = 'main.User'
 
 MIDDLEWARE = [
@@ -134,7 +139,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jakarta'
 
 USE_I18N = True
 

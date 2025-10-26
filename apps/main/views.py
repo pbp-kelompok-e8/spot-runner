@@ -20,18 +20,67 @@ from django.db import transaction
 # Create your views here.
 
 def show_main(request):
-    return render(request, 'main.html')
+    """
+    View untuk menampilkan halaman utama dengan daftar event.
+    Mendukung filter berdasarkan kategori dari URL parameter.
+    """
+    # Ambil parameter filter dari URL
+    current_category = request.GET.get('category', '')
+    current_location = request.GET.get('location', '')
+    current_status = request.GET.get('status', '')
+    
+    # Query semua event, urutkan berdasarkan event_date (descending)
+    # Atau bisa pakai '-event_date' untuk event terdekat di atas
+    events = Event.objects.all().order_by('event_date')
+    
+    # Filter berdasarkan kategori jika ada
+    # Menggunakan event_category__category karena ini adalah ManyToMany
+    if current_category:
+        events = events.filter(event_category__category=current_category).distinct()
+    
+    # Filter berdasarkan lokasi jika ada
+    if current_location:
+        events = events.filter(location=current_location)
+    
+    # Filter berdasarkan status jika ada
+    if current_status:
+        events = events.filter(event_status=current_status)
+    
+    # Siapkan context untuk template
+    context = {
+        'events': events,
+        'current_category': current_category,
+        'current_location': current_location,
+        'current_status': current_status,
+    }
+    
+    return render(request, 'main.html', context)
 
 def register(request):
     form = CustomUserCreationForm()
 
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
+
         if form.is_valid():
+            email = form.cleaned_data.get('email')
+
+            # Cek apakah email sudah digunakan
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email sudah digunakan. Silakan gunakan email lain.")
+                return redirect('main:register')
+
+            # Kalau belum ada, buat user baru
             form.save()
-            messages.success(request, 'Your account has been successfully created!')
+            messages.success(request, "Akun berhasil dibuat! Silakan login.")
             return redirect('main:login')
-    context = {'form':form}
+
+        else:
+            # Kalau form tidak valid (misalnya password tidak cocok, dll)
+            messages.error(request, "Pendaftaran gagal. Periksa kembali data yang kamu masukkan.")
+            return redirect('main:register')
+
+    context = {'form': form}
     return render(request, 'register.html', context)
 
 def login_user(request):
@@ -55,41 +104,45 @@ def show_user(request, username):
     if user != request.user:
         messages.error(request, "You are not authorized to view this profile.")
         return redirect('main:show_main')
+    
     if user.role != 'runner':
         context = {
             'user': user,
         }
         return render(request, "profile.html", context)
 
-    attendance_list = user.runner.attendance_records.all().select_related('event')
+    attendance_list = user.runner.attendance_records.all().select_related('event').prefetch_related('event__event_category')
     today = date.today()
     
-    review_list = user.runner.reviews.all()
+    # 🔹 Ambil semua review runner ini dalam 1 query
+    reviews = Review.objects.filter(runner=user.runner).select_related('event')
+    review_dict = {review.event_id: review for review in reviews}
 
-    # update semua status event
+    # ✅ HANYA update status ATTENDANCE (bukan event)
     for record in attendance_list:
-        event = record.event  # ambil objek event dari record attendance
+        event = record.event
         
-        event_date = event.event_date.date()
+        # ❌ HAPUS SEMUA BAGIAN INI
+        # event_date = event.event_date.date()
+        # if event_date < today:
+        #     event.event_status = "finished"
+        # elif event_date == today:
+        #     event.event_status = "on_going"
+        # else:
+        #     event.event_status = "coming_soon"
+        # event.save()
         
-        # bandingin
-        if event_date < today:
-            event.event_status = "finished"
-        elif event_date == today:
-            event.event_status = "on_going"
-        else:
-            event.event_status = "coming_soon"
-        event.save() # save perubahan status event
-
-        # fitur extra ga dipake lol
+        # ✅ HANYA update status attendance jika event sudah finished
         if event.event_status == "finished" and record.status == 'attending':
             record.status = 'finished'
             record.save()
+        
+        # 🔹 Attach review ke record berdasarkan event_id
+        record.review = review_dict.get(event.id)
 
     context = {
         'user': user,
-        'attendance_list': attendance_list, 
-        'review_list': review_list,
+        'attendance_list': attendance_list,
         'location_choices': Runner.LOCATION_CHOICES,
     }
 
