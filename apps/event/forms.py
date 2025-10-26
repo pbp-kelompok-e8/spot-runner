@@ -2,6 +2,8 @@ from django import forms
 from .models import Event, EventCategory
 from django.utils.html import strip_tags
 from django.forms import inlineformset_factory
+from django.core.exceptions import ValidationError 
+from django.utils import timezone
 
 class EventForm(forms.ModelForm):
     class Meta:
@@ -17,11 +19,11 @@ class EventForm(forms.ModelForm):
             'regist_deadline',
             'contact',
             'capacity',
-            'event_status',
+            # 'event_status',
             'coin',
             'event_category'
         ]
-
+        now_iso = timezone.now().strftime('%Y-%m-%dT%H:%M')
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Enter event name'}),
             'description': forms.Textarea(attrs={'placeholder': 'Enter event description...', 'rows': 5}),
@@ -29,8 +31,8 @@ class EventForm(forms.ModelForm):
             'image': forms.URLInput(attrs={'placeholder': 'https://example.com/image1.png'}),
             'image2': forms.URLInput(attrs={'placeholder': 'https://example.com/image2.png'}),
             'image3': forms.URLInput(attrs={'placeholder': 'https://example.com/image3.png'}),
-            'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'regist_deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'min': now_iso}),
+            'regist_deadline': forms.DateTimeInput(attrs={'type': 'datetime-local', 'min': now_iso}),
             'contact': forms.TextInput(attrs={'placeholder': 'Enter phone number'}),
             'capacity': forms.NumberInput(attrs={'placeholder': 'Enter max participants'}),
             'coin': forms.NumberInput(attrs={'placeholder': 'Enter coin reward'}), 
@@ -77,3 +79,37 @@ class EventForm(forms.ModelForm):
     def clean_description(self):
         description = self.cleaned_data["description"]
         return strip_tags(description)
+    
+    def clean_event_date(self):
+        event_date = self.cleaned_data.get('event_date')
+        now = timezone.now()
+        
+        if event_date and event_date < now:
+            raise ValidationError(
+                "Event date and time cannot be in the past!"
+            )
+        
+        return event_date
+
+    def clean_regist_deadline(self):
+        regist_deadline = self.cleaned_data.get('regist_deadline')
+        now = timezone.now()
+        
+        if regist_deadline and regist_deadline < now:
+            raise ValidationError(
+                "Registration deadline cannot be in the past!"
+            )
+        event_date = self.cleaned_data.get('event_date')
+        if event_date and regist_deadline and regist_deadline >= event_date:
+            raise ValidationError(
+                "Registration deadline must be before the event date/time."
+            )
+        return regist_deadline
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if not instance.pk and not instance.event_status:
+             instance.event_status = 'coming_soon' 
+        if commit:
+            instance.save()
+        return instance
