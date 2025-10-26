@@ -124,7 +124,8 @@
 									</button>
 									<div id="dropdown-{{ record.event.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
 										<button id="cancel-btn-{{ record.event.id }}" onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
-											class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+										data-event-name="{{ record.event.name|escapejs }}"
+										class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
 											<span class="flex items-center">
 												<svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
 													<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -203,9 +204,7 @@
 			</div>
 		</div>
 <script>
-    // ===================================================================
-    // DEFINISI FUNGSI (Biarkan di luar agar onclick bisa menemukan)
-    // ===================================================================
+    // DEFINISI FUNGSI
 
     function closeModal() {
         const cancelModal = document.getElementById('confirmation-modal');
@@ -286,10 +285,7 @@
         dropdown.classList.toggle('hidden');
     }
 
-    // ===================================================================
-    // KODE UTAMA: Inisialisasi dan Event Listeners
-    // (Jalankan HANYA setelah semua HTML dimuat)
-    // ===================================================================
+    // Main code hanya aktif kalo semua udh ke load
     document.addEventListener('DOMContentLoaded', () => {
         
         // --- Ambil semua elemen penting ---
@@ -316,7 +312,7 @@
         // --- Pasang Listener untuk Edit Form ---
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); // SEKARANG INI AKAN BERJALAN
+                e.preventDefault();
 
                 saveButton.disabled = true;
                 saveButtonText.classList.add('hidden');
@@ -339,31 +335,26 @@
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        // 1. Update teks di halaman
                         displayUsernameHeader.textContent = `${data.username}'s Profile`;
                         displayUsernameInput.value = data.username;
                         displayLocationInput.value = data.base_location;
 
-                        // 2. Update URL
+
                         editForm.action = data.new_urls.edit_profile;
                         changePasswordLink.href = data.new_urls.change_password;
 
-                        // 3. Update URL tombol "Cancel Booking"
                         const newCancelUrls = data.new_urls.cancel_event_urls;
                         for (const eventId in newCancelUrls) {
                             const cancelBtn = document.getElementById(`cancel-btn-${eventId}`);
                             if (cancelBtn) {
-                                const oldOnClick = cancelBtn.getAttribute('onclick');
-                                const eventName = oldOnClick.split(',\'')[1].replace(/'\)$/, '');
+                                const eventName = cancelBtn.dataset.eventName;
                                 const newOnClick = `openCancelModal('${newCancelUrls[eventId]}', '${eventName}')`;
                                 cancelBtn.setAttribute('onclick', newOnClick);
                             }
                         }
                         
-                        // 4. Tutup modal
                         closeEditModal();
                         
-                        // 5. [OPSIONAL] Update URL di browser bar tanpa refresh
                         const newPath = window.location.pathname.split('/').slice(0, -1).join('/') + '/' + data.username;
                         window.history.pushState({}, `${data.username}'s Profile`, newPath);
 
@@ -373,7 +364,7 @@
                     }
 
                 } catch (error) {
-                    console.error("Fetch Error:", error); // Lihat ini di F12 jika ada error
+                    console.error("Fetch Error:", error);
                     editError.textContent = 'A network error or JSON parsing error occurred. Please try again.';
                     editError.classList.remove('hidden');
                 } finally {
@@ -394,7 +385,7 @@
             }
         });
 
-    }); // <-- AKHIR DARI DOMCONTENTLOADED
+    }); 
 </script>
 
 
