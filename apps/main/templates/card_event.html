@@ -1,12 +1,13 @@
 {% load static %}
 {# expects: event (object), request (available), optional: show_actions True/False #}
 
-<div class="bg-white rounded-xl shadow overflow-hidden relative flex flex-col h-full">
+<div class="bg-white rounded-xl shadow overflow-hidden relative flex flex-col h-full event-card">
 
   <!-- IMAGE / HERO AREA -->
   <div class="relative w-full h-44 md:h-48 bg-gray-100">
     {% if event.image %}
-      <img src="{{ event.image.url }}" alt="{{ event.name }}" class="w-full h-full object-cover" />
+      <img src="{{ event.image }}" alt="{{ event.name }}" class="w-full h-full object-cover" />
+
     {% else %}
       <div class="w-full h-full bg-gray-200 flex items-center justify-center">
         <svg class="w-16 h-16 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,14 +53,18 @@
                 </svg>
               </a>
 
-              <form method="post" action="{% url 'event:delete_event' event.id %}" onsubmit="return confirm('Are you sure you want to delete this event?');" class="inline">
-                {% csrf_token %}
-                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-red-50" title="Delete">
-                  <svg class="w-4 h-4 text-rose-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
-                  </svg>
-                </button>
-              </form>
+              <!-- Delete button dengan class untuk JavaScript -->
+              <button type="button" 
+                      class="delete-event-btn inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-red-50" 
+                      title="Delete"
+                      data-event-id="{{ event.id }}"
+                      data-event-name="{{ event.name }}"
+                      data-delete-url="{% url 'event:delete_event' event.id %}"
+                      data-csrf-token="{{ csrf_token }}">
+                <svg class="w-4 h-4 text-rose-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                </svg>
+              </button>
             </div>
           {% endif %}
         {% endif %}
@@ -118,3 +123,106 @@
     </a>
   </div>
 </div>
+
+<!-- === CONFIRM DELETE TOAST MODAL === -->
+<div id="confirmToast" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+  <div class="bg-white rounded-xl shadow-xl p-6 w-[380px] text-center animate-fadeIn">
+    <h2 class="text-lg font-semibold text-gray-800 mb-2">Delete this event?</h2>
+    <p class="text-gray-500 mb-6 text-sm">This action cannot be undone. Please confirm.</p>
+    <div class="flex justify-center gap-3">
+      <button id="cancelToast" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
+        Cancel
+      </button>
+      <button id="confirmToastYes" class="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium">
+        Yes, delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notif -->
+<div id="toast-message" class="hidden fixed top-20 right-5 px-4 py-2 rounded-lg shadow-lg text-white text-sm z-50"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const confirmModal = document.getElementById("confirmToast");
+  const cancelBtn = document.getElementById("cancelToast");
+  const confirmBtn = document.getElementById("confirmToastYes");
+  const toast = document.getElementById("toast-message");
+
+  let currentEventCard = null;
+  let currentDeleteUrl = null;
+  let currentCsrfToken = null;
+
+  // Event listener untuk semua tombol delete
+  document.addEventListener("click", (e) => {
+    if (e.target.closest('.delete-event-btn')) {
+      const button = e.target.closest('.delete-event-btn');
+      currentEventCard = button.closest('.event-card');
+      currentDeleteUrl = button.getAttribute('data-delete-url');
+      currentCsrfToken = button.getAttribute('data-csrf-token');
+      
+      confirmModal.classList.remove("hidden");
+    }
+  });
+
+  cancelBtn.addEventListener("click", () => {
+    confirmModal.classList.add("hidden");
+    resetCurrentData();
+  });
+
+  confirmBtn.addEventListener("click", async () => {
+    if (!currentDeleteUrl || !currentCsrfToken) return;
+    
+    confirmModal.classList.add("hidden");
+    
+    try {
+      const response = await fetch(currentDeleteUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": currentCsrfToken,
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showToast("Event deleted successfully!", true);
+        if (currentEventCard) {
+          currentEventCard.style.transition = "opacity 0.4s ease";
+          currentEventCard.style.opacity = "0";
+          setTimeout(() => currentEventCard.remove(), 400);
+        }
+      } else {
+        showToast(data.error || "Failed to delete event.", false);
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      showToast("An error occurred while deleting the event.", false);
+    } finally {
+      resetCurrentData();
+    }
+  });
+
+  function resetCurrentData() {
+    currentEventCard = null;
+    currentDeleteUrl = null;
+    currentCsrfToken = null;
+  }
+
+  function showToast(message, success = true) {
+    toast.textContent = message;
+    toast.className =
+      "fixed top-20 right-5 px-4 py-2 rounded-lg shadow-lg text-white text-sm z-50 transition-opacity duration-300 " +
+      (success ? "bg-green-500" : "bg-red-500");
+    toast.classList.remove("hidden");
+    toast.style.opacity = "0";
+    setTimeout(() => (toast.style.opacity = "1"), 50);
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.classList.add("hidden"), 300);
+    }, 2000);
+  }
+});
+</script>

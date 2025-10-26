@@ -114,30 +114,27 @@ def show_user(request, username):
     attendance_list = user.runner.attendance_records.all().select_related('event').prefetch_related('event__event_category')
     today = date.today()
     
-    # 🔹 Ambil semua review runner ini dalam 1 query
     reviews = Review.objects.filter(runner=user.runner).select_related('event')
     review_dict = {review.event_id: review for review in reviews}
 
-    # ✅ HANYA update status ATTENDANCE (bukan event)
+
     for record in attendance_list:
         event = record.event
+        event_date = event.event_date.date()
         
-        # ❌ HAPUS SEMUA BAGIAN INI
-        # event_date = event.event_date.date()
-        # if event_date < today:
-        #     event.event_status = "finished"
-        # elif event_date == today:
-        #     event.event_status = "on_going"
-        # else:
-        #     event.event_status = "coming_soon"
-        # event.save()
-        
-        # ✅ HANYA update status attendance jika event sudah finished
+        # Update status event
+        if event_date < today:
+            event.event_status = "finished"
+        elif event_date == today:
+            event.event_status = "on_going"
+        else:
+            event.event_status = "coming_soon"
+        event.save()
+
+        # Update status registrasi
         if event.event_status == "finished" and record.status == 'attending':
             record.status = 'finished'
             record.save()
-        
-        # 🔹 Attach review ke record berdasarkan event_id
         record.review = review_dict.get(event.id)
 
     context = {
@@ -184,7 +181,7 @@ def edit_profile_runner(request, username):
                 "edit_profile": reverse('main:edit_profile', args=[user.username]),
                 "change_password": reverse('main:change_password', args=[user.username]),
                 "cancel_event_urls": {
-                    record.event.id: reverse('main:cancel_event', args=[user.username, record.event.id])
+                    str(record.event.id): reverse('main:cancel_event', args=[user.username, record.event.id])
                     for record in user.runner.attendance_records.filter(status='attending')
                 }
             }

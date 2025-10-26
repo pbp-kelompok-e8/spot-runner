@@ -123,7 +123,7 @@
 										</svg>
 									</button>
 									<div id="dropdown-{{ record.event.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-										<button onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
+										<button id="cancel-btn-{{ record.event.id }}" onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
 											class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
 											<span class="flex items-center">
 												<svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -203,210 +203,201 @@
 			</div>
 		</div>
 <script>
-	// ... (Kode JavaScript Anda tidak berubah) ...
-	// --- Logika untuk Cancel Modal (Tugas 3) ---
-	const cancelModal = document.getElementById('confirmation-modal'); // Asumsi dari 'confirmation_modal.html'
-	const cancelModalTitle = document.getElementById('modal-title');
-	const cancelModalText = document.getElementById('modal-text');
-	const cancelModalConfirmButton = document.getElementById('modal-confirm-button');
+    // ===================================================================
+    // DEFINISI FUNGSI (Biarkan di luar agar onclick bisa menemukan)
+    // ===================================================================
 
-	function closeModal() {
-			if (cancelModal) { // Cek dulu apakah elemennya ada
-				cancelModal.classList.add('hidden');
-			}
-		}
+    function closeModal() {
+        const cancelModal = document.getElementById('confirmation-modal');
+        if (cancelModal) {
+            cancelModal.classList.add('hidden');
+        }
+    }
 
-	function openCancelModal(actionUrl, itemName) {
-		cancelModalTitle.textContent = `Are you sure you want to cancel?`;
-		cancelModalText.textContent = `You'll lose your spot in ${itemName}.`;
-		// Ini adalah form di dalam modal Anda
-		cancelModalConfirmButton.form.action = actionUrl; 
-		
-		cancelModal.classList.remove('hidden');
-	}
+    function openCancelModal(actionUrl, itemName) {
+        // Ambil elemen di dalam fungsi agar selalu up-to-date
+        const cancelModal = document.getElementById('confirmation-modal');
+        const cancelModalTitle = document.getElementById('modal-title');
+        const cancelModalText = document.getElementById('modal-text');
+        const cancelModalConfirmButton = document.getElementById('modal-confirm-button');
 
-	const editModal = document.getElementById('edit-profile-modal');
-	const editModalContent = document.getElementById('edit-modal-content');
-	const editForm = document.getElementById('edit-profile-form');
-	const editError = document.getElementById('edit-profile-error');
-	const saveButton = document.getElementById('edit-profile-save-button');
-	const saveButtonText = document.getElementById('save-button-text');
-	const saveSpinner = document.getElementById('save-spinner');
+        cancelModalTitle.textContent = `Are you sure you want to cancel?`;
+        cancelModalText.textContent = `You'll lose your spot in ${itemName}.`;
+        cancelModalConfirmButton.form.action = actionUrl; 
+        
+        cancelModal.classList.remove('hidden');
+    }
 
-	const displayUsernameHeader = document.getElementById('display-username-header');
-	const displayUsernameInput = document.getElementById('display-username-input');
-	const displayLocationInput = document.getElementById('display-location-input');
-	const changePasswordLink = document.getElementById('change-password-link');
+    function openEditModal() {
+        const editModal = document.getElementById('edit-profile-modal');
+        if (!editModal) return;
+        
+        const displayUsernameInput = document.getElementById('display-username-input');
+        const displayLocationInput = document.getElementById('display-location-input');
+        const locationSelect = document.getElementById('edit-location');
 
+        // 1. Reset form ke nilai saat ini
+        document.getElementById('edit-username').value = displayUsernameInput.value;
+        const currentLocDisplay = displayLocationInput.value; 
+        
+        for (let i = 0; i < locationSelect.options.length; i++) {
+            if (locationSelect.options[i].text === currentLocDisplay) {
+                locationSelect.value = locationSelect.options[i].value;
+                break;
+            }
+        }
 
-	function openEditModal() {
-		if (!editModal) return;
-		
-		// 1. Reset form ke nilai saat ini (jika user edit lalu cancel)
-		document.getElementById('edit-username').value = displayUsernameInput.value;
-		// Cari display text dari location input
-		const currentLocDisplay = displayLocationInput.value; 
-		const locationSelect = document.getElementById('edit-location');
-		// Loop <option> untuk menemukan value yang cocok dengan display text
-		for (let i = 0; i < locationSelect.options.length; i++) {
-			if (locationSelect.options[i].text === currentLocDisplay) {
-				locationSelect.value = locationSelect.options[i].value;
-				break;
-			}
-		}
+        // 2. Tampilkan modal
+        editModal.classList.remove('hidden');
+        setTimeout(() => {
+            document.getElementById('edit-modal-content').classList.remove('scale-95', 'opacity-0');
+            document.getElementById('edit-modal-content').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
 
-		// 2. Tampilkan modal
-		editModal.classList.remove('hidden');
-		setTimeout(() => { // Untuk animasi
-			editModalContent.classList.remove('scale-95', 'opacity-0');
-			editModalContent.classList.add('scale-100', 'opacity-100');
-		}, 10);
-	}
+    function closeEditModal() {
+        const editModal = document.getElementById('edit-profile-modal');
+        const editModalContent = document.getElementById('edit-modal-content');
+        const editError = document.getElementById('edit-profile-error');
 
-	function closeEditModal() {
-		if (!editModal) return;
+        if (!editModal) return;
 
-		editError.classList.add('hidden'); // Sembunyikan error
-		editError.textContent = '';
-		
-		editModalContent.classList.add('scale-95', 'opacity-0');
-		editModalContent.classList.remove('scale-100', 'opacity-100');
-		
-		setTimeout(() => { // Tunggu animasi selesai
-			editModal.classList.add('hidden');
-		}, 300); // Sesuaikan dengan durasi transisi
-	}
+        editError.classList.add('hidden');
+        editError.textContent = '';
+        
+        editModalContent.classList.add('scale-95', 'opacity-0');
+        editModalContent.classList.remove('scale-100', 'opacity-100');
+        
+        setTimeout(() => {
+            editModal.classList.add('hidden');
+        }, 300);
+    }
 
+    function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+        
+        allDropdowns.forEach(d => {
+            if (d.id !== dropdownId) {
+                d.classList.add('hidden');
+            }
+        });
+        
+        dropdown.classList.toggle('hidden');
+    }
 
-	editForm.addEventListener('submit', async (e) => {
-		e.preventDefault(); // Hentikan submit form standar
+    // ===================================================================
+    // KODE UTAMA: Inisialisasi dan Event Listeners
+    // (Jalankan HANYA setelah semua HTML dimuat)
+    // ===================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // --- Ambil semua elemen penting ---
+        const editForm = document.getElementById('edit-profile-form');
+        const saveButton = document.getElementById('edit-profile-save-button');
+        const saveButtonText = document.getElementById('save-button-text');
+        const saveSpinner = document.getElementById('save-spinner');
+        const editError = document.getElementById('edit-profile-error');
+        
+        const displayUsernameHeader = document.getElementById('display-username-header');
+        const displayUsernameInput = document.getElementById('display-username-input');
+        const displayLocationInput = document.getElementById('display-location-input');
+        const changePasswordLink = document.getElementById('change-password-link');
 
-		// Tampilkan loading
-		saveButton.disabled = true;
-		saveButtonText.classList.add('hidden');
-		saveSpinner.classList.remove('hidden');
-		editError.classList.add('hidden');
+        // --- Tampilkan Last Login ---
+        {% if user.last_login %}
+            const lastLogin = new Date("{{ user.last_login|date:'c' }}");
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('lastLogin').innerText = `Last login: ${lastLogin.toLocaleDateString('en-US', options)}`;
+        {% else %}
+            document.getElementById('lastLogin').innerText = 'Last login: Never';
+        {% endif %}
 
-		const formData = new FormData(editForm);
-		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // --- Pasang Listener untuk Edit Form ---
+        if (editForm) {
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); // SEKARANG INI AKAN BERJALAN
 
-		try {
-			const response = await fetch(editForm.action, {
-				method: 'POST',
-				body: formData,
-				headers: {
-					'X-CSRFToken': csrfToken,
-					'X-Requested-With': 'XMLHttpRequest' // Opsional, tapi bagus
-				}
-			});
+                saveButton.disabled = true;
+                saveButtonText.classList.add('hidden');
+                saveSpinner.classList.remove('hidden');
+                editError.classList.add('hidden');
 
-			const data = await response.json();
+                const formData = new FormData(editForm);
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-			if (response.ok && data.success) {
-				// 1. Update teks di halaman
-				displayUsernameHeader.textContent = `${data.username}'s Profile`;
-				displayUsernameInput.value = data.username;
-				displayLocationInput.value = data.base_location;
+                try {
+                    const response = await fetch(editForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
 
-				// 2. Update URL (PENTING!)
-				editForm.action = data.new_urls.edit_profile;
-				changePasswordLink.href = data.new_urls.change_password;
+                    const data = await response.json();
 
-				// 3. Update URL untuk semua tombol "Cancel Booking"
-				const newCancelUrls = data.new_urls.cancel_event_urls;
-				for (const eventId in newCancelUrls) {
-					const cancelBtn = document.getElementById(`cancel-btn-${eventId}`);
-					if (cancelBtn) {
-						// Ambil nama event dari onclick yang lama
-						const oldOnClick = cancelBtn.getAttribute('onclick');
-						const eventName = oldOnClick.split(',\'')[1].replace(/'\)$/, ''); // Ambil nama
-						
-						// Set onclick baru
-						const newOnClick = `openCancelModal('${newCancelUrls[eventId]}', '${eventName}')`;
-						cancelBtn.setAttribute('onclick', newOnClick);
-					}
-				}
-				
-				// 4. Tutup modal
-				closeEditModal();
-				
-				// Optional: Tampilkan notifikasi sukses
-				// (Anda bisa pakai library toast atau logic messages Django)
-				
-			} else {
-				// Tampilkan error
-				editError.textContent = data.error || 'An unknown error occurred.';
-				editError.classList.remove('hidden');
-			}
+                    if (response.ok && data.success) {
+                        // 1. Update teks di halaman
+                        displayUsernameHeader.textContent = `${data.username}'s Profile`;
+                        displayUsernameInput.value = data.username;
+                        displayLocationInput.value = data.base_location;
 
-		} catch (error) {
-			editError.textContent = 'A network error occurred. Please try again.';
-			editError.classList.remove('hidden');
-		} finally {
-			// Sembunyikan loading
-			saveButton.disabled = false;
-			saveButtonText.classList.remove('hidden');
-			saveSpinner.classList.add('hidden');
-		}
-	});
+                        // 2. Update URL
+                        editForm.action = data.new_urls.edit_profile;
+                        changePasswordLink.href = data.new_urls.change_password;
 
+                        // 3. Update URL tombol "Cancel Booking"
+                        const newCancelUrls = data.new_urls.cancel_event_urls;
+                        for (const eventId in newCancelUrls) {
+                            const cancelBtn = document.getElementById(`cancel-btn-${eventId}`);
+                            if (cancelBtn) {
+                                const oldOnClick = cancelBtn.getAttribute('onclick');
+                                const eventName = oldOnClick.split(',\'')[1].replace(/'\)$/, '');
+                                const newOnClick = `openCancelModal('${newCancelUrls[eventId]}', '${eventName}')`;
+                                cancelBtn.setAttribute('onclick', newOnClick);
+                            }
+                        }
+                        
+                        // 4. Tutup modal
+                        closeEditModal();
+                        
+                        // 5. [OPSIONAL] Update URL di browser bar tanpa refresh
+                        const newPath = window.location.pathname.split('/').slice(0, -1).join('/') + '/' + data.username;
+                        window.history.pushState({}, `${data.username}'s Profile`, newPath);
 
+                    } else {
+                        editError.textContent = data.error || 'An unknown error occurred.';
+                        editError.classList.remove('hidden');
+                    }
 
+                } catch (error) {
+                    console.error("Fetch Error:", error); // Lihat ini di F12 jika ada error
+                    editError.textContent = 'A network error or JSON parsing error occurred. Please try again.';
+                    editError.classList.remove('hidden');
+                } finally {
+                    saveButton.disabled = false;
+                    saveButtonText.classList.remove('hidden');
+                    saveSpinner.classList.add('hidden');
+                }
+            });
+        } else {
+            console.error("Peringatan: Elemen form #edit-profile-form tidak ditemukan.");
+        }
 
+        // --- Pasang Listener untuk menutup dropdown ---
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.relative')) {
+                const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+                allDropdowns.forEach(d => d.classList.add('hidden'));
+            }
+        });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	function toggleDropdown(dropdownId) {
-	const dropdown = document.getElementById(dropdownId);
-	const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
-	
-	// Close all other dropdowns
-	allDropdowns.forEach(d => {
-		if (d.id !== dropdownId) {
-			d.classList.add('hidden');
-		}
-	});
-	
-	// Toggle current dropdown
-	dropdown.classList.toggle('hidden');
-}
-
-
-	// ===================================================================
-	// KODE UTAMA: Inisialisasi
-	// ===================================================================
-	document.addEventListener('DOMContentLoaded', () => {
-		
-		// --- Tampilkan Last Login ---
-		{% if user.last_login %}
-			const lastLogin = new Date("{{ user.last_login|date:'c' }}");
-			const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-			document.getElementById('lastLogin').innerText = `Last login: ${lastLogin.toLocaleDateString('en-US', options)}`;
-		{% else %}
-			document.getElementById('lastLogin').innerText = 'Last login: Never';
-		{% endif %}
-
-	});
-	// Close dropdowns when clicking outside
-	document.addEventListener('click', function(e) {
-		if (!e.target.closest('.relative')) {
-			const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
-			allDropdowns.forEach(d => d.classList.add('hidden'));
-		}
-	});
+    }); // <-- AKHIR DARI DOMCONTENTLOADED
 </script>
+
+
 
 {% include 'footer.html' %}
 {% endblock content %}
