@@ -120,23 +120,19 @@ def show_user(request, username):
 
     # update semua status event
     for record in attendance_list:
-        event = record.event  # Ambil objek event dari record attendance
-        
-        # Cek jika event_date tidak None
+        event = record.event
         event_date = event.event_date.date()
         
-        # Logika ini untuk mengubah status EVENT-nya
+        # Update status event
         if event_date < today:
             event.event_status = "finished"
         elif event_date == today:
             event.event_status = "on_going"
         else:
             event.event_status = "coming_soon"
-        event.save() # Simpan perubahan status di OBJEK EVENT
+        event.save()
 
-        # Logika TAMBAHAN: Update status REGISTRASI-nya
-        # Jika event-nya sudah selesai DAN status pendaftarannya 
-        # masih 'attending', ubah jadi 'finished'.
+        # Update status registrasi
         if event.event_status == "finished" and record.status == 'attending':
             record.status = 'finished'
             record.save()
@@ -147,7 +143,7 @@ def show_user(request, username):
     context = {
         'user': user,
         'attendance_list': attendance_list,
-        'location_choices': Runner.LOCATION_CHOICES,
+        # 'location_choices': Runner.LOCATION_CHOICES,
     }
 
     return render(request, "runner_detail.html", context)
