@@ -11,12 +11,14 @@
 <main class="mt-16 py-8 bg-white text-gray-900">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        <!-- Opsi back -->
         <div class="mb-4">
             <a href="javascript:history.back()" class="text-sm font-medium text-gray-700 hover:text-gray-900">
                 &lt; Back
             </a>
         </div>
-
+        
+        <!-- Form Create -->
         <div class="bg-white p-6 sm:p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
             <form id="create-event-form" novalidate>
                 {% csrf_token %}
@@ -28,12 +30,14 @@
                     <p class="text-sm font-medium text-gray-500">Launch new marathon event</p>
                 </div>
 
+                <!-- Error Box -->
                 <div id="form-errors-container" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded" style="display: none;">
                     <p class="font-bold">Please correct the errors below</p>
                     <ul id="form-errors-list" class="list-disc list-inside">
                         </ul>
                 </div>
-
+                
+                <!-- Event Status -->
                 <div class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <div class="flex flex-wrap gap-3">
@@ -57,6 +61,7 @@
                     <div id="error-event_status" class="mt-1 text-xs text-red-600"></div>
                 </div>
 
+                <!-- Input field section -->
                 <div class="mb-5">
                     <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                         Event Name
@@ -120,20 +125,21 @@
                     {{ form.coin }}
                     <div id="error-coin" class="mt-1 text-xs text-red-600"></div>
                 </div>
-
-                <div class="mb-5">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Event Category</label>
-                    <div class="space-y-2">
-                        {% for choice in form.event_category %}
-                        <div class="flex items-center">
-                            {{ choice.tag }} 
-                            <label for="{{ choice.id_for_label }}" class="ml-2 block text-sm text-gray-900">
-                                {{ choice.choice_label }}
-                            </label>
-                        </div>
-                        {% endfor %}
+                
+                <div class="space-y-2">
+                    <div class="block text-sm font-medium text-gray-700 mb-1">
+                        Event Category
                     </div>
-                    <div id="error-event_category" class="mt-1 text-xs text-red-600"></div>
+                    {% for choice in form.event_category %}
+                    <div class="flex items-center">
+                        {{ choice.tag }} 
+                        <label for="{{ choice.id_for_label }}" class="ml-2 block text-sm text-gray-900">
+                            {{ choice.choice_label }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                    <div class="space-y-2">
+                    </div>
                 </div>
                 
                 <div class="mb-5">
@@ -160,7 +166,8 @@
                     <div id="error-image3" class="mt-1 text-xs text-red-600"></div>
                 </div>
 
-                <div class="mt-6">
+                <!-- Create Button -->
+                <div  class="mt-6">
                     <button type="submit" id="submit-button"
                             class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
                         Create Event
@@ -172,6 +179,24 @@
     </div>
 </main>
 
+<!-- Toast Confirmation -->
+<div id="confirmToast" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-[380px] text-center animate-fadeIn">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Are you sure you want to create this event?</h2>
+        <p class="text-gray-500 mb-6 text-sm">
+            Please review your event details before creating.
+        </p>
+        <div class="flex justify-center gap-3">
+            <button id="cancelToast" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
+                Cancel
+            </button>
+            <button id="confirmToastYes" class="px-4 py-2 rounded-lg bg-lime-500 hover:bg-lime-600 text-white font-medium">
+                Yes, I'm sure
+            </button>
+        </div>
+    </div>
+</div>
+
 {% include 'footer.html' %}
 
 <script>
@@ -180,31 +205,54 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitButton = document.getElementById('submit-button');
     const errorContainer = document.getElementById('form-errors-container');
     const errorList = document.getElementById('form-errors-list');
+    const toast = document.getElementById('confirmToast');
+    const btnCancel = document.getElementById('cancelToast');
+    const btnYes = document.getElementById('confirmToastYes');
 
     form.addEventListener('submit', function(event) {
         event.preventDefault();
+        toast.classList.remove('hidden');
+    });
+
+    btnCancel.addEventListener('click', function() {
+        toast.classList.add('hidden');
+    });
+
+    btnYes.addEventListener('click', async function() {
+        toast.classList.add('hidden');
+        
         submitButton.disabled = true;
         submitButton.textContent = 'Creating...';
         errorContainer.style.display = 'none';
         errorList.innerHTML = '';
+        
+        // Clear individual field errors
         document.querySelectorAll('[id^="error-"]').forEach(el => {
             el.innerHTML = '';
         });
+
         const formData = new FormData(form);
-        fetch(window.location.pathname, { 
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',                
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
+        
+        try {
+            const response = await fetch(window.location.pathname, { 
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',                
+                }
+            });
+            
+            const data = await response.json();
+            
             if (data.success) {
-                alert('Event created successfully!');
-                window.location.href = data.redirect_url;
+                showToast('Event created successfully!', true);
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1000);
             } else {
                 errorContainer.style.display = 'block';
+                
+                // Handle general errors
                 if (data.errors['__all__']) {
                     data.errors['__all__'].forEach(error => {
                         const li = document.createElement('li');
@@ -213,13 +261,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
 
+                // Handle field-specific errors
                 Object.keys(data.errors).forEach(field => {
                     if (field !== '__all__') {
                         const errorDiv = document.getElementById(`error-${field}`);
-                        const fieldErrorList = document.createElement('ul');
-                        const li = document.createElement('li');
-                        li.textContent = `${field.replace('_', ' ')}: ${data.errors[field][0].message}`;
-                        errorList.appendChild(li);
+                        
+                        // Add to general error list
+                        data.errors[field].forEach(error => {
+                            const li = document.createElement('li');
+                            li.textContent = `${field.replace('_', ' ')}: ${error.message}`;
+                            errorList.appendChild(li);
+                        });
+                        
+                        // Add to individual field error display
                         if (errorDiv) {
                             data.errors[field].forEach(error => {
                                 const p = document.createElement('p');
@@ -229,18 +283,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
-                submitButton.disabled = false;
-                submitButton.textContent = 'Create Event';
+                
+                showToast('Please correct the errors below.', false);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            errorContainer.style.display = 'block';
-            errorList.innerHTML = '<li>An unexpected error occurred. Please try again.</li>';
+            showToast('An unexpected error occurred. Please try again.', false);
+        } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Create Event';
-        });
+        }
     });
+
+    // Function: Small toast notification (top right)
+    function showToast(message, success = true) {
+        const toast = document.createElement("div");
+        toast.className =
+            "fixed top-20 right-5 px-4 py-2 rounded-lg shadow-lg text-white text-sm z-50 transition-opacity duration-300 " +
+            (success ? "bg-green-500" : "bg-red-500");
+
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        // Animasi fade-in/out biar smooth
+        toast.style.opacity = 0;
+        setTimeout(() => (toast.style.opacity = 1), 50);
+        setTimeout(() => {
+            toast.style.opacity = 0;
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 });
 </script>
 {% endblock content %}

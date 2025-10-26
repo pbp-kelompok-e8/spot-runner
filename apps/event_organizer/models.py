@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.conf import settings
 
@@ -13,8 +14,24 @@ class EventOrganizer(models.Model):
         related_name='event_organizer_profile'
     )
 
+    CITY_CHOICES = [
+        ('jakarta', 'Jakarta'),
+        ('surabaya', 'Surabaya'),
+        ('bandung', 'Bandung'),
+        ('medan', 'Medan'),
+        ('semarang', 'Semarang'),
+        ('makassar', 'Makassar'),
+        ('palembang', 'Palembang'),
+        ('denpasar', 'Denpasar'),
+        ('yogyakarta', 'Yogyakarta'),
+        ('surakarta', 'Surakarta'),
+        ('malang', 'Malang'),
+        ('pekanbaru', 'Pekanbaru'),
+        ('depok', 'Depok')
+    ]
+
     profile_picture = models.URLField(blank=True, null=True)
-    base_location = models.CharField(max_length=255, blank=True)
+    base_location = models.CharField(max_length=50, choices=CITY_CHOICES)
     total_events = models.IntegerField(default=0)
     rating = models.FloatField(default=0.0)
     review_count = models.IntegerField(default=0)

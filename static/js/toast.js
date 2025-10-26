@@ -20,3 +20,4 @@ function hideToast(id) {
   toast.classList.add('hidden');
   toast.classList.remove('flex');
 }
+

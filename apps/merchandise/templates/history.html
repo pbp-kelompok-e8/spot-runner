@@ -6,7 +6,6 @@
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar.html' %}
 
 <body class="bg-gray-50 text-gray-800 mt-16">
   <div class="max-w-7xl mx-auto px-6 py-10">
@@ -22,7 +21,20 @@
 
     <!-- Page Title -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">History</h1>
+      <h1 class="text-3xl font-bold text-gray-900">
+        {% if user_type == 'runner' %}
+          My Redemption History
+        {% else %}
+          Merchandise Redemptions
+        {% endif %}
+      </h1>
+      <p class="text-gray-600 mt-2">
+        {% if user_type == 'runner' %}
+          Track your merchandise redemptions
+        {% else %}
+          View all redemptions for your merchandise
+        {% endif %}
+      </p>
     </div>
 
     <!-- History Cards -->
@@ -138,3 +150,4 @@
 
 {% include 'footer.html' %}
 {% endblock %}
+

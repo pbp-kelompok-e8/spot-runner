@@ -15,11 +15,11 @@
                 &lt; Back
             </a>
         </div>
-
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
         <div class="bg-white p-6 sm:p-8 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-            <form id="create-event-form" novalidate>
+            <form id="edit-event-form" novalidate>
                 {% csrf_token %}
-                
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
                 <div class="text-center mb-1">
                     <h1 class="text-2xl font-semibold text-gray-900">Edit Your Event</h1>
                 </div>
@@ -168,40 +168,80 @@
     </div>
 </main>
 
+<!-- Toast Confirmation -->
+<div id="confirmToast" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-[380px] text-center animate-fadeIn">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Are you sure you want to save changes?</h2>
+        <p class="text-gray-500 mb-6 text-sm">
+            Please review your event details before saving.
+        </p>
+        <div class="flex justify-center gap-3">
+            <button id="cancelToast" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700">
+                Cancel
+            </button>
+            <button id="confirmToastYes" class="px-4 py-2 rounded-lg bg-lime-500 hover:bg-lime-600 text-white font-medium">
+                Yes, I'm sure
+            </button>
+        </div>
+    </div>
+</div>
+
 {% include 'footer.html' %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('create-event-form');
+    const form = document.getElementById('edit-event-form');
     const submitButton = document.getElementById('submit-button');
     const errorContainer = document.getElementById('form-errors-container');
     const errorList = document.getElementById('form-errors-list');
+    const toast = document.getElementById('confirmToast');
+    const btnCancel = document.getElementById('cancelToast');
+    const btnYes = document.getElementById('confirmToastYes');
 
     form.addEventListener('submit', function(event) {
         event.preventDefault();
+        toast.classList.remove('hidden');
+    });
+
+    btnCancel.addEventListener('click', function() {
+        toast.classList.add('hidden');
+    });
+
+    btnYes.addEventListener('click', async function() {
+        toast.classList.add('hidden');
+        
         submitButton.disabled = true;
-        submitButton.textContent = 'Creating...';
+        submitButton.textContent = 'Editing...';
         errorContainer.style.display = 'none';
         errorList.innerHTML = '';
+        
+        // Clear individual field errors
         document.querySelectorAll('[id^="error-"]').forEach(el => {
             el.innerHTML = '';
         });
 
         const formData = new FormData(form);
-        fetch(window.location.pathname, { 
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
+        
+        try {
+            const response = await fetch(window.location.pathname, { 
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+            
+            const data = await response.json();
+            
             if (data.success) {
-                alert('Event Edited successfully!');
-                window.location.href = data.redirect_url;
+                showToast('Event updated successfully!', true);
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1000);
             } else {
                 errorContainer.style.display = 'block';
+                
+                // Handle general errors
                 if (data.errors['__all__']) {
                     data.errors['__all__'].forEach(error => {
                         const li = document.createElement('li');
@@ -209,12 +249,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         errorList.appendChild(li);
                     });
                 }
+
+                // Handle field-specific errors
                 Object.keys(data.errors).forEach(field => {
                     if (field !== '__all__') {
                         const errorDiv = document.getElementById(`error-${field}`);
-                        const fieldErrorList = document.createElement('ul');
-                        const li = document.createElement('li');
-                        li.textContent = `${field.replace('_', ' ')}: ${data.errors[field][0].message}`; 
+                        
+                        // Add to general error list
+                        data.errors[field].forEach(error => {
+                            const li = document.createElement('li');
+                            li.textContent = `${field.replace('_', ' ')}: ${error.message}`;
+                            errorList.appendChild(li);
+                        });
+                        
+                        // Add to individual field error display
                         if (errorDiv) {
                             data.errors[field].forEach(error => {
                                 const p = document.createElement('p');
@@ -224,18 +272,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
-                submitButton.disabled = false;
-                submitButton.textContent = 'Edit Event';
+                
+                showToast('Please correct the errors below.', false);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            errorContainer.style.display = 'block';
-            errorList.innerHTML = '<li>An unexpected error occurred. Please try again.</li>';
+            showToast('An unexpected error occurred. Please try again.', false);
+        } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Edit Event';
-        });
+        }
     });
+
+    // Function: Small toast notification (top right)
+    function showToast(message, success = true) {
+        const toast = document.createElement("div");
+        toast.className =
+            "fixed top-20 right-5 px-4 py-2 rounded-lg shadow-lg text-white text-sm z-50 transition-opacity duration-300 " +
+            (success ? "bg-green-500" : "bg-red-500");
+
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        // Animasi fade-in/out biar smooth
+        toast.style.opacity = 0;
+        setTimeout(() => (toast.style.opacity = 1), 50);
+        setTimeout(() => {
+            toast.style.opacity = 0;
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 });
 </script>
 {% endblock content %}
