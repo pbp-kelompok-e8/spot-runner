@@ -63,21 +63,16 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
 
         if form.is_valid():
-            email = form.cleaned_data.get('email')
 
-            # Cek apakah email sudah digunakan
-            if User.objects.filter(email=email).exists():
-                messages.error(request, "Email sudah digunakan. Silakan gunakan email lain.")
-                return redirect('main:register')
-
-            # Kalau belum ada, buat user baru
             form.save()
             messages.success(request, "Akun berhasil dibuat! Silakan login.")
             return redirect('main:login')
 
         else:
-            # Kalau form tidak valid (misalnya password tidak cocok, dll)
-            messages.error(request, "Pendaftaran gagal. Periksa kembali data yang kamu masukkan.")
+            if 'email' in form.errors:
+                messages.error(request, form.errors['email'][0]) # Pesan error dari form
+            else:
+                messages.error(request, "Pendaftaran gagal. Periksa kembali data yang kamu masukkan.")
             return redirect('main:register')
 
     context = {'form': form}
@@ -261,7 +256,7 @@ def participate_in_event(request, username, id, category_key):
 
     try:
         with transaction.atomic():
-            if event.full:
+            if event.total_participans >= event.capacity:
                 messages.error(request, f"Sorry, {event.name} is already full.")
                 return redirect('main:show_user', username=username)
 
@@ -291,11 +286,7 @@ def participate_in_event(request, username, id, category_key):
     except Exception as e:
         messages.error(request, f"An error occurred: {e}")
 
-        return redirect('main:show_user', username=username)
-    
-    else:
-        messages.error(request, "Invalid request method to join event.")
-        return redirect('main:show_user', username=username)
+    return redirect('main:show_user', username=username)
 
 @login_required
 def change_password(request,username):
@@ -323,9 +314,9 @@ def change_password(request,username):
 
     else:
         form = PasswordChangeForm(request.user)
-        context = {
-            'form':form,
-            'user': request.user
-        }
+    context = {
+        'form':form,
+        'user': request.user
+    }
 
     return render(request, "change_password.html", context)
