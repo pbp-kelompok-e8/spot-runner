@@ -134,11 +134,11 @@ def show_profile(request, username=None):
 
 @login_required
 def edit_profile(request):
-    """Edit Event Organizer Profile"""
-
     try:
         organizer = request.user.event_organizer_profile
     except EventOrganizer.DoesNotExist:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": False, "message": "Organizer profile not found."})
         messages.error(request, "You don't have an event organizer profile.")
         return redirect('event_organizer:profile')
 
@@ -157,6 +157,11 @@ def edit_profile(request):
         organizer.profile_picture = image_url
         organizer.save()
 
+        # ✅ RETURN JSON kalau AJAX
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": True})
+
+        # jika bukan AJAX → redirect biasa
         messages.success(request, "Profile updated successfully!")
         return redirect('event_organizer:profile')
 
