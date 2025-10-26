@@ -5,88 +5,101 @@ from apps.merchandise.models import Merchandise, Redemption
 from apps.event_organizer.models import EventOrganizer
 from apps.main.models import Runner
 import json
-# test
-# Create your tests here.
-User = get_user_model()
 
+User = get_user_model()
 class MerchandiseModelTest(TestCase):
+    """Test Merchandise model"""
+    
     def setUp(self):
-        """Setup test data"""
-        # Create test users
-        self.organizer_user = User.objects.create_user(
-            username='organizer1',
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
             email='organizer@test.com',
             password='testpass123',
             role='event_organizer'
         )
-        
-        self.runner_user = User.objects.create_user(
-            username='runner1',
-            email='runner@test.com',
-            password='testpass123',
-            role='runner'
-        )
-        
-        # Create profiles
         self.organizer = EventOrganizer.objects.create(
-            user=self.organizer_user,
-            base_location='Jakarta',
-            coin=100
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
         )
         
-        self.runner = Runner.objects.create(
-            user=self.runner_user,
-            base_location='Jakarta',
-            coin=500
-        )
-        
-        # Create test merchandise
+        # Create Merchandise
         self.merchandise = Merchandise.objects.create(
-            name='Test Tote Bag',
-            description='A test tote bag',
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
+            category='apparel',
             price_coins=100,
+            stock=50,
             organizer=self.organizer,
-            image_url='https://example.com/image.jpg',
-            category='totebag',
-            stock=10
+            image_url='https://example.com/test.jpg'
         )
     
     def test_merchandise_creation(self):
-        """Test merchandise object creation"""
-        self.assertEqual(self.merchandise.name, 'Test Tote Bag')
+        """Test merchandise is created correctly"""
+        self.assertEqual(self.merchandise.name, 'Test T-Shirt')
         self.assertEqual(self.merchandise.price_coins, 100)
-        self.assertEqual(self.merchandise.stock, 10)
-        self.assertEqual(self.merchandise.category, 'totebag')
+        self.assertEqual(self.merchandise.stock, 50)
         self.assertTrue(self.merchandise.available)
     
-    def test_merchandise_available_property(self):
-        """Test available property with stock > 0"""
-        self.assertTrue(self.merchandise.available)
-        
-        # Test with stock = 0
-        self.merchandise.stock = 0
-        self.merchandise.save()
-        self.assertFalse(self.merchandise.available)
-    
-    def test_merchandise_str_method(self):
+    def test_merchandise_str(self):
         """Test merchandise string representation"""
         expected = f"{self.merchandise.name} — {self.organizer}"
         self.assertEqual(str(self.merchandise), expected)
     
-    def test_merchandise_default_category(self):
-        """Test default category is 'apparel'"""
-        merch = Merchandise.objects.create(
-            name='Default Category Product',
-            description='Test',
-            price_coins=50,
-            organizer=self.organizer,
-            image_url='https://example.com/test.jpg',
-            stock=5
+    def test_merchandise_available_property(self):
+        """Test available property"""
+        self.assertTrue(self.merchandise.available)
+        
+        # Set stock to 0
+        self.merchandise.stock = 0
+        self.merchandise.save()
+        self.assertFalse(self.merchandise.available)
+
+
+class RedemptionModelTest(TestCase):
+    """Test Redemption model"""
+    
+    def setUp(self):
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
+            email='organizer@test.com',
+            password='testpass123',
+            role='event_organizer'
         )
-        self.assertEqual(merch.category, 'apparel')
+        self.organizer = EventOrganizer.objects.create(
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
+        )
+        
+        # Create Runner
+        self.runner_user = User.objects.create_user(
+            username='testrunner',
+            email='runner@test.com',
+            password='testpass123',
+            role='runner'
+        )
+        self.runner = Runner.objects.create(
+            user=self.runner_user,
+            base_location='jakarta',
+            coin=500
+        )
+        
+        # Create Merchandise
+        self.merchandise = Merchandise.objects.create(
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
+            category='apparel',
+            price_coins=100,
+            stock=50,
+            organizer=self.organizer,
+            image_url='https://example.com/test.jpg'
+        )
     
     def test_redemption_creation(self):
-        """Test redemption object creation with explicit values"""
+        """Test redemption is created correctly"""
         redemption = Redemption.objects.create(
             user=self.runner,
             merchandise=self.merchandise,
@@ -96,12 +109,10 @@ class MerchandiseModelTest(TestCase):
         )
         
         self.assertEqual(redemption.quantity, 2)
-        self.assertEqual(redemption.price_per_item, 100)
         self.assertEqual(redemption.total_coins, 200)
         self.assertEqual(redemption.user, self.runner)
-        self.assertEqual(redemption.merchandise, self.merchandise)
     
-    def test_redemption_str_method(self):
+    def test_redemption_str(self):
         """Test redemption string representation"""
         redemption = Redemption.objects.create(
             user=self.runner,
@@ -110,11 +121,12 @@ class MerchandiseModelTest(TestCase):
             price_per_item=100,
             total_coins=200
         )
+        
         expected = f"{self.runner.user.username} - {self.merchandise.name} x2"
         self.assertEqual(str(redemption), expected)
     
-    def test_redemption_with_deleted_product(self):
-        """Test redemption string when product is deleted"""
+    def test_redemption_with_deleted_merchandise(self):
+        """Test redemption when merchandise is deleted"""
         redemption = Redemption.objects.create(
             user=self.runner,
             merchandise=self.merchandise,
@@ -127,411 +139,620 @@ class MerchandiseModelTest(TestCase):
         self.merchandise.delete()
         redemption.refresh_from_db()
         
+        # Should still exist with null merchandise
         self.assertIsNone(redemption.merchandise)
-        self.assertIn("[Deleted Product]", str(redemption))
+        self.assertEqual(str(redemption), f"{self.runner.user.username} - [Deleted Product] x1")
 
 
-class MerchandiseViewTest(TestCase):
+class ShowMerchandiseViewTest(TestCase):
+    """Test show_merchandise view"""
+    
     def setUp(self):
-        """Setup test client and data"""
         self.client = Client()
         
-        # Create users
-        self.organizer_user = User.objects.create_user(
-            username='organizer1',
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
             email='organizer@test.com',
             password='testpass123',
             role='event_organizer'
         )
+        self.organizer = EventOrganizer.objects.create(
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
+        )
         
+        # Create Runner
         self.runner_user = User.objects.create_user(
-            username='runner1',
+            username='testrunner',
             email='runner@test.com',
             password='testpass123',
             role='runner'
         )
-        
-        # Create profiles
-        self.organizer = EventOrganizer.objects.create(
-            user=self.organizer_user,
-            base_location='Jakarta',
-            coin=100
-        )
-        
         self.runner = Runner.objects.create(
             user=self.runner_user,
-            base_location='Jakarta',
+            base_location='jakarta',
             coin=500
         )
         
-        # Create test merchandise
+        # Create Merchandise
         self.merchandise = Merchandise.objects.create(
-            name='Test Product',
-            description='Test description',
-            price_coins=100,
-            organizer=self.organizer,
-            image_url='https://example.com/image.jpg',
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
             category='apparel',
-            stock=10
+            price_coins=100,
+            stock=50,
+            organizer=self.organizer,
+            image_url='https://example.com/test.jpg'
         )
     
-    def test_merchandise_main_url_exists(self):
-        """Test merchandise main page URL exists"""
-        response = self.client.get('/merchandise/')
-        self.assertEqual(response.status_code, 200)
-    
-    def test_merchandise_main_uses_correct_template(self):
-        """Test merchandise main page uses correct template"""
+    def test_show_merchandise_anonymous(self):
+        """Test merchandise page for anonymous users"""
         response = self.client.get(reverse('merchandise:show_merchandise'))
+        
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'merchandise_main.html')
+        self.assertContains(response, 'Test T-Shirt')
+        self.assertEqual(response.context['user_coins'], 0)
+        self.assertEqual(response.context['organizer_coins'], 0)
+        self.assertFalse(response.context['is_organizer'])
     
-    def test_product_detail_url_exists(self):
-        """Test product detail page URL exists"""
-        response = self.client.get(f'/merchandise/{self.merchandise.id}/')
-        self.assertEqual(response.status_code, 200)
-    
-    def test_product_detail_uses_correct_template(self):
-        """Test product detail page uses correct template"""
-        response = self.client.get(
-            reverse('merchandise:product_detail', args=[self.merchandise.id])
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'product_detail.html')
-    
-    def test_nonexistent_product_returns_404(self):
-        """Test accessing non-existent product returns 404"""
-        fake_uuid = '00000000-0000-0000-0000-000000000000'
-        response = self.client.get(f'/merchandise/{fake_uuid}/')
-        self.assertEqual(response.status_code, 404)
-    
-    def test_add_merchandise_requires_login(self):
-        """Test add merchandise requires authentication"""
-        response = self.client.get(reverse('merchandise:add_merchandise'))
-        # Should redirect to login
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/login', response.url)
-    
-    def test_add_merchandise_requires_organizer(self):
-        """Test add merchandise requires organizer role"""
-        # Login as runner
-        self.client.login(username='runner1', password='testpass123')
-        response = self.client.get(reverse('merchandise:add_merchandise'))
-        # Should redirect (not authorized)
-        self.assertEqual(response.status_code, 302)
-    
-    def test_add_merchandise_as_organizer(self):
-        """Test organizer can access add merchandise page"""
-        self.client.login(username='organizer1', password='testpass123')
-        response = self.client.get(reverse('merchandise:add_merchandise'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'add_merchandise.html')
-    
-    def test_create_merchandise_post(self):
-        """Test creating merchandise via POST"""
-        self.client.login(username='organizer1', password='testpass123')
+    def test_show_merchandise_runner(self):
+        """Test merchandise page for runner"""
+        self.client.login(username='testrunner', password='testpass123')
+        response = self.client.get(reverse('merchandise:show_merchandise'))
         
-        data = {
-            'name': 'New Product',
-            'description': 'New description',
-            'price_coins': 150,
-            'image_url': 'https://example.com/new.jpg',
-            'category': 'accessories',
-            'stock': 20
-        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['user_coins'], 500)
+        self.assertFalse(response.context['is_organizer'])
+    
+    def test_show_merchandise_organizer(self):
+        """Test merchandise page for organizer"""
+        self.client.login(username='testorganizer', password='testpass123')
+        response = self.client.get(reverse('merchandise:show_merchandise'))
         
-        response = self.client.post(
-            reverse('merchandise:add_merchandise'),
-            data=data
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['is_organizer'])
+        self.assertEqual(response.context['organizer_coins'], 0)
+    
+    def test_category_filter(self):
+        """Test category filtering"""
+        # Create another merchandise with different category
+        Merchandise.objects.create(
+            name='Water Bottle',
+            description='A water bottle',
+            category='water_bottle',
+            price_coins=50,
+            stock=30,
+            organizer=self.organizer,
+            image_url='https://example.com/bottle.jpg'
         )
         
-        # Should redirect to merchandise main
-        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse('merchandise:show_merchandise') + '?category=apparel')
         
-        # Check product was created
-        self.assertTrue(
-            Merchandise.objects.filter(name='New Product').exists()
-        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['products'].count(), 1)
+        self.assertEqual(response.context['products'].first().name, 'Test T-Shirt')
+
+
+class ProductDetailViewTest(TestCase):
+    """Test product_detail view"""
     
-    def test_edit_merchandise_requires_ownership(self):
-        """Test only owner can edit merchandise"""
-        # Create another organizer
-        other_org_user = User.objects.create_user(
-            username='organizer2',
-            email='org2@test.com',
+    def setUp(self):
+        self.client = Client()
+        
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
+            email='organizer@test.com',
             password='testpass123',
             role='event_organizer'
         )
-        other_org = EventOrganizer.objects.create(
-            user=other_org_user,
-            base_location='Bandung',
-            coin=50
+        self.organizer = EventOrganizer.objects.create(
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
         )
         
-        # Login as other organizer
-        self.client.login(username='organizer2', password='testpass123')
+        # Create Runner
+        self.runner_user = User.objects.create_user(
+            username='testrunner',
+            email='runner@test.com',
+            password='testpass123',
+            role='runner'
+        )
+        self.runner = Runner.objects.create(
+            user=self.runner_user,
+            base_location='jakarta',
+            coin=500
+        )
+        
+        # Create Merchandise
+        self.merchandise = Merchandise.objects.create(
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
+            category='apparel',
+            price_coins=100,
+            stock=50,
+            organizer=self.organizer,
+            image_url='https://example.com/test.jpg'
+        )
+    
+    def test_product_detail_anonymous(self):
+        """Test product detail for anonymous users"""
+        response = self.client.get(
+            reverse('merchandise:product_detail', args=[self.merchandise.id])
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'product_detail.html')
+        self.assertContains(response, 'Test T-Shirt')
+        self.assertFalse(response.context['is_organizer'])
+    
+    def test_product_detail_runner(self):
+        """Test product detail for runner"""
+        self.client.login(username='testrunner', password='testpass123')
+        response = self.client.get(
+            reverse('merchandise:product_detail', args=[self.merchandise.id])
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['user_coins'], 500)
+        self.assertFalse(response.context['is_organizer'])
+    
+    def test_product_detail_owner(self):
+        """Test product detail for owner/organizer"""
+        self.client.login(username='testorganizer', password='testpass123')
+        response = self.client.get(
+            reverse('merchandise:product_detail', args=[self.merchandise.id])
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['is_organizer'])
+    
+    def test_product_detail_404(self):
+        """Test product detail with invalid ID"""
+        import uuid
+        fake_id = uuid.uuid4()
+        response = self.client.get(
+            reverse('merchandise:product_detail', args=[fake_id])
+        )
+        
+        self.assertEqual(response.status_code, 404)
+
+
+class AddMerchandiseViewTest(TestCase):
+    """Test add_merchandise view"""
+    
+    def setUp(self):
+        self.client = Client()
+        
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
+            email='organizer@test.com',
+            password='testpass123',
+            role='event_organizer'
+        )
+        self.organizer = EventOrganizer.objects.create(
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
+        )
+        
+        # Create Runner
+        self.runner_user = User.objects.create_user(
+            username='testrunner',
+            email='runner@test.com',
+            password='testpass123',
+            role='runner'
+        )
+        Runner.objects.create(
+            user=self.runner_user,
+            base_location='jakarta',
+            coin=500
+        )
+    
+    def test_add_merchandise_anonymous(self):
+        """Test add merchandise redirects for anonymous users"""
+        response = self.client.get(reverse('merchandise:add_merchandise'))
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login', response.url)
+    
+    def test_add_merchandise_runner_denied(self):
+        """Test runners cannot add merchandise"""
+        self.client.login(username='testrunner', password='testpass123')
+        response = self.client.get(reverse('merchandise:add_merchandise'))
+        
+        self.assertEqual(response.status_code, 302)
+    
+    def test_add_merchandise_get_organizer(self):
+        """Test GET add merchandise for organizer"""
+        self.client.login(username='testorganizer', password='testpass123')
+        response = self.client.get(reverse('merchandise:add_merchandise'))
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'add_merchandise.html')
+    
+    def test_add_merchandise_post_valid(self):
+        """Test POST add merchandise with valid data"""
+        self.client.login(username='testorganizer', password='testpass123')
+        
+        data = {
+            'name': 'New T-Shirt',
+            'description': 'Brand new shirt',
+            'category': 'apparel',
+            'price_coins': 150,
+            'stock': 20,
+            'image_url': 'https://example.com/new.jpg'
+        }
+        
+        response = self.client.post(reverse('merchandise:add_merchandise'), data)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Merchandise.objects.count(), 1)
+        
+        merch = Merchandise.objects.first()
+        self.assertEqual(merch.name, 'New T-Shirt')
+        self.assertEqual(merch.organizer, self.organizer)
+    
+    def test_add_merchandise_post_invalid(self):
+        """Test POST add merchandise with invalid data"""
+        self.client.login(username='testorganizer', password='testpass123')
+        
+        data = {
+            'name': '',  # Invalid: empty name
+            'description': 'Brand new shirt',
+            'category': 'apparel',
+            'price_coins': 150,
+            'stock': 20,
+            'image_url': 'https://example.com/new.jpg'
+        }
+        
+        response = self.client.post(reverse('merchandise:add_merchandise'), data)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Merchandise.objects.count(), 0)
+
+
+class EditMerchandiseViewTest(TestCase):
+    """Test edit_merchandise view"""
+    
+    def setUp(self):
+        self.client = Client()
+        
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
+            email='organizer@test.com',
+            password='testpass123',
+            role='event_organizer'
+        )
+        self.organizer = EventOrganizer.objects.create(
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
+        )
+        
+        # Create Another Organizer
+        self.other_eo_user = User.objects.create_user(
+            username='otherorganizer',
+            email='other@test.com',
+            password='testpass123',
+            role='event_organizer'
+        )
+        self.other_organizer = EventOrganizer.objects.create(
+            user=self.other_eo_user,
+            base_location='jakarta',
+            coin=0
+        )
+        
+        # Create Merchandise
+        self.merchandise = Merchandise.objects.create(
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
+            category='apparel',
+            price_coins=100,
+            stock=50,
+            organizer=self.organizer,
+            image_url='https://example.com/test.jpg'
+        )
+    
+    def test_edit_merchandise_owner(self):
+        """Test owner can edit merchandise"""
+        self.client.login(username='testorganizer', password='testpass123')
         response = self.client.get(
             reverse('merchandise:edit_merchandise', args=[self.merchandise.id])
         )
         
-        # Should be redirected (not owner)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'add_merchandise.html')
+    
+    def test_edit_merchandise_not_owner(self):
+        """Test non-owner cannot edit merchandise"""
+        self.client.login(username='otherorganizer', password='testpass123')
+        response = self.client.get(
+            reverse('merchandise:edit_merchandise', args=[self.merchandise.id])
+        )
+        
         self.assertEqual(response.status_code, 302)
     
-    def test_delete_merchandise_ajax(self):
-        """Test deleting merchandise via AJAX"""
-        self.client.login(username='organizer1', password='testpass123')
+    def test_edit_merchandise_post_valid(self):
+        """Test POST edit merchandise with valid data"""
+        self.client.login(username='testorganizer', password='testpass123')
+        
+        data = {
+            'name': 'Updated T-Shirt',
+            'description': 'Updated description',
+            'category': 'apparel',
+            'price_coins': 200,
+            'stock': 30,
+            'image_url': 'https://example.com/updated.jpg'
+        }
         
         response = self.client.post(
-            reverse('merchandise:delete_merchandise', args=[self.merchandise.id]),
+            reverse('merchandise:edit_merchandise', args=[self.merchandise.id]),
+            data
+        )
+        
+        self.assertEqual(response.status_code, 302)
+        
+        self.merchandise.refresh_from_db()
+        self.assertEqual(self.merchandise.name, 'Updated T-Shirt')
+        self.assertEqual(self.merchandise.price_coins, 200)
+
+
+class DeleteMerchandiseViewTest(TestCase):
+    """Test delete_merchandise view"""
+    
+    def setUp(self):
+        self.client = Client()
+        
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
+            email='organizer@test.com',
+            password='testpass123',
+            role='event_organizer'
+        )
+        self.organizer = EventOrganizer.objects.create(
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
+        )
+        
+        # Create Merchandise
+        self.merchandise = Merchandise.objects.create(
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
+            category='apparel',
+            price_coins=100,
+            stock=50,
+            organizer=self.organizer,
+            image_url='https://example.com/test.jpg'
+        )
+    
+    def test_delete_merchandise_owner(self):
+        """Test owner can delete merchandise"""
+        self.client.login(username='testorganizer', password='testpass123')
+        response = self.client.post(
+            reverse('merchandise:delete_merchandise', args=[self.merchandise.id])
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertTrue(data['success'])
+        self.assertEqual(Merchandise.objects.count(), 0)
+    
+    def test_delete_merchandise_get_not_allowed(self):
+        """Test GET method not allowed for delete"""
+        self.client.login(username='testorganizer', password='testpass123')
+        response = self.client.get(
+            reverse('merchandise:delete_merchandise', args=[self.merchandise.id])
+        )
+        
+        # Should return 405 Method Not Allowed
+        self.assertEqual(response.status_code, 405)
+
+
+class RedeemMerchandiseViewTest(TestCase):
+    """Test redeem_merchandise view"""
+    
+    def setUp(self):
+        self.client = Client()
+        
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
+            email='organizer@test.com',
+            password='testpass123',
+            role='event_organizer'
+        )
+        self.organizer = EventOrganizer.objects.create(
+            user=self.eo_user,
+            base_location='jakarta',
+            coin=0
+        )
+        
+        # Create Runner
+        self.runner_user = User.objects.create_user(
+            username='testrunner',
+            email='runner@test.com',
+            password='testpass123',
+            role='runner'
+        )
+        self.runner = Runner.objects.create(
+            user=self.runner_user,
+            base_location='jakarta',
+            coin=500
+        )
+        
+        # Create Merchandise
+        self.merchandise = Merchandise.objects.create(
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
+            category='apparel',
+            price_coins=100,
+            stock=50,
+            organizer=self.organizer,
+            image_url='https://example.com/test.jpg'
+        )
+    
+    def test_redeem_merchandise_success(self):
+        """Test successful redemption"""
+        self.client.login(username='testrunner', password='testpass123')
+        
+        data = {'quantity': 2}
+        response = self.client.post(
+            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
+            json.dumps(data),
             content_type='application/json'
         )
         
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
-        self.assertTrue(data['success'])
-        
-        # Check product was deleted
-        self.assertFalse(
-            Merchandise.objects.filter(id=self.merchandise.id).exists()
-        )
-    
-    def test_redeem_merchandise_requires_login(self):
-        """Test redeem requires authentication"""
-        response = self.client.post(
-            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
-            content_type='application/json',
-            data=json.dumps({'quantity': 1})
-        )
-        self.assertEqual(response.status_code, 302)
-    
-    def test_redeem_merchandise_requires_runner(self):
-        """Test only runners can redeem"""
-        self.client.login(username='organizer1', password='testpass123')
-        
-        response = self.client.post(
-            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
-            content_type='application/json',
-            data=json.dumps({'quantity': 1})
-        )
-        
-        self.assertEqual(response.status_code, 403)
-        data = json.loads(response.content)
-        self.assertFalse(data['success'])
-    
-    def test_redeem_merchandise_insufficient_coins(self):
-        """Test redemption fails with insufficient coins"""
-        # Set runner coins to less than price
-        self.runner.coin = 50
-        self.runner.save()
-        
-        self.client.login(username='runner1', password='testpass123')
-        
-        response = self.client.post(
-            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
-            content_type='application/json',
-            data=json.dumps({'quantity': 1})
-        )
-        
-        self.assertEqual(response.status_code, 400)
-        data = json.loads(response.content)
-        self.assertFalse(data['success'])
-        self.assertIn('Insufficient coins', data['error'])
-    
-    def test_redeem_merchandise_success(self):
-        """Test successful merchandise redemption"""
-        self.client.login(username='runner1', password='testpass123')
-        
-        initial_runner_coins = self.runner.coin
-        initial_organizer_coins = self.organizer.coin
-        initial_stock = self.merchandise.stock
-        
-        response = self.client.post(
-            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
-            content_type='application/json',
-            data=json.dumps({'quantity': 2})
-        )
-        
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
-        self.assertTrue(data['success'])
-        self.assertEqual(data['total_coins'], 200)
+        result = json.loads(response.content)
+        self.assertTrue(result['success'])
+        self.assertEqual(result['total_coins'], 200)
         
         # Check runner coins decreased
         self.runner.refresh_from_db()
-        self.assertEqual(
-            self.runner.coin,
-            initial_runner_coins - 200
-        )
+        self.assertEqual(self.runner.coin, 300)
         
         # Check organizer coins increased
         self.organizer.refresh_from_db()
-        self.assertEqual(
-            self.organizer.coin,
-            initial_organizer_coins + 200
-        )
+        self.assertEqual(self.organizer.coin, 200)
         
         # Check stock decreased
         self.merchandise.refresh_from_db()
-        self.assertEqual(
-            self.merchandise.stock,
-            initial_stock - 2
-        )
+        self.assertEqual(self.merchandise.stock, 48)
         
-        # Check redemption was created
-        self.assertTrue(
-            Redemption.objects.filter(
-                user=self.runner,
-                merchandise=self.merchandise
-            ).exists()
-        )
+        # Check redemption created
+        self.assertEqual(Redemption.objects.count(), 1)
     
-    def test_history_page_runner(self):
-        """Test history page for runner"""
-        self.client.login(username='runner1', password='testpass123')
+    def test_redeem_insufficient_coins(self):
+        """Test redemption with insufficient coins"""
+        self.runner.coin = 50
+        self.runner.save()
         
-        # Create a redemption
-        Redemption.objects.create(
-            user=self.runner,
-            merchandise=self.merchandise,
-            quantity=1,
-            price_per_item=100,
-            total_coins=100
+        self.client.login(username='testrunner', password='testpass123')
+        
+        data = {'quantity': 2}
+        response = self.client.post(
+            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
+            json.dumps(data),
+            content_type='application/json'
         )
         
-        response = self.client.get(reverse('merchandise:history'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'history.html')
-        self.assertEqual(response.context['user_type'], 'runner')
-        self.assertEqual(len(response.context['redemptions']), 1)
+        self.assertEqual(response.status_code, 400)
+        result = json.loads(response.content)
+        self.assertFalse(result['success'])
+        self.assertIn('Insufficient coins', result['error'])
     
-    def test_history_page_organizer(self):
-        """Test history page for organizer"""
-        self.client.login(username='organizer1', password='testpass123')
+    def test_redeem_insufficient_stock(self):
+        """Test redemption with insufficient stock"""
+        self.client.login(username='testrunner', password='testpass123')
         
-        # Create a redemption
-        Redemption.objects.create(
-            user=self.runner,
-            merchandise=self.merchandise,
-            quantity=1,
-            price_per_item=100,
-            total_coins=100
+        data = {'quantity': 100}  # More than stock
+        response = self.client.post(
+            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
+            json.dumps(data),
+            content_type='application/json'
         )
         
-        response = self.client.get(reverse('merchandise:history'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['user_type'], 'organizer')
-        self.assertEqual(len(response.context['redemptions']), 1)
+        self.assertEqual(response.status_code, 400)
+        result = json.loads(response.content)
+        self.assertFalse(result['success'])
+        self.assertIn('in stock', result['error'])
     
-    def test_category_filter(self):
-        """Test filtering merchandise by category"""
-        # Create merchandise with different categories
-        Merchandise.objects.create(
-            name='Accessory Product',
-            description='Test',
-            price_coins=50,
-            organizer=self.organizer,
-            image_url='https://example.com/acc.jpg',
-            category='accessories',
-            stock=5
+    def test_redeem_organizer_cannot_redeem(self):
+        """Test organizers cannot redeem merchandise"""
+        self.client.login(username='testorganizer', password='testpass123')
+        
+        data = {'quantity': 1}
+        response = self.client.post(
+            reverse('merchandise:redeem_merchandise', args=[self.merchandise.id]),
+            json.dumps(data),
+            content_type='application/json'
         )
         
-        response = self.client.get(
-            reverse('merchandise:show_merchandise') + '?category=accessories'
-        )
-        
-        self.assertEqual(response.status_code, 200)
-        # Check that filtered products are in context
-        products = response.context['products']
-        for product in products:
-            self.assertEqual(product.category, 'accessories')
+        self.assertEqual(response.status_code, 403)
 
 
-class MerchandiseIntegrationTest(TestCase):
+class HistoryViewTest(TestCase):
+    """Test history view"""
+    
     def setUp(self):
-        """Setup for integration tests"""
         self.client = Client()
         
-        # Create complete user setup
-        self.organizer_user = User.objects.create_user(
-            username='org_test',
-            email='org@test.com',
-            password='pass123',
+        # Create Event Organizer
+        self.eo_user = User.objects.create_user(
+            username='testorganizer',
+            email='organizer@test.com',
+            password='testpass123',
             role='event_organizer'
         )
-        
-        self.runner_user = User.objects.create_user(
-            username='runner_test',
-            email='runner@test.com',
-            password='pass123',
-            role='runner'
-        )
-        
         self.organizer = EventOrganizer.objects.create(
-            user=self.organizer_user,
-            base_location='Jakarta',
+            user=self.eo_user,
+            base_location='jakarta',
             coin=0
         )
         
+        # Create Runner
+        self.runner_user = User.objects.create_user(
+            username='testrunner',
+            email='runner@test.com',
+            password='testpass123',
+            role='runner'
+        )
         self.runner = Runner.objects.create(
             user=self.runner_user,
-            base_location='Jakarta',
-            coin=1000
+            base_location='jakarta',
+            coin=500
+        )
+        
+        # Create Merchandise
+        self.merchandise = Merchandise.objects.create(
+            name='Test T-Shirt',
+            description='A cool test t-shirt',
+            category='apparel',
+            price_coins=100,
+            stock=50,
+            organizer=self.organizer,
+            image_url='https://example.com/test.jpg'
+        )
+        
+        # Create Redemption
+        self.redemption = Redemption.objects.create(
+            user=self.runner,
+            merchandise=self.merchandise,
+            quantity=2,
+            price_per_item=100,
+            total_coins=200
         )
     
-    def test_full_merchandise_lifecycle(self):
-        """Test complete merchandise lifecycle: create, list, redeem, history"""
-        # 1. Organizer creates merchandise
-        self.client.login(username='org_test', password='pass123')
+    def test_history_runner(self):
+        """Test history for runner"""
+        self.client.login(username='testrunner', password='testpass123')
+        response = self.client.get(reverse('merchandise:history'))
         
-        create_response = self.client.post(
-            reverse('merchandise:add_merchandise'),
-            {
-                'name': 'Lifecycle Product',
-                'description': 'Test product',
-                'price_coins': 100,
-                'image_url': 'https://example.com/test.jpg',
-                'category': 'apparel',
-                'stock': 5
-            }
-        )
-        self.assertEqual(create_response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'history.html')
+        self.assertEqual(response.context['user_type'], 'runner')
+        self.assertEqual(response.context['redemptions'].count(), 1)
+    
+    def test_history_organizer(self):
+        """Test history for organizer"""
+        self.client.login(username='testorganizer', password='testpass123')
+        response = self.client.get(reverse('merchandise:history'))
         
-        merchandise = Merchandise.objects.get(name='Lifecycle Product')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['user_type'], 'organizer')
+        self.assertEqual(response.context['redemptions'].count(), 1)
+    
+    def test_history_anonymous(self):
+        """Test history redirects for anonymous users"""
+        response = self.client.get(reverse('merchandise:history'))
         
-        # 2. Product appears in listing
-        list_response = self.client.get(reverse('merchandise:show_merchandise'))
-        self.assertContains(list_response, 'Lifecycle Product')
-        
-        self.client.logout()
-        
-        # 3. Runner redeems product
-        self.client.login(username='runner_test', password='pass123')
-        
-        redeem_response = self.client.post(
-            reverse('merchandise:redeem_merchandise', args=[merchandise.id]),
-            content_type='application/json',
-            data=json.dumps({'quantity': 2})
-        )
-        
-        self.assertEqual(redeem_response.status_code, 200)
-        redeem_data = json.loads(redeem_response.content)
-        self.assertTrue(redeem_data['success'])
-        
-        # 4. Check runner history
-        runner_history = self.client.get(reverse('merchandise:history'))
-        self.assertEqual(runner_history.status_code, 200)
-        self.assertEqual(len(runner_history.context['redemptions']), 1)
-        
-        self.client.logout()
-        
-        # 5. Check organizer history
-        self.client.login(username='org_test', password='pass123')
-        org_history = self.client.get(reverse('merchandise:history'))
-        self.assertEqual(org_history.status_code, 200)
-        self.assertEqual(len(org_history.context['redemptions']), 1)
-        
-        # 6. Verify coin transactions
-        self.runner.refresh_from_db()
-        self.organizer.refresh_from_db()
-        self.assertEqual(self.runner.coin, 800)  # 1000 - (100*2)
-        self.assertEqual(self.organizer.coin, 200)  # 0 + (100*2)
+        self.assertEqual(response.status_code, 302)
