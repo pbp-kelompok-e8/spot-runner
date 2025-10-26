@@ -63,7 +63,7 @@
 			{% if attendance_list %}
 				<div class="space-y-6">
 					{% for record in attendance_list %}
-					<div class="bg-white border rounded-lg p-6 relative mb-4
+					<div class="border rounded-lg p-6 relative mb-4
 						{% if record.status == 'canceled' %}
 							border-red-300 bg-red-50
 						{% elif record.status == 'finished' %}
@@ -166,10 +166,7 @@
 							</div>
 							<span class="text-sm text-gray-600">Type</span>
 							<p class="text-gray-900">
-								{% for cat in record.event.event_category.all %}
-									{{ cat }}
-									{% if not forloop.last %}, {% endif %}
-								{% endfor %}
+								{{ record.category }}
 							</p>
 
 							<div class="flex items-center text-gray-600">

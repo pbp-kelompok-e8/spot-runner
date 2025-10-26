@@ -5,7 +5,7 @@ from django.urls import reverse
 from apps.main.models import User, Attendance, Runner
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from apps.event.models import Event
+from apps.event.models import Event, EventCategory
 from apps.review.models import Review
 from django.http import JsonResponse
 from apps.main.forms import CustomUserCreationForm
@@ -122,15 +122,14 @@ def show_user(request, username):
         event = record.event
         event_date = event.event_date.date()
         
-        # Untuk cek button review
         # Update status event
-        # if event_date < today:
-        #     event.event_status = "finished"
-        # elif event_date == today:
-        #     event.event_status = "on_going"
-        # else:
-        #     event.event_status = "coming_soon"
-        # event.save()
+        if event_date < today:
+            event.event_status = "finished"
+        elif event_date == today:
+            event.event_status = "on_going"
+        else:
+            event.event_status = "coming_soon"
+        event.save()
 
         # Update status registrasi
         if event.event_status == "finished" and record.status == 'attending':
@@ -241,7 +240,7 @@ def cancel_event(request, username, id):
     return redirect('main:show_user', username=username)
 
 
-def participate_in_event(request, username, id):
+def participate_in_event(request, username, id, category_key):
     user = get_object_or_404(User, username=username)
     if user != request.user or user.role != 'runner':
         messages.error(request, "You are not authorized to perform this action.")
@@ -249,6 +248,16 @@ def participate_in_event(request, username, id):
 
     event = get_object_or_404(Event, pk=id)
     runner = user.runner
+
+    try:
+
+        selected_category = EventCategory.objects.get(
+            category=category_key, 
+            events=event
+        )
+    except EventCategory.DoesNotExist:
+        messages.error(request, "Invalid category selected for this event.")
+        return redirect('event:event_detail', pk=id)
 
     try:
         with transaction.atomic():
@@ -259,7 +268,11 @@ def participate_in_event(request, username, id):
             attendance, created = Attendance.objects.get_or_create(
                 runner=runner,
                 event=event,
-                defaults={'status': 'attending'}
+                defaults={
+                        'status': 'attending',
+                        'category': selected_category
+                        }
+                
             )
 
             if created:
@@ -268,6 +281,7 @@ def participate_in_event(request, username, id):
             else:
                 if attendance.status == 'canceled':
                     attendance.status = 'attending'
+                    attendance.category = selected_category
                     attendance.save()
                     event.increment_participans() 
                     messages.success(request, f"You have re-registered for {event.name}.")
