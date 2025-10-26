@@ -80,31 +80,31 @@ class EventForm(forms.ModelForm):
         description = self.cleaned_data["description"]
         return strip_tags(description)
     
-    # def clean_event_date(self):
-    #     event_date = self.cleaned_data.get('event_date')
-    #     now = timezone.now()
+    def clean_event_date(self):
+        event_date = self.cleaned_data.get('event_date')
+        now = timezone.now()
         
-    #     if event_date and event_date < now:
-    #         raise ValidationError(
-    #             "Event date and time cannot be in the past!"
-    #         )
+        if event_date and event_date < now:
+            raise ValidationError(
+                "Event date and time cannot be in the past!"
+            )
         
-    #     return event_date
+        return event_date
 
-    # def clean_regist_deadline(self):
-    #     regist_deadline = self.cleaned_data.get('regist_deadline')
-    #     now = timezone.now()
+    def clean_regist_deadline(self):
+        regist_deadline = self.cleaned_data.get('regist_deadline')
+        now = timezone.now()
         
-    #     if regist_deadline and regist_deadline < now:
-    #         raise ValidationError(
-    #             "Registration deadline cannot be in the past!"
-    #         )
-    #     event_date = self.cleaned_data.get('event_date')
-    #     if event_date and regist_deadline and regist_deadline >= event_date:
-    #         raise ValidationError(
-    #             "Registration deadline must be before the event date/time."
-    #         )
-    #     return regist_deadline
+        if regist_deadline and regist_deadline < now:
+            raise ValidationError(
+                "Registration deadline cannot be in the past!"
+            )
+        event_date = self.cleaned_data.get('event_date')
+        if event_date and regist_deadline and regist_deadline >= event_date:
+            raise ValidationError(
+                "Registration deadline must be before the event date/time."
+            )
+        return regist_deadline
     
     def save(self, commit=True):
         instance = super().save(commit=False)

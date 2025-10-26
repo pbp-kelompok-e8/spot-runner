@@ -1,4 +1,36 @@
-<div class="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100">
+<!-- apps/review/templates/review/review_card.html -->
+<div class="bg-white rounded-2xl shadow-lg p-8 text-center border border-gray-100 relative">
+    <!-- Three Dots Menu (Only for review owner) -->
+    {% if request.user == review.runner.user %}
+    <div class="absolute top-4 right-4">
+        <button onclick="toggleReviewMenu('menu-{{ review.id }}')" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <circle cx="12" cy="19" r="2"/>
+            </svg>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div id="menu-{{ review.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+            <button onclick="openEditReview('{{ review.id }}', '{{ review.event.id }}', '{{ review.event.name|escapejs }}', {{ review.rating }}, '{{ review.review_text|escapejs }}')" 
+                    class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-2 text-gray-700 rounded-t-lg">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Edit
+            </button>
+            <button onclick="deleteReview('{{ review.id }}')" 
+                    class="w-full text-left px-4 py-3 hover:bg-red-50 flex items-center gap-2 text-red-600 border-t border-gray-100 rounded-b-lg">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Delete
+            </button>
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- Runner Name -->
     <h3 class="text-xl font-bold text-gray-800 mb-1">
         {{ review.runner.user.username }}
@@ -23,3 +55,60 @@
         <span class="text-sm text-gray-400">/5.0 rating</span>
     </div>
 </div>
+
+<script>
+// Toggle three dots menu
+function toggleReviewMenu(menuId) {
+    // Close all other menus first
+    document.querySelectorAll('[id^="menu-"]').forEach(menu => {
+        if (menu.id !== menuId) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    const menu = document.getElementById(menuId);
+    menu.classList.toggle('hidden');
+    
+    // Close menu when clicking outside
+    if (!menu.classList.contains('hidden')) {
+        setTimeout(() => {
+            document.addEventListener('click', function closeMenu(e) {
+                if (!e.target.closest(`#${menuId}`) && !e.target.closest('button[onclick*="toggleReviewMenu"]')) {
+                    menu.classList.add('hidden');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }, 100);
+    }
+}
+
+// Delete review
+async function deleteReview(reviewId) {
+    if (!confirm('Are you sure you want to delete this review?')) {
+        return;
+    }
+    
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    try {
+        const response = await fetch(`/review/${reviewId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Review deleted successfully!');
+            window.location.reload();
+        } else {
+            alert('Failed to delete review: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the review');
+    }
+}
+</script>

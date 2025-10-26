@@ -122,14 +122,15 @@ def show_user(request, username):
         event = record.event
         event_date = event.event_date.date()
         
+        # Untuk cek button review
         # Update status event
-        if event_date < today:
-            event.event_status = "finished"
-        elif event_date == today:
-            event.event_status = "on_going"
-        else:
-            event.event_status = "coming_soon"
-        event.save()
+        # if event_date < today:
+        #     event.event_status = "finished"
+        # elif event_date == today:
+        #     event.event_status = "on_going"
+        # else:
+        #     event.event_status = "coming_soon"
+        # event.save()
 
         # Update status registrasi
         if event.event_status == "finished" and record.status == 'attending':

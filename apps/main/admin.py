@@ -81,6 +81,3 @@ class AttendanceAdmin(admin.ModelAdmin):
         """Menampilkan nama event."""
         return obj.event.name
     event_name.short_description = "Event"
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user')

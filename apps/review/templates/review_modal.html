@@ -1,11 +1,14 @@
-<!-- Modal Review -->
+<!-- templates/review/review_modal.html -->
+<!-- Modal Review (Reusable for Create & Edit) -->
 <div id="reviewModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden items-center justify-center z-50" style="display: none;">
   <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4">Rate & Review</h2>
+    <h2 id="modalTitle" class="text-xl font-semibold text-gray-800 mb-4">Rate & Review</h2>
 
     <form id="reviewForm">
       {% csrf_token %}
       <input type="hidden" id="modal_event_id" name="event_id">
+      <input type="hidden" id="modal_review_id" name="review_id">
+      <input type="hidden" id="modal_mode" name="mode" value="create">
 
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-600">Event</label>
@@ -19,12 +22,12 @@
 
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-600">Review</label>
-        <textarea id="review_text" name="review_text" rows="3" class="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-400"></textarea>
+        <textarea id="review_text" name="review_text" rows="3" class="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-400" placeholder="Share your experience..."></textarea>
       </div>
 
       <div class="flex justify-end space-x-3">
-        <button type="button" id="cancelModal" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-lime-400 text-white rounded-lg hover:bg-lime-500">Post</button>
+        <button type="button" id="cancelModal" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+        <button type="submit" id="submitBtn" class="px-4 py-2 bg-lime-400 text-white rounded-lg hover:bg-lime-500 transition">Post</button>
       </div>
     </form>
     
