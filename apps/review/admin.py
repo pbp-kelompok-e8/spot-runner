@@ -1,20 +1,40 @@
 from django.contrib import admin
 from .models import Review
-# test
+
+
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('runner', 'event', 'rating', 'created_at')
-    list_filter = ('rating', 'created_at')
-    search_fields = ('runner__user__username', 'event__name', 'review_text')
+    list_display = (
+        'id',
+        'runner',
+        'event',
+        'event_organizer',
+        'rating',
+        'created_at',
+    )
+    list_filter = (
+        'rating',
+        'event',
+        'event_organizer',
+        'created_at',
+    )
+    search_fields = (
+        'runner__user__username',
+        'event__name',
+        'event_organizer__user__username',
+        'review_text',
+    )
     readonly_fields = ('created_at',)
-    date_hierarchy = 'created_at'
-    
+    ordering = ('-created_at',)
+
     fieldsets = (
-        (None, {
-            'fields': ('runner', 'event', 'event_organizer', 'rating', 'review_text')
+        ('Reviewer & Event Info', {
+            'fields': ('runner', 'event', 'event_organizer')
+        }),
+        ('Review Details', {
+            'fields': ('rating', 'review_text')
         }),
         ('Timestamps', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
+            'fields': ('created_at',)
         }),
     )

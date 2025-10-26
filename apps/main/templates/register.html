@@ -80,19 +80,15 @@
                             <select id="base_location" name="base_location"
                                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-500">
                                 <option value="" disabled selected>Select your location</option>
-                                <option value="jakarta">Jakarta</option>
-                                <option value="surabaya">Surabaya</option>
-                                <option value="bandung">Bandung</option>
-                                <option value="medan">Medan</option>
-                                <option value="semarang">Semarang</option>
-                                <option value="makassar">Makassar</option>
-                                <option value="palembang">Palembang</option>
-                                <option value="denpasar">Denpasar</option>
-                                <option value="yogyakarta">Yogyakarta</option>
-                                <option value="surakarta">Surakarta</option>
-                                <option value="malang">Malang</option>
-                                <option value="pekanbaru">Pekanbaru</option>
+                                <option value="jakarta_barat">Jakarta Barat</option>
+                                <option value="jakarta_pusat">Jakarta Pusat</option>
+                                <option value="jakarta_selatan">Jakarta Selatan</option>
+                                <option value="jakarta_timur">Jakarta Timur</option>
+                                <option value="jakarta_utara">Jakarta Utara</option>
+                                <option value="bekasi">Bekasi</option>
+                                <option value="bogor">Bogor</option>
                                 <option value="depok">Depok</option>
+                                <option value="tangerang">Tangerang</option>
                             </select>
                         </div>
                     </div>
@@ -110,24 +106,20 @@
 
                     <!-- Base Location -->
                     <div>
-                        <label for="base_location_org" class="block text-sm font-medium text-gray-700">Location</label>
+                        <label for="base_location" class="block text-sm font-medium text-gray-700">Location</label>
                         <div class="mt-1">
-                            <select id="base_location_org" name="base_location"
+                            <select id="base_location" name="base_location"
                                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-500">
                                 <option value="" disabled selected>Select your location</option>
-                                <option value="jakarta">Jakarta</option>
-                                <option value="surabaya">Surabaya</option>
-                                <option value="bandung">Bandung</option>
-                                <option value="medan">Medan</option>
-                                <option value="semarang">Semarang</option>
-                                <option value="makassar">Makassar</option>
-                                <option value="palembang">Palembang</option>
-                                <option value="denpasar">Denpasar</option>
-                                <option value="yogyakarta">Yogyakarta</option>
-                                <option value="surakarta">Surakarta</option>
-                                <option value="malang">Malang</option>
-                                <option value="pekanbaru">Pekanbaru</option>
+                                <option value="jakarta_barat">Jakarta Barat</option>
+                                <option value="jakarta_pusat">Jakarta Pusat</option>
+                                <option value="jakarta_selatan">Jakarta Selatan</option>
+                                <option value="jakarta_timur">Jakarta Timur</option>
+                                <option value="jakarta_utara">Jakarta Utara</option>
+                                <option value="bekasi">Bekasi</option>
+                                <option value="bogor">Bogor</option>
                                 <option value="depok">Depok</option>
+                                <option value="tangerang">Tangerang</option>
                             </select>
                         </div>
                     </div>
@@ -174,7 +166,7 @@
                 organizerFields.classList.remove('hidden');
                 // Make organizer fields required
                 document.getElementById('email').required = false;
-                document.getElementById('base_location').required = false;
+                document.getElementById('base_location_org').required = true;
                 document.getElementById('profile_picture').required = true;
             }
         });

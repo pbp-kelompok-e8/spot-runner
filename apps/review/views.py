@@ -1,58 +1,173 @@
-# apps/review/views.py
-
-from django.shortcuts import render, get_object_or_404
+# apss/review/views.py
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+import json
 from .models import Review
 from apps.event.models import Event
-from apps.main.models import Runner
-from apps.event_organizer.models import EventOrganizer
+from apps.main.models import Runner, Attendance
+
 
 @login_required
-def create_review(request):
-    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        event_id = request.POST.get('event_id')
-        rating = request.POST.get('rating')
-        review_text = request.POST.get('review_text', '')
-
-        # Validasi rating
-        try:
-            rating = int(rating)
-            if rating < 1 or rating > 5:
-                return JsonResponse({'success': False, 'error': 'Rating must be between 1 and 5'}, status=400)
-        except (ValueError, TypeError):
-            return JsonResponse({'success': False, 'error': 'Invalid rating'}, status=400)
-
-        # Get event
+@require_POST
+def create_review(request, event_id):
+    """
+    Create a new review for an event.
+    Only runners who attended the event can review.
+    """
+    try:
         event = get_object_or_404(Event, id=event_id)
+        runner = request.user.runner
         
-        # Get runner profile (pastikan user adalah runner)
-        try:
-            runner = Runner.objects.get(user=request.user)
-        except Runner.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Only runners can post reviews'}, status=403)
+        # Check if runner attended the event
+        attendance = Attendance.objects.filter(
+            runner=runner, 
+            event=event,
+            status__in=['attending', 'finished']
+        ).first()
         
-        # Get event organizer
-        event_organizer = event.user_eo
-
-        # Create or update review
-        review, created = Review.objects.update_or_create(
+        if not attendance:
+            return JsonResponse({
+                'success': False,
+                'message': 'You must attend this event to leave a review'
+            }, status=403)
+        
+        # Check if review already exists
+        if Review.objects.filter(runner=runner, event=event).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'You have already reviewed this event'
+            }, status=400)
+        
+        # Parse JSON data
+        data = json.loads(request.body)
+        rating = data.get('rating')
+        review_text = data.get('review_text', '').strip()
+        
+        # Validate rating
+        if not rating or not (1 <= int(rating) <= 5):
+            return JsonResponse({
+                'success': False,
+                'message': 'Rating must be between 1 and 5'
+            }, status=400)
+        
+        # Create review
+        review = Review.objects.create(
             runner=runner,
             event=event,
-            defaults={
-                'rating': rating, 
-                'review_text': review_text,
-                'event_organizer': event_organizer
-            },
+            event_organizer=event.user_eo,
+            rating=int(rating),
+            review_text=review_text
         )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Review posted successfully',
+            'review': {
+                'id': str(review.id),
+                'rating': review.rating,
+                'review_text': review.review_text
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data'
+        }, status=400)
+    except Runner.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Runner profile not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
 
-        data = {
-            'user': request.user.username,
-            'event': event.name,
-            'rating': review.rating,
-            'review_text': review.review_text,
-            'created_at': review.created_at.strftime("%d %b %Y"),
-        }
-        return JsonResponse({'success': True, 'review': data})
 
-    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+@login_required
+@require_POST
+def edit_review(request, review_id):
+    """
+    Edit an existing review.
+    Only the review owner can edit.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    
+    # Check authorization
+    if request.user != review.runner.user:
+        return JsonResponse({
+            'success': False,
+            'message': 'You are not authorized to edit this review'
+        }, status=403)
+    
+    try:
+        # Parse JSON data
+        data = json.loads(request.body)
+        rating = data.get('rating')
+        review_text = data.get('review_text', '').strip()
+        
+        # Validate rating
+        if not rating or not (1 <= int(rating) <= 5):
+            return JsonResponse({
+                'success': False,
+                'message': 'Rating must be between 1 and 5'
+            }, status=400)
+        
+        # Update review
+        review.rating = int(rating)
+        review.review_text = review_text
+        review.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Review updated successfully',
+            'review': {
+                'id': str(review.id),
+                'rating': review.rating,
+                'review_text': review.review_text
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+@login_required
+@require_POST
+def delete_review(request, review_id):
+    """
+    Delete a review.
+    Only the review owner can delete.
+    """
+    review = get_object_or_404(Review, id=review_id)
+    
+    # Check authorization
+    if request.user != review.runner.user:
+        return JsonResponse({
+            'success': False,
+            'message': 'You are not authorized to delete this review'
+        }, status=403)
+    
+    try:
+        review.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Review deleted successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)

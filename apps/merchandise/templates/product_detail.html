@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
-{% comment %} # test {% endcomment %}
+
 {% block meta %}
 <title>{{ merchandise.name }} - Merchandise</title>
 {% endblock meta %}
 
 {% block content %}
-{% include 'navbar.html' %}
 
 <!-- Toast Messages -->
 {% if messages %}

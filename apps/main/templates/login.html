@@ -51,17 +51,6 @@
                 </div>
             </form>
 
-            <!-- Messages Display -->
-            {% if messages %}
-                <div class="mt-6">
-                {% for message in messages %}
-                    <div id="toast-{{ message.tags }}" class="hidden flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-                </div>
-            {% endif %}
-
             <div class="mt-6">
                 <div class="relative">
                     <div class="relative flex justify-center text-sm">

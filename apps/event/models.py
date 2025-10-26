@@ -64,8 +64,15 @@ class Event(models.Model):
         self.save()
         
     def decrement_participans(self):
-        if self.total_participans <= self.capacity:
+    # PERBAIKAN: Hanya kurangi jika jumlahnya lebih besar dari 0
+        if self.total_participans > 0:
             self.total_participans -= 1
+            
+            # Logika 'full' Anda
             if self.full:
                 self.full = False
+        
+        # else:
+        # Jika sudah 0, jangan lakukan apa-apa
+        
         self.save()

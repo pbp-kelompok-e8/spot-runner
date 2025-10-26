@@ -1,14 +1,18 @@
-<div id="reviewModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center z-50">
+<!-- templates/review/review_modal.html -->
+<!-- Modal Review (Reusable for Create & Edit) -->
+<div id="reviewModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden items-center justify-center z-50" style="display: none;">
   <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4">Rate & Review</h2>
+    <h2 id="modalTitle" class="text-xl font-semibold text-gray-800 mb-4">Rate & Review</h2>
 
     <form id="reviewForm">
       {% csrf_token %}
-      <input type="hidden" id="event_id" name="event_id" value="{{ event.id }}">
+      <input type="hidden" id="modal_event_id" name="event_id">
+      <input type="hidden" id="modal_review_id" name="review_id">
+      <input type="hidden" id="modal_mode" name="mode" value="create">
 
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-600">Event</label>
-        <input type="text" readonly value="{{ event.name }}" class="w-full mt-1 px-3 py-2 bg-gray-100 rounded-lg border border-gray-200 text-gray-700">
+        <input type="text" id="modal_event_name" readonly class="w-full mt-1 px-3 py-2 bg-gray-100 rounded-lg border border-gray-200 text-gray-700">
       </div>
 
       <div class="mb-4">
@@ -18,77 +22,15 @@
 
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-600">Review</label>
-        <textarea id="review_text" name="review_text" rows="3" class="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-400"></textarea>
+        <textarea id="review_text" name="review_text" rows="3" class="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-400" placeholder="Share your experience..."></textarea>
       </div>
 
       <div class="flex justify-end space-x-3">
-        <button type="button" id="cancelModal" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-lime-400 text-white rounded-lg hover:bg-lime-500">Post</button>
+        <button type="button" id="cancelModal" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+        <button type="submit" id="submitBtn" class="px-4 py-2 bg-lime-400 text-white rounded-lg hover:bg-lime-500 transition">Post</button>
       </div>
     </form>
     
-    <!-- Error message container -->
     <div id="errorMessage" class="hidden mt-3 p-3 bg-red-100 text-red-700 rounded-lg text-sm"></div>
   </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('reviewForm');
-  const modal = document.getElementById('reviewModal');
-  const cancel = document.getElementById('cancelModal');
-  const errorMessage = document.getElementById('errorMessage');
-
-  cancel.addEventListener('click', () => {
-    modal.classList.add('hidden');
-    errorMessage.classList.add('hidden');
-  });
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    errorMessage.classList.add('hidden');
-
-    const formData = new FormData(form);
-
-    fetch("{% url 'review:create_review' %}", {
-      method: 'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        const review = data.review;
-        const container = document.getElementById('reviewContainer');
-        
-        // Remove "no reviews" message if exists
-        const noReviews = container.querySelector('p.text-gray-500');
-        if (noReviews) noReviews.remove();
-        
-        const card = `
-          <div class="bg-white rounded-2xl shadow-md p-5 mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">${review.user}</h3>
-            <p class="text-gray-600 mt-2">${review.review_text || 'No comment'}</p>
-            <div class="flex items-center mt-3">
-              <span class="text-lime-500 text-lg mr-1">★</span>
-              <span class="font-semibold text-gray-800">${review.rating}</span>
-              <span class="text-sm text-gray-500 ml-1">/ 5</span>
-              <span class="text-xs text-gray-400 ml-auto">${review.created_at}</span>
-            </div>
-          </div>
-        `;
-        container.insertAdjacentHTML('afterbegin', card);
-        modal.classList.add('hidden');
-        form.reset();
-      } else {
-        errorMessage.textContent = data.error || 'Failed to submit review';
-        errorMessage.classList.remove('hidden');
-      }
-    })
-    .catch(error => {
-      errorMessage.textContent = 'An error occurred. Please try again.';
-      errorMessage.classList.remove('hidden');
-    });
-  });
-});
-</script>
