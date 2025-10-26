@@ -58,7 +58,7 @@
                     <h2 class="text-lg font-semibold text-gray-900">Review & Rating</h2>
 
                     <div class="flex items-center gap-3 text-gray-800">
-                        <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-6 h-6 text-lime-400" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.955a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.372 2.453a1 1 0 00-.364 1.118l1.286 3.955c.3.921-.755 1.688-1.54 1.118L10 14.347l-3.377 2.479c-.784.57-1.838-.197-1.539-1.118l1.285-3.955a1 1 0 00-.364-1.118L3.63 9.382c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.955z"/>
                         </svg>
 
@@ -85,9 +85,9 @@
             </div>
 
             {% if events %}
-            <div class="space-y-6">
+            <div class="event-card-list space-y-6">
                 {% for event in events %}
-                <div class="p-5 rounded-xl shadow-md border
+                <div class="event-card p-5 rounded-xl shadow-md border
                     {% if event.event_status == 'coming_soon' %}
                         bg-yellow-50 border-yellow-200
                     {% elif event.event_status == 'on_going' %}
@@ -160,7 +160,7 @@
             </div>
 
             {% else %}
-            <div class="text-center py-16">
+            <div id="no-events-message" class="text-center py-16">
                 <h3 class="text-sm font-medium text-gray-900">No events yet</h3>
                 <p class="mt-1 text-sm text-gray-500">Create your first event now</p>
             </div>
