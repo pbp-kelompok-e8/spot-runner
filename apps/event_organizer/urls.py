@@ -16,5 +16,5 @@ urlpatterns = [
     path('dashboard/', dashboard_view, name='dashboard'),
     path('change-password/', change_password, name='change_password'),
 
-    path('create-event/', create_event, name='create_event'),
+    # path('create-event/', create_event, name='create_event'),
 ]

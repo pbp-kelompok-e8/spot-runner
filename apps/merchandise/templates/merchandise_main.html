@@ -23,21 +23,6 @@
 <body class="bg-gray-50 text-gray-800 mt-16">
   <div class="max-w-7xl mx-auto px-6 py-10">
 
-    <div style="background: #f0f0f0; padding: 20px; margin: 10px; border: 2px solid red;">
-      <h3>DEBUG CONTEXT:</h3>
-      <p><strong>User:</strong> {{ user }}</p>
-      <p><strong>User is authenticated:</strong> {{ user.is_authenticated }}</p>
-      <p><strong>Is Organizer:</strong> {{ is_organizer }}</p>
-      <p><strong>User Coins:</strong> {{ user_coins }}</p>
-      <p><strong>Organizer Coins:</strong> {{ organizer_coins }}</p>
-      <p><strong>Products count:</strong> {{ products.count }}</p>
-      <p><strong>Categories:</strong> {{ categories }}</p>
-      
-      <!-- Debug user profiles -->
-      <p><strong>Has runner:</strong> {{ user.runner }}</p>
-      <p><strong>Has eventorganizer:</strong> {{ user.event_organizer_profile }}</p>
-    </div>
-
     <!-- ===== Banner: runner or organizer ===== -->
     {% if user.is_authenticated and is_organizer %}
       <!-- Organizer banner -->

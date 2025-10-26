@@ -137,7 +137,7 @@
                     <div class="mt-5 space-y-2 text-sm text-gray-700">
                         <p><span class="font-medium">👥 Total Participants:</span> {{ event.total_participans|default:"0" }}</p>
                         <p><span class="font-medium">📅 Date:</span> {{ event.event_date|date:"d M Y (D)" }}</p>
-                        <p><span class="font-medium">📍 Location:</span> {{ event.location }}</p>
+                        <p><span class="font-medium">📍 Location:</span> {{ event.get_location_display }}</p>
                         <p class="text-sm text-gray-700">
                         🏷️ Run Types:
                         {% for cat in event.event_category.all %}
