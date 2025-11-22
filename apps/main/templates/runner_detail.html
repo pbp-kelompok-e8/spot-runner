@@ -60,6 +60,12 @@
 
 
 	<div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
+            <a href="{% url 'main:show_main' %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                Join New Event +
+            </a>
+        </div>
 			{% if attendance_list %}
 				<div class="space-y-6">
 					{% for record in attendance_list %}
@@ -208,6 +214,59 @@
         {% else %}
             <div class="text-center py-8">
                 <p class="text-gray-600">You haven't joined any events yet.</p>
+            </div>
+        {% endif %}
+    </div>
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Your Reviews</h2>
+
+        {% if user_reviews %}
+            <div class="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x snap-mandatory">
+                {% for review in user_reviews %}
+                <div class="min-w-[300px] md:min-w-[350px] bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col relative snap-center transition hover:shadow-md">
+                    
+                    <div class="mb-3">
+                        <h3 class="text-lg font-bold text-gray-900 truncate" title="{{ review.event.name }}">
+                            {{ review.event.name }}
+                        </h3>
+                        <p class="text-xs text-gray-500">{{ review.created_at|date:"d M Y" }}</p>
+                    </div>
+
+                    <div class="flex items-center mb-3">
+                        <svg class="w-5 h-5 text-lime-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <span class="ml-2 font-bold text-gray-900">{{ review.rating }}</span>
+                        <span class="text-gray-400 text-sm">/5.0</span>
+                    </div>
+
+                    <p class="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow italic">
+                        "{{ review.review_text }}"
+                    </p>
+
+                    <div class="flex gap-3 mt-auto pt-4 border-t border-gray-100">
+                        <button onclick="window.openEditReview('{{ review.id }}', '{{ review.event.id }}', '{{ review.event.name|escapejs }}', {{ review.rating }}, '{{ review.review_text|escapejs }}')" 
+                                class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            Edit
+                        </button>
+
+                        <button onclick="window.deleteReview('{{ review.id }}')"
+                                class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-8 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
+                <p class="text-gray-500">You haven't written any reviews yet.</p>
             </div>
         {% endif %}
     </div>

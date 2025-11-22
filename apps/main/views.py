@@ -136,6 +136,7 @@ def show_user(request, username):
         'user': user,
         'attendance_list': attendance_list,
         'location_choices': Runner.LOCATION_CHOICES,
+        'user_reviews': reviews,
     }
 
     return render(request, "runner_detail.html", context)
