@@ -30,6 +30,21 @@
 
     <!-- Scripts -->
     <script src="{% static 'js/toast.js' %}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        try {
+          const saved = sessionStorage.getItem('toastMessage');
+          if (saved) {
+            const { type, message } = JSON.parse(saved);
+            const id = type === 'success' ? 'toast-success' : (type === 'error' ? 'toast-danger' : 'toast-warning');
+            if (typeof showToast === 'function') {
+              showToast(id, message || '');
+            }
+            sessionStorage.removeItem('toastMessage');
+          }
+        } catch (_) {}
+      });
+    </script>
     
     <!-- Review Modal Script - FIXED VERSION -->
     <script>

@@ -1,3 +1,4 @@
+
 from django import forms
 from .models import Event, EventCategory
 from django.utils.html import strip_tags
@@ -31,8 +32,8 @@ class EventForm(forms.ModelForm):
             'image': forms.URLInput(attrs={'placeholder': 'https://example.com/image1.png'}),
             'image2': forms.URLInput(attrs={'placeholder': 'https://example.com/image2.png'}),
             'image3': forms.URLInput(attrs={'placeholder': 'https://example.com/image3.png'}),
-            'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'regist_deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'required': True, 'min': now_iso}),
+            'regist_deadline': forms.DateTimeInput(attrs={'type': 'datetime-local', 'required': True, 'min': now_iso}),
             'contact': forms.TextInput(attrs={'placeholder': 'Enter phone number'}),
             'capacity': forms.NumberInput(attrs={'placeholder': 'Enter max participants'}),
             'coin': forms.NumberInput(attrs={'placeholder': 'Enter coin reward'}), 
@@ -71,6 +72,10 @@ class EventForm(forms.ModelForm):
 
         if 'description' in self.fields:
             self.fields['description'].widget.attrs.update({'class': textarea_style})
+        if 'event_date' in self.fields:
+            self.fields['event_date'].required = True
+        if 'regist_deadline' in self.fields:
+            self.fields['regist_deadline'].required = True
             
     def clean_name(self):
         name = self.cleaned_data["name"]
@@ -82,28 +87,23 @@ class EventForm(forms.ModelForm):
     
     def clean_event_date(self):
         event_date = self.cleaned_data.get('event_date')
+        if not event_date:
+            raise ValidationError("Event date is required.")
         now = timezone.now()
-        
-        # if event_date and event_date < now:
-        #     raise ValidationError(
-        #         "Event date and time cannot be in the past!"
-        #     )
-        
+        if event_date < now:
+            raise ValidationError("Event date and time cannot be in the past!")
         return event_date
 
     def clean_regist_deadline(self):
         regist_deadline = self.cleaned_data.get('regist_deadline')
+        if not regist_deadline:
+            raise ValidationError("Registration deadline is required.")
         now = timezone.now()
-        
-        # if regist_deadline and regist_deadline < now:
-        #     raise ValidationError(
-        #         "Registration deadline cannot be in the past!"
-        #     )
+        if regist_deadline < now:
+            raise ValidationError("Registration deadline cannot be in the past!")
         event_date = self.cleaned_data.get('event_date')
-        if event_date and regist_deadline and regist_deadline >= event_date:
-            raise ValidationError(
-                "Registration deadline must be before the event date/time."
-            )
+        if event_date and regist_deadline >= event_date or regist_deadline >= event_date :
+            raise ValidationError("Registration deadline must be before the event date/time.")
         return regist_deadline
     
     def save(self, commit=True):

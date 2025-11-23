@@ -37,7 +37,7 @@ def dashboard_view(request):
             elif event_date == today:
                 new_status = "on_going"
             elif event.regist_deadline.date() < today:
-                 pass
+                pass
             if new_status != event.event_status:
                 event.event_status = new_status
                 event.save()
