@@ -13,8 +13,9 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.db import transaction
 
 # Create your views here.
@@ -150,7 +151,7 @@ def logout_user(request):
     return response
 
 
-@login_required
+@login_required(login_url='main:login')
 def edit_profile_runner(request, username):
     user = get_object_or_404(User, username=username)
     if user != request.user or user.role != 'runner':
@@ -289,7 +290,7 @@ def participate_in_event(request, username, id, category_key):
 
     return redirect('main:show_user', username=username)
 
-@login_required
+@login_required(login_url='main:login')
 def change_password(request,username):
     if request.method == "POST":
         form = PasswordChangeForm(request.user, request.POST)
@@ -321,3 +322,31 @@ def change_password(request,username):
     }
 
     return render(request, "change_password.html", context)
+
+@login_required(login_url='main:login')
+@require_POST
+def delete_profile(request, id):
+    user = request.user
+
+    password = request.POST.get("password")
+
+    if not user.check_password(password):
+        return JsonResponse({
+            "success": False,
+            "message": "Password yang Anda masukkan salah."
+        }, status=400)
+    
+    try:
+        user.delete()
+        logout(request)
+        
+        return JsonResponse({
+            "success": True,
+            "message": "Akun berhasil dihapus.",
+            "redirect_url": reverse('main:show_main')
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": f"Terjadi kesalahan: {str(e)}"
+        }, status=500)
