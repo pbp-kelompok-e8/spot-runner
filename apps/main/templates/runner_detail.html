@@ -10,180 +10,184 @@
 {% include 'navbar.html' %}{% include 'confirmation_modal.html' %}{% include 'edit_profile_modal.html' %}
 
 <div class="max-w-4xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
-	<div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
-		<div class="flex justify-between items-center mb-6">
-			<div class="flex items-center gap-3">
-				<h1 id="display-username-header" class="text-2xl font-bold text-gray-900">Your Profile</h1>
-				<span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
-			</div>
-			<div id="lastLogin" class="text-sm text-gray-500">
-				
-			</div>
-		</div>
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <h1 id="display-username-header" class="text-2xl font-bold text-gray-900">Your Profile</h1>
+                <span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
+            </div>
+            <div id="lastLogin" class="text-sm text-gray-500">
+                
+            </div>
+        </div>
 
-		<div class="space-y-6">
-			<div >
-				<label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-				<input type="text" id="display-username-input" value="{{ user.username }}" disabled
-					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
-			</div>
+        <div class="space-y-6">
+            <div >
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" id="display-username-input" value="{{ user.username }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
 
-			<div id="location">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-				<input type="text" id="display-location-input" value="{{ user.runner.base_location|default:'Not set' }}" disabled
-					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
-			</div>
+            <div id="location">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input type="text" id="display-location-input" value="{{ user.runner.base_location|default:'Not set' }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
 
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-				<input type="password" value="********" disabled
-					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
-				<div class="flex items-center text-sm">
-					<span class="text-gray-500">Forgot your password?</span>
-					<a id="change-password-link" href="{% url 'main:change_password' user.username %}" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
-				</div>
-			</div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value="********" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
+                <div class="flex items-center text-sm">
+                    <span class="text-gray-500">Forgot your password?</span>
+                    <a id="change-password-link" href="{% url 'main:change_password' user.username %}" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
+                </div>
+            </div>
 
-			<div class="flex justify-end space-x-4 mt-6">
-				<a href="{% url 'main:logout' %}">
-				<button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
-					Log out
-				</button>
-				</a>
-				<button type="button" onclick="openEditModal()"
-					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-					Edit Profile
-				</button>
-			</div>
-		</div>
-	</div>
+            <div class="flex justify-end space-x-4 mt-6">
+                <a href="{% url 'main:logout' %}">
+                <button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    Log out
+                </button>
+                </a>
+                <button type="button" onclick="openEditModal()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Edit Profile
+                </button>
+                <button onclick="openDeleteAccountModal()" 
+                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium">
+                    Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
 
 
-	<div class="bg-white rounded-lg shadow-lg p-6">
+    <div class="bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
             <a href="{% url 'main:show_main' %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
                 Join New Event +
             </a>
         </div>
-			{% if attendance_list %}
-				<div class="space-y-6">
-					{% for record in attendance_list %}
-					<div class="border rounded-lg p-6 relative mb-4
-						{% if record.status == 'canceled' %}
-							border-red-300 bg-red-50
-						{% elif record.status == 'finished' %}
-							border-green-300 bg-green-50
-						{% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
-							border-blue-300 bg-blue-50
-						{% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
-							border-yellow-300 bg-yellow-50
-						{% else %}
-							border-gray-300 bg-gray-50
-						{% endif %}">
-						
-						<div class="flex justify-between items-start mb-4">
-							<div>
-								<h3 class="font-semibold text-gray-900">{{ record.event.name }}</h3>
-								<p class="text-gray-600">{{ record.event.get_location_display }}</p>
-							</div>
-							<div class="flex items-center gap-3">
-								<div class="flex items-center gap-2">
+            {% if attendance_list %}
+                <div class="space-y-6">
+                    {% for record in attendance_list %}
+                    <div class="border rounded-lg p-6 relative mb-4
+                        {% if record.status == 'canceled' %}
+                            border-red-300 bg-red-50
+                        {% elif record.status == 'finished' %}
+                            border-green-300 bg-green-50
+                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                            border-blue-300 bg-blue-50
+                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                            border-yellow-300 bg-yellow-50
+                        {% else %}
+                            border-gray-300 bg-gray-50
+                        {% endif %}">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ record.event.name }}</h3>
+                                <p class="text-gray-600">{{ record.event.get_location_display }}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-2">
 
-									<span class="px-3 py-1 rounded-full text-sm 
-										{% if record.status == 'canceled' %}
-											bg-red-100 text-red-800
-										{% elif record.status == 'finished' %}
-											bg-green-100 text-green-800
-										{% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
-											bg-blue-100 text-blue-800
-										{% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
-											bg-yellow-100 text-yellow-800
-										{% else %}
-											bg-gray-100 text-gray-800
-										{% endif %}">
-										{% if record.status == 'canceled' %}
-											Canceled
-										{% elif record.status == 'finished' %}
-											Finished
-										{% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
-											On Going
-										{% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
-											Coming Soon
-										{% else %}
-											{{ record.status|title }}
-										{% endif %}
-									</span>
-									
-									{% if record.status == 'finished' and record.review %}
-									<div class="flex items-center">
-										</div>
-									{% endif %}
-								</div>
+                                    <span class="px-3 py-1 rounded-full text-sm 
+                                        {% if record.status == 'canceled' %}
+                                            bg-red-100 text-red-800
+                                        {% elif record.status == 'finished' %}
+                                            bg-green-100 text-green-800
+                                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                                            bg-blue-100 text-blue-800
+                                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% else %}
+                                            bg-gray-100 text-gray-800
+                                        {% endif %}">
+                                        {% if record.status == 'canceled' %}
+                                            Canceled
+                                        {% elif record.status == 'finished' %}
+                                            Finished
+                                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                                            On Going
+                                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                                            Coming Soon
+                                        {% else %}
+                                            {{ record.status|title }}
+                                        {% endif %}
+                                    </span>
+                                    
+                                    {% if record.status == 'finished' and record.review %}
+                                    <div class="flex items-center">
+                                        </div>
+                                    {% endif %}
+                                </div>
 
-								{% if record.status == 'attending' %}
-								<div class="relative">
-									<button class="text-gray-400 hover:text-gray-600" onclick="toggleDropdown('dropdown-{{ record.event.id }}')">
-										<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-											<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
-										</svg>
-									</button>
-									<div id="dropdown-{{ record.event.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-										<button id="cancel-btn-{{ record.event.id }}" onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
-										data-event-name="{{ record.event.name|escapejs }}"
-										class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-											<span class="flex items-center">
-												<svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-													<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-												</svg>
-												Cancel Booking
-											</span>
-										</button>
-									</div>
-								</div>
-								{% endif %}
-							</div>
-						</div>
+                                {% if record.status == 'attending' %}
+                                <div class="relative">
+                                    <button class="text-gray-400 hover:text-gray-600" onclick="toggleDropdown('dropdown-{{ record.event.id }}')">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                                        </svg>
+                                    </button>
+                                    <div id="dropdown-{{ record.event.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                                        <button id="cancel-btn-{{ record.event.id }}" onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
+                                        data-event-name="{{ record.event.name|escapejs }}"
+                                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                            <span class="flex items-center">
+                                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Cancel Booking
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
 
-						<hr class="border-gray-200 my-4">
+                        <hr class="border-gray-200 my-4">
 
-						<div class="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-2 mb-4">
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Date</span>
-							<p class="text-gray-900">{{ record.event.event_date|date:"d M Y" }}</p>
+                        <div class="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-2 mb-4">
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Date</span>
+                            <p class="text-gray-900">{{ record.event.event_date|date:"d M Y" }}</p>
 
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Location</span>
-							<p class="text-gray-900">{{ record.event.get_location_display }}</p>
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Location</span>
+                            <p class="text-gray-900">{{ record.event.get_location_display }}</p>
 
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Type</span>
-							<p class="text-gray-900">
-								{{ record.category }}
-							</p>
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Type</span>
+                            <p class="text-gray-900">
+                                {{ record.category }}
+                            </p>
 
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4m-9 4h2m-2 4h4m6-4h2m-2 4h4m-6-4h.01M16 16h.01"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Participant ID</span>
-							<p class="text-gray-900">{{ record.participant_id }}</p>
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4m-9 4h2m-2 4h4m6-4h2m-2 4h4m-6-4h.01M16 16h.01"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Participant ID</span>
+                            <p class="text-gray-900">{{ record.participant_id }}</p>
 
-						</div>
+                        </div>
 
                     <!-- Rate Button -->
                     {% if record.status == 'finished' and not record.review %}
@@ -270,6 +274,38 @@
             </div>
         {% endif %}
     </div>
+    <div id="delete-account-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 transform transition-all" id="delete-modal-content">
+        
+        <h3 class="text-xl font-bold text-red-600 mb-2">Delete Account</h3>
+        <p class="text-gray-600 mb-4 text-sm">
+            Are you sure you want to delete your account? This action is <strong>permanent</strong> and cannot be undone. 
+            All your event history and coins will be lost.
+        </p>
+
+        <form id="delete-account-form" onsubmit="handleDeleteAccount(event)">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Confirm with Password</label>
+                <input type="password" name="password" required placeholder="Enter your password"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+            </div>
+            
+            <div id="delete-error-msg" class="hidden text-red-600 text-sm mb-3"></div>
+
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeDeleteAccountModal()" 
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center">
+                    <span>Delete Permanently</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 </div>
 
 <script>
@@ -455,6 +491,53 @@
         });
 
     }); 
+
+    function openDeleteAccountModal() {
+    document.getElementById('delete-account-modal').classList.remove('hidden');
+}
+
+function closeDeleteAccountModal() {
+    document.getElementById('delete-account-modal').classList.add('hidden');
+    document.getElementById('delete-account-form').reset();
+    document.getElementById('delete-error-msg').classList.add('hidden');
+}
+
+async function handleDeleteAccount(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const errorMsg = document.getElementById('delete-error-msg');
+    
+    // Konfirmasi terakhir (Browser alert)
+    if (!confirm("This is your last chance. Are you absolutely sure?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch("{% url 'main:delete_profile' user.username %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(data.message);
+            window.location.href = data.redirect_url;
+        } else {
+            errorMsg.textContent = data.message;
+            errorMsg.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        errorMsg.textContent = "Terjadi kesalahan jaringan.";
+        errorMsg.classList.remove('hidden');
+    }
+}
 </script>
 
 
