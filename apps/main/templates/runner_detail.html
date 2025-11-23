@@ -9,7 +9,7 @@
 {% block content %}
 {% include 'navbar.html' %}{% include 'confirmation_modal.html' %}{% include 'edit_profile_modal.html' %}
 
-<div class="max-w-4xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
+<div class="max-w-7xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
     <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-3">
@@ -225,45 +225,52 @@
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Your Reviews</h2>
 
         {% if user_reviews %}
-            <div class="flex overflow-x-auto pb-6 gap-6 scrollbar-hide snap-x snap-mandatory">
+            <div class="flex overflow-x-auto pb-8 gap-6 scrollbar-hide snap-x snap-mandatory px-2">
                 {% for review in user_reviews %}
-                <div class="min-w-[300px] md:min-w-[350px] bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col relative snap-center transition hover:shadow-md">
+                <div class="min-w-[320px] md:min-w-[340px] bg-white rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center text-center relative snap-center transition-transform hover:-translate-y-1 duration-300">
                     
-                    <div class="mb-3">
-                        <h3 class="text-lg font-bold text-gray-900 truncate" title="{{ review.event.name }}">
-                            {{ review.event.name }}
-                        </h3>
-                        <p class="text-xs text-gray-500">{{ review.created_at|date:"d M Y" }}</p>
+                    <div class="absolute top-5 right-5">
+                        <button onclick="toggleReviewMenu('menu-{{ review.id }}')" class="text-gray-300 hover:text-gray-600 transition-colors p-1">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="5" r="2"/>
+                                <circle cx="12" cy="12" r="2"/>
+                                <circle cx="12" cy="19" r="2"/>
+                            </svg>
+                        </button>
+                        
+                        <div id="menu-{{ review.id }}" class="hidden absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-xl border border-gray-100 z-20 overflow-hidden text-left animate-fadeIn">
+                            <button onclick="window.openEditReview('{{ review.id }}', '{{ review.event.id }}', '{{ review.event.name|escapejs }}', {{ review.rating }}, '{{ review.review_text|escapejs }}')" 
+                                    class="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                Edit
+                            </button>
+                            <button onclick="window.deleteReview('{{ review.id }}')" 
+                                    class="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-red-50 hover:text-red-600 flex items-center gap-2 border-t border-gray-50 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Delete
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="flex items-center mb-3">
-                        <svg class="w-5 h-5 text-lime-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    <div class="mb-6 w-full">
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ user.username }}</h3>
+                        <p class="text-xs text-gray-400 font-medium truncate px-4">
+                            Participant {{ review.event.name }}
+                        </p>
+                    </div>
+
+                    <div class="flex-grow w-full mb-8 flex items-center justify-center">
+                        <p class="text-gray-500 text-sm leading-relaxed line-clamp-4">
+                            {{ review.review_text }}
+                        </p>
+                    </div>
+
+                    <div class="mt-auto flex items-center justify-center gap-2 w-full pt-4 border-t border-gray-50 border-dashed">
+                        <svg class="w-6 h-6 text-[#CDFA5D]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+                            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
                         </svg>
-                        <span class="ml-2 font-bold text-gray-900">{{ review.rating }}</span>
-                        <span class="text-gray-400 text-sm">/5.0</span>
-                    </div>
-
-                    <p class="text-gray-600 text-sm mb-6 line-clamp-3 flex-grow italic">
-                        "{{ review.review_text }}"
-                    </p>
-
-                    <div class="flex gap-3 mt-auto pt-4 border-t border-gray-100">
-                        <button onclick="window.openEditReview('{{ review.id }}', '{{ review.event.id }}', '{{ review.event.name|escapejs }}', {{ review.rating }}, '{{ review.review_text|escapejs }}')" 
-                                class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                            </svg>
-                            Edit
-                        </button>
-
-                        <button onclick="window.deleteReview('{{ review.id }}')"
-                                class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            Delete
-                        </button>
+                        <span class="text-2xl font-bold text-gray-900">{{ review.rating }}</span>
+                        <span class="text-xs text-gray-400 font-medium relative top-1">/5.0 rating</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -309,91 +316,8 @@
 </div>
 
 <script>
-    // DEFINISI FUNGSI
-
-    function closeModal() {
-        const cancelModal = document.getElementById('confirmation-modal');
-        if (cancelModal) {
-            cancelModal.classList.add('hidden');
-        }
-    }
-
-    function openCancelModal(actionUrl, itemName) {
-        // Ambil elemen di dalam fungsi agar selalu up-to-date
-        const cancelModal = document.getElementById('confirmation-modal');
-        const cancelModalTitle = document.getElementById('modal-title');
-        const cancelModalText = document.getElementById('modal-text');
-        const cancelModalConfirmButton = document.getElementById('modal-confirm-button');
-
-        cancelModalTitle.textContent = `Are you sure you want to cancel?`;
-        cancelModalText.textContent = `You'll lose your spot in ${itemName}.`;
-        cancelModalConfirmButton.form.action = actionUrl; 
-        
-        cancelModal.classList.remove('hidden');
-    }
-
-    function openEditModal() {
-        const editModal = document.getElementById('edit-profile-modal');
-        if (!editModal) return;
-        
-        const displayUsernameInput = document.getElementById('display-username-input');
-        const displayLocationInput = document.getElementById('display-location-input');
-        const locationSelect = document.getElementById('edit-location');
-
-        // 1. Reset form ke nilai saat ini
-        document.getElementById('edit-username').value = displayUsernameInput.value;
-        const currentLocDisplay = displayLocationInput.value; 
-        
-        for (let i = 0; i < locationSelect.options.length; i++) {
-            if (locationSelect.options[i].text === currentLocDisplay) {
-                locationSelect.value = locationSelect.options[i].value;
-                break;
-            }
-        }
-
-        // 2. Tampilkan modal
-        editModal.classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('edit-modal-content').classList.remove('scale-95', 'opacity-0');
-            document.getElementById('edit-modal-content').classList.add('scale-100', 'opacity-100');
-        }, 10);
-    }
-
-    function closeEditModal() {
-        const editModal = document.getElementById('edit-profile-modal');
-        const editModalContent = document.getElementById('edit-modal-content');
-        const editError = document.getElementById('edit-profile-error');
-
-        if (!editModal) return;
-
-        editError.classList.add('hidden');
-        editError.textContent = '';
-        
-        editModalContent.classList.add('scale-95', 'opacity-0');
-        editModalContent.classList.remove('scale-100', 'opacity-100');
-        
-        setTimeout(() => {
-            editModal.classList.add('hidden');
-        }, 300);
-    }
-
-    function toggleDropdown(dropdownId) {
-        const dropdown = document.getElementById(dropdownId);
-        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
-        
-        allDropdowns.forEach(d => {
-            if (d.id !== dropdownId) {
-                d.classList.add('hidden');
-            }
-        });
-        
-        dropdown.classList.toggle('hidden');
-    }
-
-    // Main code hanya aktif kalo semua udh ke load
     document.addEventListener('DOMContentLoaded', () => {
-        
-        // --- Ambil semua elemen penting ---
+        // --- 1. INITIAL SETUP (Last Login & Edit Profile) ---
         const editForm = document.getElementById('edit-profile-form');
         const saveButton = document.getElementById('edit-profile-save-button');
         const saveButtonText = document.getElementById('save-button-text');
@@ -405,7 +329,6 @@
         const displayLocationInput = document.getElementById('display-location-input');
         const changePasswordLink = document.getElementById('change-password-link');
 
-        // --- Tampilkan Last Login ---
         {% if user.last_login %}
             const lastLogin = new Date("{{ user.last_login|date:'c' }}");
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -414,11 +337,9 @@
             document.getElementById('lastLogin').innerText = 'Last login: Never';
         {% endif %}
 
-        // --- Pasang Listener untuk Edit Form ---
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-
                 saveButton.disabled = true;
                 saveButtonText.classList.add('hidden');
                 saveSpinner.classList.remove('hidden');
@@ -431,20 +352,14 @@
                     const response = await fetch(editForm.action, {
                         method: 'POST',
                         body: formData,
-                        headers: {
-                            'X-CSRFToken': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
+                        headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
                     });
-
                     const data = await response.json();
 
                     if (response.ok && data.success) {
                         displayUsernameHeader.textContent = `${data.username}'s Profile`;
                         displayUsernameInput.value = data.username;
                         displayLocationInput.value = data.base_location;
-
-
                         editForm.action = data.new_urls.edit_profile;
                         changePasswordLink.href = data.new_urls.change_password;
 
@@ -453,24 +368,19 @@
                             const cancelBtn = document.getElementById(`cancel-btn-${eventId}`);
                             if (cancelBtn) {
                                 const eventName = cancelBtn.dataset.eventName;
-                                const newOnClick = `openCancelModal('${newCancelUrls[eventId]}', '${eventName}')`;
-                                cancelBtn.setAttribute('onclick', newOnClick);
+                                cancelBtn.onclick = () => openCancelModal(newCancelUrls[eventId], eventName);
                             }
                         }
-                        
                         closeEditModal();
-                        
                         const newPath = window.location.pathname.split('/').slice(0, -1).join('/') + '/' + data.username;
                         window.history.pushState({}, `${data.username}'s Profile`, newPath);
-
                     } else {
                         editError.textContent = data.error || 'An unknown error occurred.';
                         editError.classList.remove('hidden');
                     }
-
                 } catch (error) {
                     console.error("Fetch Error:", error);
-                    editError.textContent = 'A network error or JSON parsing error occurred. Please try again.';
+                    editError.textContent = 'A network error occurred.';
                     editError.classList.remove('hidden');
                 } finally {
                     saveButton.disabled = false;
@@ -478,66 +388,250 @@
                     saveSpinner.classList.add('hidden');
                 }
             });
-        } else {
-            console.error("Peringatan: Elemen form #edit-profile-form tidak ditemukan.");
         }
 
-        // --- Pasang Listener untuk menutup dropdown ---
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
-                allDropdowns.forEach(d => d.classList.add('hidden'));
+            const isButton = e.target.closest('button[onclick^="toggleReviewMenu"]') || e.target.closest('button[onclick^="toggleDropdown"]');
+            const isMenu = e.target.closest('[id^="menu-"]') || e.target.closest('[id^="dropdown-"]');
+            if (!isButton && !isMenu) {
+                document.querySelectorAll('[id^="menu-"], [id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
             }
         });
-
     }); 
 
-    function openDeleteAccountModal() {
-    document.getElementById('delete-account-modal').classList.remove('hidden');
-}
-
-function closeDeleteAccountModal() {
-    document.getElementById('delete-account-modal').classList.add('hidden');
-    document.getElementById('delete-account-form').reset();
-    document.getElementById('delete-error-msg').classList.add('hidden');
-}
-
-async function handleDeleteAccount(event) {
-    event.preventDefault();
+    // ==========================================
+    // 2. GENERIC CONFIRMATION MODAL
+    // ==========================================
     
-    const form = event.target;
-    const formData = new FormData(form);
-    const errorMsg = document.getElementById('delete-error-msg');
-    
-    // Konfirmasi terakhir (Browser alert)
-    if (!confirm("This is your last chance. Are you absolutely sure?")) {
-        return;
+    function closeConfirmationModal() {
+        const modal = document.getElementById('confirmation-modal');
+        if (modal) modal.classList.add('hidden');
     }
 
-    try {
-        const response = await fetch("{% url 'main:delete_profile' user.username %}", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+    function showConfirmationModal({ title, text, leftText, rightText, type, actionUrl, onConfirm, isSubmitLeft = false }) {
+        const modal = document.getElementById('confirmation-modal');
+        if (!modal) return;
+
+        // 1. Clone Form untuk reset event listener
+        // Kita ambil elemen FRESH dari DOM setiap kali fungsi dipanggil
+        const oldForm = document.getElementById('modal-form');
+        const newForm = oldForm.cloneNode(true);
+        oldForm.parentNode.replaceChild(newForm, oldForm);
+
+        // Ambil referensi ke elemen judul dan teks (pastikan ID unik)
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        
+        // Ambil tombol dari form yang BARU
+        const leftBtn = newForm.querySelector('#modal-cancel-btn');  // Tombol Putih (Kiri)
+        const rightBtn = newForm.querySelector('#modal-confirm-btn'); // Tombol Warna (Kanan)
+
+        // 2. Set Konten
+        modalTitle.textContent = title;
+        modalText.innerHTML = text;
+        leftBtn.textContent = leftText;
+        rightBtn.textContent = rightText;
+
+        // 3. Set Warna Tombol Kanan (Primary)
+        // Reset class dulu
+        rightBtn.className = "flex-1 px-4 py-2 font-medium rounded-md focus:outline-none transition-colors shadow-sm text-white"; 
+        
+        if (type === 'danger') {
+            rightBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            // Lime Green (Default) - Text gray agar terlihat di background lime
+            rightBtn.classList.add('bg-[#CDFA5D]', 'text-gray-900', 'hover:bg-[#bfe754]');
+            rightBtn.classList.remove('text-white');
+        }
+
+        // 4. Logika Tombol (Normal vs Terbalik)
+        
+        if (isSubmitLeft) {
+            // --- KASUS CANCEL EVENT ---
+            // Kiri (Putih): Submit/Action (Cancel Registration)
+            // Kanan (Warna): Close Modal (Stay)
+            
+            leftBtn.type = "submit";
+            leftBtn.onclick = null; 
+
+            rightBtn.type = "button";
+            rightBtn.onclick = closeConfirmationModal;
+
+            if (actionUrl) newForm.action = actionUrl;
+
+        } else {
+            // --- KASUS DELETE REVIEW (Default) ---
+            // Kiri (Putih): Close Modal (Cancel)
+            // Kanan (Warna): Submit/Action (Yes, Delete)
+
+            leftBtn.type = "button";
+            leftBtn.onclick = closeConfirmationModal;
+
+            rightBtn.type = "submit";
+            rightBtn.onclick = null;
+
+            if (actionUrl) {
+                newForm.action = actionUrl;
+            } else if (onConfirm) {
+                newForm.action = "";
+                newForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    await onConfirm();
+                    closeConfirmationModal();
+                };
+            }
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    // --- WRAPPER: Cancel Booking Event (Tombol Terbalik) ---
+    function openCancelModal(actionUrl, eventName) {
+        showConfirmationModal({
+            title: "Are you sure you want to cancel?",
+            text: `You'll lose your spot in ${eventName}.`,
+            
+            leftText: "Cancel Registration", // Kiri (Putih) -> Submit Form
+            rightText: "Stay",               // Kanan (Warna) -> Tutup Modal
+            
+            type: 'warning', // Warna Lime
+            actionUrl: actionUrl,
+            isSubmitLeft: true // Aktifkan mode tombol terbalik
+        });
+    }
+
+    // --- WRAPPER: Delete Review (Tombol Normal) ---
+    function deleteReview(reviewId) {
+        showConfirmationModal({
+            title: "Delete Review?",
+            text: "Are you sure you want to delete this review? This action cannot be undone.",
+            
+            leftText: "Cancel",      // Kiri (Putih) -> Tutup Modal
+            rightText: "Yes, Delete", // Kanan (Warna) -> Action AJAX
+            
+            type: 'danger', // Warna Merah
+            isSubmitLeft: false, // Mode normal
+            
+            onConfirm: async () => {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                try {
+                    const response = await fetch(`/review/${reviewId}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred.');
+                }
             }
         });
+    }
 
-        const data = await response.json();
+    // ==========================================
+    // 3. EDIT PROFILE & UTILS
+    // ==========================================
+    function openEditModal() {
+        const editModal = document.getElementById('edit-profile-modal');
+        if (!editModal) return;
+        
+        const displayUsernameInput = document.getElementById('display-username-input');
+        const displayLocationInput = document.getElementById('display-location-input');
+        const locationSelect = document.getElementById('edit-location');
 
-        if (data.success) {
-            alert(data.message);
-            window.location.href = data.redirect_url;
-        } else {
-            errorMsg.textContent = data.message;
+        document.getElementById('edit-username').value = displayUsernameInput.value;
+        const currentLocDisplay = displayLocationInput.value; 
+        
+        for (let i = 0; i < locationSelect.options.length; i++) {
+            if (locationSelect.options[i].text === currentLocDisplay) {
+                locationSelect.value = locationSelect.options[i].value;
+                break;
+            }
+        }
+        editModal.classList.remove('hidden');
+        setTimeout(() => {
+            document.getElementById('edit-modal-content').classList.remove('scale-95', 'opacity-0');
+            document.getElementById('edit-modal-content').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeEditModal() {
+        const editModal = document.getElementById('edit-profile-modal');
+        const editModalContent = document.getElementById('edit-modal-content');
+        if (!editModal) return;
+        document.getElementById('edit-profile-error').classList.add('hidden');
+        
+        editModalContent.classList.add('scale-95', 'opacity-0');
+        editModalContent.classList.remove('scale-100', 'opacity-100');
+        setTimeout(() => { editModal.classList.add('hidden'); }, 300);
+    }
+
+    function toggleReviewMenu(menuId) {
+        const menu = document.getElementById(menuId);
+        document.querySelectorAll('[id^="menu-"]').forEach(el => {
+            if (el.id !== menuId) el.classList.add('hidden');
+        });
+        if (menu) menu.classList.toggle('hidden');
+    }
+
+    function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+            if (d.id !== dropdownId) d.classList.add('hidden');
+        });
+        if (dropdown) dropdown.classList.toggle('hidden');
+    }
+
+    // ==========================================
+    // 4. DELETE ACCOUNT FUNCTIONS
+    // ==========================================
+    function openDeleteAccountModal() {
+        document.getElementById('delete-account-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteAccountModal() {
+        document.getElementById('delete-account-modal').classList.add('hidden');
+        document.getElementById('delete-account-form').reset();
+        document.getElementById('delete-error-msg').classList.add('hidden');
+    }
+
+    async function handleDeleteAccount(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const errorMsg = document.getElementById('delete-error-msg');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        if (!confirm("This is your last chance. Are you absolutely sure?")) return;
+
+        try {
+            const response = await fetch("{% url 'main:delete_profile' user.username %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert(data.message);
+                window.location.href = data.redirect_url;
+            } else {
+                errorMsg.textContent = data.message || "An error occurred.";
+                errorMsg.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            errorMsg.textContent = "Network error occurred.";
             errorMsg.classList.remove('hidden');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        errorMsg.textContent = "Terjadi kesalahan jaringan.";
-        errorMsg.classList.remove('hidden');
     }
-}
 </script>
 
 

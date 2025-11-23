@@ -31,8 +31,8 @@ class EventForm(forms.ModelForm):
             'image': forms.URLInput(attrs={'placeholder': 'https://example.com/image1.png'}),
             'image2': forms.URLInput(attrs={'placeholder': 'https://example.com/image2.png'}),
             'image3': forms.URLInput(attrs={'placeholder': 'https://example.com/image3.png'}),
-            'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'min': now_iso}),
-            'regist_deadline': forms.DateTimeInput(attrs={'type': 'datetime-local', 'min': now_iso}),
+            'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'regist_deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'contact': forms.TextInput(attrs={'placeholder': 'Enter phone number'}),
             'capacity': forms.NumberInput(attrs={'placeholder': 'Enter max participants'}),
             'coin': forms.NumberInput(attrs={'placeholder': 'Enter coin reward'}), 
@@ -84,10 +84,10 @@ class EventForm(forms.ModelForm):
         event_date = self.cleaned_data.get('event_date')
         now = timezone.now()
         
-        if event_date and event_date < now:
-            raise ValidationError(
-                "Event date and time cannot be in the past!"
-            )
+        # if event_date and event_date < now:
+        #     raise ValidationError(
+        #         "Event date and time cannot be in the past!"
+        #     )
         
         return event_date
 
@@ -95,10 +95,10 @@ class EventForm(forms.ModelForm):
         regist_deadline = self.cleaned_data.get('regist_deadline')
         now = timezone.now()
         
-        if regist_deadline and regist_deadline < now:
-            raise ValidationError(
-                "Registration deadline cannot be in the past!"
-            )
+        # if regist_deadline and regist_deadline < now:
+        #     raise ValidationError(
+        #         "Registration deadline cannot be in the past!"
+        #     )
         event_date = self.cleaned_data.get('event_date')
         if event_date and regist_deadline and regist_deadline >= event_date:
             raise ValidationError(

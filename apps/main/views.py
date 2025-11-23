@@ -325,9 +325,8 @@ def change_password(request,username):
 
 @login_required(login_url='main:login')
 @require_POST
-def delete_profile(request, id):
+def delete_profile(request, username):
     user = request.user
-
     password = request.POST.get("password")
 
     if not user.check_password(password):
@@ -337,14 +336,24 @@ def delete_profile(request, id):
         }, status=400)
     
     try:
-        user.delete()
-        logout(request)
+        with transaction.atomic():
+            if hasattr(user, 'runner'):
+                active_attendances = Attendance.objects.filter(
+                    runner=user.runner, 
+                    status='attending'
+                ).select_related('event')
+                for attendance in active_attendances:
+                    event = attendance.event
+                    event.decrement_participans() 
+            user.delete()
+            logout(request)
         
         return JsonResponse({
             "success": True,
             "message": "Akun berhasil dihapus.",
             "redirect_url": reverse('main:show_main')
         })
+        
     except Exception as e:
         return JsonResponse({
             "success": False,

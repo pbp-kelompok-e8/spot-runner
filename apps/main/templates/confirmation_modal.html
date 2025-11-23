@@ -1,9 +1,8 @@
-<div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    
-    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+<div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4 transform transition-all scale-100">
         
         <div class="flex justify-end">
-            <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <button type="button" onclick="closeConfirmationModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                 </svg>
@@ -11,24 +10,21 @@
         </div>
 
         <div class="text-center">
-            
-            <h3 id="modal-title" class="text-lg font-bold text-gray-900 mb-2">
-                </h3>
-            
-            <p id="modal-text" class="text-sm text-gray-500 mb-6">
-                </p>
+            <h3 id="modal-title" class="text-lg font-bold text-gray-900 mb-2"></h3>
+            <p id="modal-text" class="text-sm text-gray-500 mb-6"></p>
 
-            <form method="POST" action=""> {% csrf_token %}
+            <form id="modal-form" method="POST" action=""> 
+                {% csrf_token %}
                 <div class="flex space-x-4">
                     
-                    <button id="modal-confirm-button" type="submit" 
-                            class="flex-1 whitespace-nowrap px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none">
-                        Cancel Registration
+                    <button type="button" id="modal-cancel-btn" onclick="closeConfirmationModal()" 
+                            class="flex-1 whitespace-nowrap px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none transition-colors">
+                        Cancel
                     </button>
 
-                    <button type="button" onclick="closeModal()" 
-                            class="flex-1 px-4 py-2 bg-[#CDFA5D] text-gray-800 font-medium rounded-md hover:bg-[#bfe754] focus:outline-none"> 
-                        Stay
+                    <button type="submit" id="modal-confirm-btn" 
+                            class="flex-1 px-4 py-2 font-medium rounded-md focus:outline-none transition-colors shadow-sm"> 
+                        Confirm
                     </button>
                     
                 </div>
