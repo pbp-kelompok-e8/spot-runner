@@ -24,5 +24,5 @@ urlpatterns = [
     path('event-organizer/', include('apps.event_organizer.urls')),  # Routing ke app event_organizer
     path('merchandise/', include('apps.merchandise.urls')),  # Routing ke app merchandise
     path('review/', include('apps.review.urls')),  # Routing ke app review
-    path('auth/', include('authentication.urls')),
+    path('auth/', include('apps.authentication.urls')),
 ]

@@ -4,9 +4,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from apps.main.models import User, Attendance, Runner
 from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import update_session_auth_hash, get_user_model
 from apps.event.models import Event, EventCategory
 from apps.review.models import Review
+from apps.event_organizer.models import EventOrganizer
 from django.http import JsonResponse
 from apps.main.forms import CustomUserCreationForm
 from django.contrib import messages
@@ -359,3 +360,52 @@ def delete_profile(request, username):
             "success": False,
             "message": f"Terjadi kesalahan: {str(e)}"
         }, status=500)
+    
+
+
+
+def show_all_users_json(request):
+    User = get_user_model()
+    users = User.objects.all()  # Mengambil semua user dari database
+    
+    data_list = [] # List penampung
+
+    for user in users:
+        # Data dasar
+        user_data = {
+            "id": user.id, # Tambahkan ID agar lebih spesifik
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "details": None # Default null
+        }
+
+        # Cek Role dan Ambil Data Tambahan
+        if user.role == 'runner':
+            try:
+                runner_profile = user.runner
+                user_data["details"] = {
+                    "base_location": runner_profile.base_location,
+                    "coin": runner_profile.coin,
+                }
+            except Runner.DoesNotExist:
+                pass # Biarkan details tetap None
+
+        elif user.role == 'event_organizer':
+            try:
+                # Perhatikan related_name di model EventOrganizer
+                eo_profile = user.event_organizer_profile 
+                user_data["details"] = {
+                    "base_location": eo_profile.base_location,
+                    "profile_picture": eo_profile.profile_picture,
+                    "total_events": eo_profile.total_events,
+                    "rating": eo_profile.rating,
+                    "coin": eo_profile.coin,
+                }
+            except EventOrganizer.DoesNotExist:
+                pass
+
+        data_list.append(user_data)
+
+    # safe=False wajib digunakan jika yang dikembalikan adalah List (bukan Dict)
+    return JsonResponse(data_list, safe=False, status=200)
