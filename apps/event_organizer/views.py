@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import update_session_auth_hash, logout
 from django.contrib.auth.forms import PasswordChangeForm
 from django.db.models import Avg, Count, Prefetch
 from apps.event.models import Event
@@ -201,3 +201,49 @@ def change_password(request):
         form = PasswordChangeForm(request.user)
 
     return render(request, 'event_organizer/change_password.html', {'form': form})
+
+@login_required
+def delete_account(request):
+    """Delete Event Organizer account + linked user."""
+    
+    # Pastikan hanya EO yang bisa delete akunnya
+    if request.user.role != 'event_organizer':
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"success": False, "message": "You are not allowed to delete this account."})
+        messages.error(request, "Access denied.")
+        return redirect('main:show_main')
+
+    user = request.user
+
+    # Aksi hanya boleh lewat POST (supaya tidak ke-delete via GET)
+    if request.method == "POST":
+        # Hapus profil Event Organizer
+        try:
+            if hasattr(user, "event_organizer_profile"):
+                user.event_organizer_profile.delete()
+        except:
+            pass
+        
+        # Logout dulu untuk mencegah session error
+        logout(request)
+
+        # Hapus akun user
+        user.delete()
+
+        # Jika request via AJAX → balikan JSON
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({
+                "success": True, 
+                "message": "Account deleted successfully."
+            })
+
+        # Non-AJAX → redirect ke halaman utama
+        messages.success(request, "Your account has been deleted.")
+        return redirect('main:show_main')
+
+    # Jika GET → tolak
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"success": False, "message": "Invalid request method."})
+
+    messages.error(request, "Invalid request.")
+    return redirect('event_organizer:profile')
