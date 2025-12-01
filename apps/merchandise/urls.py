@@ -11,4 +11,13 @@ urlpatterns = [
     path('<uuid:id>/redeem/', redeem_merchandise, name='redeem_merchandise'),
     path('edit/<uuid:id>/', edit_merchandise, name='edit_merchandise'),
     path('delete/<uuid:id>/', delete_merchandise, name='delete_merchandise'),
+
+    # Flutter JSON endpoints
+    path('json/', show_json, name='merchandise_json'),
+    path('json/<uuid:id>/', show_json_by_id, name='merchandise_detail_json'),
+    path('redemption/json/', show_redemption_json, name='redemption_json'),
+    path('redemption/json/<uuid:id>/', show_redemption_json_by_id, name='redemption_detail_json'),
+    path('user-coins/', get_user_coins, name='user_coins'),
+
+    # path('debug-user/', debug_user_info, name='debug_user'),
 ]

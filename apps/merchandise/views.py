@@ -277,3 +277,287 @@ def history(request):
     # User is neither runner nor organizer
     messages.error(request, 'Access denied')
     return HttpResponseRedirect('/login')
+
+def show_json(request):
+    """Get all merchandise in JSON format"""
+    merchandise_list = Merchandise.objects.select_related('organizer__user').all()
+    
+    # Optional: Filter by category
+    category = request.GET.get('category', '')
+    if category:
+        merchandise_list = merchandise_list.filter(category=category)
+    
+    data = []
+    for merch in merchandise_list:
+        data.append({
+            'id': str(merch.id),
+            'name': merch.name,
+            'price_coins': merch.price_coins,
+            'description': merch.description,
+            'image_url': merch.image_url,
+            'category': merch.category,
+            'category_display': merch.get_category_display(),
+            'stock': merch.stock,
+            'available': merch.available,
+            'created_at': merch.created_at.isoformat(),
+            'updated_at': merch.updated_at.isoformat(),
+            'organizer': {
+                'id': merch.organizer.user_id,  # user_id is the primary key
+                'username': merch.organizer.user.username,
+                'name': merch.organizer.name,  # Using the @property
+                'profile_picture': merch.organizer.profile_picture,
+                'base_location': merch.organizer.get_base_location_display(),
+                'rating': merch.organizer.rating,
+                'total_events': merch.organizer.total_events,
+            }
+        })
+    
+    return JsonResponse(data, safe=False)
+
+
+def show_json_by_id(request, id):
+    """Get single merchandise by ID in JSON format"""
+    merchandise = get_object_or_404(
+        Merchandise.objects.select_related('organizer__user'), 
+        pk=id
+    )
+    
+    # Check if current user is the organizer
+    is_owner = False
+    if request.user.is_authenticated:
+        try:
+            is_owner = merchandise.organizer.user_id == request.user.id
+        except AttributeError:
+            pass
+    
+    data = {
+        'id': str(merchandise.id),
+        'name': merchandise.name,
+        'price_coins': merchandise.price_coins,
+        'description': merchandise.description,
+        'image_url': merchandise.image_url,
+        'category': merchandise.category,
+        'category_display': merchandise.get_category_display(),
+        'stock': merchandise.stock,
+        'available': merchandise.available,
+        'created_at': merchandise.created_at.isoformat(),
+        'updated_at': merchandise.updated_at.isoformat(),
+        'is_owner': is_owner,
+        'organizer': {
+            'id': merchandise.organizer.user_id,
+            'username': merchandise.organizer.user.username,
+            'name': merchandise.organizer.name,
+            'profile_picture': merchandise.organizer.profile_picture,
+            'base_location': merchandise.organizer.get_base_location_display(),
+            'rating': merchandise.organizer.rating,
+            'total_events': merchandise.organizer.total_events,
+            'review_count': merchandise.organizer.review_count,
+        }
+    }
+    
+    return JsonResponse(data)
+
+def show_redemption_json(request):
+    """Get all redemptions in JSON format (for history page)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
+    user = request.user
+    redemptions = None
+    user_type = None
+    
+    # Check if user is a runner
+    try:
+        runner_profile = user.runner
+        # FIX: Runner.user adalah primary key, jadi langsung pakai runner_profile
+        redemptions = Redemption.objects.filter(
+            user=runner_profile  # runner_profile sudah adalah Runner object
+        ).select_related('merchandise__organizer__user').order_by('-redeemed_at')
+        user_type = 'runner'
+    except AttributeError:
+        pass
+    
+    # Check if user is an event organizer
+    if not user_type:
+        try:
+            organizer_profile = user.event_organizer_profile
+            redemptions = Redemption.objects.filter(
+                merchandise__organizer=organizer_profile
+            ).select_related('merchandise', 'user__user').order_by('-redeemed_at')
+            user_type = 'organizer'
+        except AttributeError:
+            pass
+    
+    if not user_type:
+        return JsonResponse({
+            'error': 'User type not found',
+            'message': 'User must be a runner or event organizer to view redemption history'
+        }, status=403)
+    
+    data = []
+    for redemption in redemptions:
+        # Handle deleted merchandise
+        merch_data = None
+        if redemption.merchandise:
+            merch_data = {
+                'id': str(redemption.merchandise.id),
+                'name': redemption.merchandise.name,
+                'image_url': redemption.merchandise.image_url,
+                'category': redemption.merchandise.category,
+                'category_display': redemption.merchandise.get_category_display(),
+            }
+        
+        redemption_data = {
+            'id': str(redemption.id),
+            'quantity': redemption.quantity,
+            'price_per_item': redemption.price_per_item,
+            'total_coins': redemption.total_coins,
+            'redeemed_at': redemption.redeemed_at.isoformat(),
+            'merchandise': merch_data,
+        }
+        
+        # Add user info if organizer is viewing
+        if user_type == 'organizer':
+            redemption_data['user'] = {
+                'username': redemption.user.user.username if redemption.user else 'Unknown',
+            }
+        
+        data.append(redemption_data)
+    
+    return JsonResponse({
+        'user_type': user_type,
+        'redemptions': data
+    })
+
+
+def show_redemption_json_by_id(request, id):
+    """Get single redemption by ID"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
+    redemption = get_object_or_404(
+        Redemption.objects.select_related('merchandise', 'user__user'), 
+        pk=id
+    )
+    
+    # Check authorization
+    user = request.user
+    is_authorized = False
+    
+    # Runner can view their own redemptions
+    try:
+        runner_profile = user.runner
+        # FIX: Compare user_id karena Runner.user adalah primary key
+        if redemption.user.user_id == user.id:
+            is_authorized = True
+    except AttributeError:
+        pass
+    
+    # Organizer can view redemptions of their merchandise
+    if not is_authorized:
+        try:
+            organizer_profile = user.event_organizer_profile
+            if redemption.merchandise and redemption.merchandise.organizer.user_id == user.id:
+                is_authorized = True
+        except AttributeError:
+            pass
+    
+    if not is_authorized:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    # Handle deleted merchandise
+    merch_data = None
+    if redemption.merchandise:
+        merch_data = {
+            'id': str(redemption.merchandise.id),
+            'name': redemption.merchandise.name,
+            'image_url': redemption.merchandise.image_url,
+            'category': redemption.merchandise.category,
+            'category_display': redemption.merchandise.get_category_display(),
+        }
+    
+    data = {
+        'id': str(redemption.id),
+        'quantity': redemption.quantity,
+        'price_per_item': redemption.price_per_item,
+        'total_coins': redemption.total_coins,
+        'redeemed_at': redemption.redeemed_at.isoformat(),
+        'merchandise': merch_data,
+        'user': {
+            'username': redemption.user.user.username if redemption.user else 'Unknown',
+        }
+    }
+    
+    return JsonResponse(data)
+
+
+def get_user_coins(request):
+    """Get user coin balance and user type"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Not authenticated'}, status=401)
+    
+    user = request.user
+    coins = 0
+    user_type = 'guest'
+    
+    # Check if runner
+    try:
+        runner_profile = user.runner
+        coins = runner_profile.coin
+        user_type = 'runner'
+    except AttributeError:
+        pass
+    
+    # Check if event organizer
+    try:
+        organizer_profile = user.event_organizer_profile
+        coins = organizer_profile.coin  # Use the coin field from EventOrganizer model
+        user_type = 'organizer'
+    except AttributeError:
+        pass
+    
+    return JsonResponse({
+        'coins': coins,
+        'user_type': user_type,
+        'username': user.username
+    })
+
+
+# def debug_user_info(request):
+#     """Debug endpoint to check user type"""
+#     if not request.user.is_authenticated:
+#         return JsonResponse({'error': 'Not authenticated'}, status=401)
+    
+#     user = request.user
+#     debug_info = {
+#         'user_id': user.id,
+#         'username': user.username,
+#         'is_authenticated': user.is_authenticated,
+#     }
+    
+#     # Check runner
+#     try:
+#         runner_profile = user.runner
+#         debug_info['is_runner'] = True
+#         debug_info['runner_info'] = {
+#             'coin': runner_profile.coin,
+#             'user_id': runner_profile.user.id if hasattr(runner_profile, 'user') else 'N/A'
+#         }
+#     except AttributeError as e:
+#         debug_info['is_runner'] = False
+#         debug_info['runner_error'] = str(e)
+    
+#     # Check organizer
+#     try:
+#         organizer_profile = user.event_organizer_profile
+#         debug_info['is_organizer'] = True
+#         debug_info['organizer_info'] = {
+#             'coin': organizer_profile.coin,
+#             'user_id': organizer_profile.user_id
+#         }
+#     except AttributeError as e:
+#         debug_info['is_organizer'] = False
+#         debug_info['organizer_error'] = str(e)
+    
+#     return JsonResponse(debug_info)
+    
