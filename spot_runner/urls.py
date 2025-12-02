@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from apps.event.views import create_event_flutter, edit_event_flutter
+from apps.event.views import create_event_flutter, edit_event_flutter, delete_event_flutter
 
 urlpatterns = [
     path('', include('apps.main.urls')),  # Routing ke app main
@@ -24,6 +24,7 @@ urlpatterns = [
     path('event/', include('apps.event.urls')),  # Routing ke app event
     path('api-test-flutter/', create_event_flutter, name='create_event_flutter'),
     path('api-edit-flutter/<str:event_id>/', edit_event_flutter, name='edit_event_flutter'),
+    path('api-delete-flutter/<str:event_id>/', delete_event_flutter, name='delete_event_flutter'),
     path('event-organizer/', include('apps.event_organizer.urls')),  # Routing ke app event_organizer
     path('merchandise/', include('apps.merchandise.urls')),  # Routing ke app merchandise
     path('review/', include('apps.review.urls')),  # Routing ke app review

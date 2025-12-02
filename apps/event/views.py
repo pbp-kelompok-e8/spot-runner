@@ -95,28 +95,20 @@ def edit_event(request, id):
 def delete_event(request, id):
     if request.method == 'POST':
         event = get_object_or_404(Event, pk=id)
-        
-        # Check permission
         if event.user_eo != request.user.event_organizer_profile:
             messages.error(request, 'You are not authorized to delete this event.')
             return redirect('event:show_event', id=id)
-        
-        # Check if it's an AJAX request
         is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
-        
-        # Delete the event
         event.delete()
         
         if is_ajax:
-            # Return JSON for AJAX requests
             return JsonResponse({
                 'success': True, 
                 'message': 'Event deleted successfully.'
             })
         else:
-            # Return redirect for normal form submissions
             messages.success(request, 'Event deleted successfully!')
-            return redirect('main:show_main')  # atau 'event_organizer:dashboard'
+            return redirect('main:show_main') 
     
     return HttpResponseBadRequest("Invalid request method")
 
@@ -298,5 +290,19 @@ def edit_event_flutter(request, event_id):
             return JsonResponse({"status": "error", "message": "Event not found"}, status=404)
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
+
+@csrf_exempt
+def delete_event_flutter(request, event_id):
+    if request.method == 'POST':
+        try:
+            event = Event.objects.get(pk=event_id)
+            event.delete()
+
+            return JsonResponse({"status": "success", "message": "Event deleted successfully"}, status=200)
+
+        except Event.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Event not found"}, status=404)
 
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
