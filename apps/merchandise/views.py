@@ -7,7 +7,11 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.db.models import Sum, F
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 import json
+from django.http import HttpResponse
+import requests
+from django.views.decorators.cache import cache_page
 
 # test
 # Merchandise landing page
@@ -522,42 +526,251 @@ def get_user_coins(request):
         'username': user.username
     })
 
+@csrf_exempt
+@login_required
+def create_merchandise_flutter(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
+    # Check if user is event organizer
+    try:
+        organizer_profile = request.user.event_organizer_profile
+    except AttributeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Only event organizers can add merchandise'
+        }, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        # Validate required fields
+        required_fields = ['name', 'price_coins', 'description', 'image_url', 'category', 'stock']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Field {field} is required'
+                }, status=400)
+        
+        # Validate price_coins and stock are positive integers
+        try:
+            price_coins = int(data['price_coins'])
+            stock = int(data['stock'])
+            
+            if price_coins < 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Price must be a positive number'
+                }, status=400)
+            
+            if stock < 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Stock must be a positive number'
+                }, status=400)
+                
+        except ValueError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Price and stock must be valid numbers'
+            }, status=400)
+        
+        # Validate category
+        valid_categories = ['apparel', 'accessories', 'totebag', 'water_bottle', 'other']
+        if data['category'] not in valid_categories:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid category'
+            }, status=400)
+        
+        # Create merchandise
+        merchandise = Merchandise.objects.create(
+            name=data['name'].strip(),
+            price_coins=price_coins,
+            description=data['description'].strip(),
+            image_url=data['image_url'].strip(),
+            category=data['category'],
+            stock=stock,
+            organizer=organizer_profile
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Product created successfully',
+            'merchandise_id': str(merchandise.id)
+        }, status=201)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+    
 
-# def debug_user_info(request):
-#     """Debug endpoint to check user type"""
-#     if not request.user.is_authenticated:
-#         return JsonResponse({'error': 'Not authenticated'}, status=401)
+@csrf_exempt
+@login_required
+def edit_merchandise_flutter(request, id):
+    """Edit merchandise product - Owner only (Flutter endpoint)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
     
-#     user = request.user
-#     debug_info = {
-#         'user_id': user.id,
-#         'username': user.username,
-#         'is_authenticated': user.is_authenticated,
-#     }
+    merchandise = get_object_or_404(Merchandise, id=id)
     
-#     # Check runner
-#     try:
-#         runner_profile = user.runner
-#         debug_info['is_runner'] = True
-#         debug_info['runner_info'] = {
-#             'coin': runner_profile.coin,
-#             'user_id': runner_profile.user.id if hasattr(runner_profile, 'user') else 'N/A'
-#         }
-#     except AttributeError as e:
-#         debug_info['is_runner'] = False
-#         debug_info['runner_error'] = str(e)
+    # Check ownership
+    try:
+        organizer_profile = request.user.event_organizer_profile
+        if merchandise.organizer != organizer_profile:
+            return JsonResponse({
+                'success': False,
+                'error': 'You do not have permission to edit this product'
+            }, status=403)
+    except AttributeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Only event organizers can edit merchandise'
+        }, status=403)
     
-#     # Check organizer
-#     try:
-#         organizer_profile = user.event_organizer_profile
-#         debug_info['is_organizer'] = True
-#         debug_info['organizer_info'] = {
-#             'coin': organizer_profile.coin,
-#             'user_id': organizer_profile.user_id
-#         }
-#     except AttributeError as e:
-#         debug_info['is_organizer'] = False
-#         debug_info['organizer_error'] = str(e)
+    try:
+        data = json.loads(request.body)
+        
+        # Validate required fields
+        required_fields = ['name', 'price_coins', 'description', 'image_url', 'category', 'stock']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Field {field} is required'
+                }, status=400)
+            
+            if isinstance(data[field], str) and not data[field].strip():
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Field {field} cannot be empty'
+                }, status=400)
+        
+        # Validate price_coins and stock
+        try:
+            price_coins = int(data['price_coins'])
+            stock = int(data['stock'])
+            
+            if price_coins < 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Price must be a positive number'
+                }, status=400)
+            
+            if stock < 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Stock must be a positive number'
+                }, status=400)
+                
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False,
+                'error': 'Price and stock must be valid numbers'
+            }, status=400)
+        
+        # Validate category
+        valid_categories = ['apparel', 'accessories', 'totebag', 'water_bottle', 'other']
+        if data['category'] not in valid_categories:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid category'
+            }, status=400)
+        
+        # Update merchandise
+        merchandise.name = data['name'].strip()
+        merchandise.price_coins = price_coins
+        merchandise.description = data['description'].strip()
+        merchandise.image_url = data['image_url'].strip()
+        merchandise.category = data['category']
+        merchandise.stock = stock
+        merchandise.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Product updated successfully',
+            'merchandise_id': str(merchandise.id)
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+@login_required
+def delete_merchandise_flutter(request, id):
+    """Delete merchandise product - Owner only (Flutter endpoint)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
     
-#     return JsonResponse(debug_info)
+    merchandise = get_object_or_404(Merchandise, id=id)
     
+    # Check ownership
+    try:
+        organizer_profile = request.user.event_organizer_profile
+        if merchandise.organizer != organizer_profile:
+            return JsonResponse({
+                'success': False,
+                'error': 'You do not have permission to delete this product'
+            }, status=403)
+    except AttributeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Only event organizers can delete merchandise'
+        }, status=403)
+    
+    try:
+        merchandise_name = merchandise.name
+        merchandise.delete()
+        return JsonResponse({
+            'success': True,
+            'message': f'Product "{merchandise_name}" deleted successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+    
+@cache_page(60 * 60 * 24)  # Cache 24 jam
+def proxy_image(request):
+    """Proxy external images to avoid CORS issues"""
+    image_url = request.GET.get('url', '')
+    
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external URL
+        response = requests.get(
+            image_url, 
+            timeout=10,
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        
+        if response.status_code == 200:
+            # Return image with correct content type
+            content_type = response.headers.get('content-type', 'image/jpeg')
+            return HttpResponse(response.content, content_type=content_type)
+        else:
+            return HttpResponse('Image not found', status=404)
+            
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+

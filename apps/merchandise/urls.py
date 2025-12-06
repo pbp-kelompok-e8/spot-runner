@@ -20,4 +20,9 @@ urlpatterns = [
     path('user-coins/', get_user_coins, name='user_coins'),
 
     # path('debug-user/', debug_user_info, name='debug_user'),
+
+    path('create-flutter/', create_merchandise_flutter, name='create_merchandise_flutter'),
+    path('edit-flutter/<uuid:id>/', edit_merchandise_flutter, name='edit_merchandise_flutter'),
+    path('delete-flutter/<uuid:id>/', delete_merchandise_flutter, name='delete_merchandise_flutter'),
+    path('proxy-image/', proxy_image, name='proxy_image'),
 ]
