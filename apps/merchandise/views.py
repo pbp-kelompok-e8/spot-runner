@@ -181,7 +181,7 @@ def delete_merchandise(request, id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-
+@csrf_exempt
 @login_required
 @require_POST
 def redeem_merchandise(request, id):
