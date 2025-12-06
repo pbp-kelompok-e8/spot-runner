@@ -204,11 +204,10 @@ def show_json_by_id(request, event_id):
 
 @csrf_exempt
 def create_event_flutter(request):
+    print("DEBUG: Request masuk ke fungsi!")
     if request.method == 'POST':
         data = json.loads(request.body)
         user = request.user
-        if not user.is_authenticated:
-            user = User.objects.first()
         try:
             eo_profile = EventOrganizer.objects.get(user=user)
         except EventOrganizer.DoesNotExist:

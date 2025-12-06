@@ -33,11 +33,8 @@ DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "william-jonnatan-spotrunner.pbp.cs.ui.ac.id","10.0.2.2"]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost',
-    'http://127.0.0.1',
-    'http://10.0.2.2',
     "https://william-jonnatan-spotrunner.pbp.cs.ui.ac.id",
-    'http://localhost:63639',
+    "http://localhost:57480"
 ]
 
 
