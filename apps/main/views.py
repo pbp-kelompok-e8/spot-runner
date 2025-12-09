@@ -19,6 +19,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db import transaction
 import requests
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 def show_main(request):
@@ -386,7 +387,7 @@ def show_all_users_json(request):
                 runner_profile = user.runner
                 user_data["details"] = {
                     "base_location": runner_profile.base_location,
-                    "coin": runner_profile.coin,
+                    "coin": int(runner_profile.coin) if runner_profile.coin is not None else 0,
                 }
             except Runner.DoesNotExist:
                 pass # Biarkan details tetap None
@@ -399,8 +400,8 @@ def show_all_users_json(request):
                     "base_location": eo_profile.base_location,
                     "profile_picture": eo_profile.profile_picture,
                     "total_events": eo_profile.total_events,
-                    "rating": eo_profile.rating,
-                    "coin": eo_profile.coin,
+                    "rating": float(eo_profile.rating) if eo_profile.rating else 0.0,
+                    "coin": int(eo_profile.coin) if eo_profile.coin is not None else 0,
                 }
             except EventOrganizer.DoesNotExist:
                 pass
@@ -409,3 +410,144 @@ def show_all_users_json(request):
 
     # safe=False wajib digunakan jika yang dikembalikan adalah List (bukan Dict)
     return JsonResponse(data_list, safe=False, status=200)
+
+# views.py - api_profile
+@csrf_exempt
+@login_required
+def api_profile(request):
+    """API untuk mendapatkan data user profile (JSON)"""
+    try:
+        user = request.user
+        
+        # Build details based on user role
+        details = {}
+        
+        if user.role == 'event_organizer':
+            try:
+                eo_profile = user.event_organizer_profile
+                details = {
+                    "base_location": eo_profile.base_location or "",
+                    "profile_picture": eo_profile.profile_picture or "",
+                    "total_events": Event.objects.filter(user_eo=eo_profile).count(),
+                    "rating": float(eo_profile.rating) if eo_profile.rating else 0.0,
+                    "coin": int(eo_profile.coin) if eo_profile.coin is not None else 0,
+                }
+            except (EventOrganizer.DoesNotExist, AttributeError):
+                details = {
+                    "base_location": "",
+                    "profile_picture": "",
+                    "total_events": 0,
+                    "rating": 0.0,
+                    "coin": 0,
+                }
+        elif user.role == 'runner':
+            try:
+                runner_profile = user.runner
+                details = {
+                    "base_location": runner_profile.base_location or "",
+                    "coin": int(runner_profile.coin) if runner_profile.coin is not None else 0,
+                }
+            except (Runner.DoesNotExist, AttributeError):
+                details = {
+                    "base_location": "",
+                    "coin": 0,
+                }
+        else:
+            details = {
+                "base_location": "",
+                "coin": 0,
+            }
+        
+        data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role or "user",
+            "details": details
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e),
+            "status": "error"
+        }, status=500)
+
+
+# views.py - api_events
+@csrf_exempt
+@login_required
+def api_events(request):
+    """API untuk mendapatkan data events yang diorganisir user (JSON)"""
+    try:
+        user = request.user
+        
+        # Hanya event organizer yang memiliki events
+        if user.role != 'event_organizer':
+            return JsonResponse([], safe=False, status=200)
+        
+        # Dapatkan EventOrganizer profile
+        try:
+            eo_profile = user.event_organizer_profile
+        except EventOrganizer.DoesNotExist:
+            return JsonResponse([], safe=False, status=200)
+        
+        # Query events berdasarkan eo_profile (bukan user)
+        events = Event.objects.filter(user_eo=eo_profile).order_by('-event_date')[:5]
+        
+        data = []
+        for event in events:
+            # Pastikan semua field ada
+            event_status = getattr(event, 'event_status', 'On Going')
+            
+            # Format tanggal
+            event_date = event.event_date
+            if event_date:
+                event_date_str = event_date.isoformat()
+            else:
+                event_date_str = "2024-12-04T00:00:00Z"
+            
+            regist_deadline = getattr(event, 'regist_deadline', None)
+            if regist_deadline:
+                regist_deadline_str = regist_deadline.isoformat()
+            else:
+                regist_deadline_str = event_date_str
+            
+            # Kategori event
+            event_categories = []
+            if hasattr(event, 'event_categories') and event.event_categories.exists():
+                event_categories = list(event.event_categories.values_list('category', flat=True))
+            
+            event_obj = {
+                "id": str(event.id),
+                "name": event.name or "",
+                "description": event.description or "",
+                "location": event.location or "",
+                "event_status": event_status,
+                "image": event.image.url if hasattr(event.image, 'url') else "",
+                "image2": None,
+                "image3": None,
+                "event_date": event_date_str,
+                "regist_deadline": regist_deadline_str,
+                "contact": event.contact or "",
+                "capacity": event.capacity or 0,
+                "total_participans": event.total_participans or 0,
+                "full": event.full if hasattr(event, 'full') else False,
+                "coin": event.coin or 0,
+                "user_eo": {
+                    "id": user.id,
+                    "username": user.username
+                },
+                "event_categories": event_categories
+            }
+            
+            data.append(event_obj)
+        
+        return JsonResponse(data, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e),
+            "status": "error"
+        }, status=500)
