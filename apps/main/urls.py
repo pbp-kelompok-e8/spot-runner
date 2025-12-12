@@ -17,7 +17,7 @@ urlpatterns = [
     path('user/<str:username>/participate-event/<str:id>/<str:category_key>/', participate_in_event, name='participate_event'),
     path('user/<str:username>/delete-account', delete_profile, name='delete_profile'),
     path('all-users/', show_all_users_json, name='show_all_users_json'),
-
+    path('<str:username>/json', show_user_json, name='show_user_json'),
     path('api/profile/', api_profile, name='api_profile'),
     path('api/events/', api_events, name='api_events'),
 
