@@ -409,3 +409,62 @@ def show_all_users_json(request):
 
     # safe=False wajib digunakan jika yang dikembalikan adalah List (bukan Dict)
     return JsonResponse(data_list, safe=False, status=200)
+
+@login_required(login_url='main:login')
+def show_user_json(request, username):
+    user = get_object_or_404(User, username=username)
+
+    if user != request.user:
+        return JsonResponse({
+            "status": "error",
+            "message": "You are not authorized to view this profile."
+        }, status=403)
+
+    user_data = {
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "last_login": user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else None,
+    }
+
+    if user.role != 'runner':
+        return JsonResponse({
+            "status": "success",
+            "user": user_data,
+            "message": "User is not a runner"
+        }, status=200)
+
+    runner_profile = user.runner
+    
+    user_data["base_location"] = runner_profile.base_location
+    user_data["base_location_display"] = runner_profile.get_base_location_display()
+    user_data["coin"] = runner_profile.coin
+
+    attendance_list = runner_profile.attendance_records.all().select_related('event').prefetch_related('event__event_category')
+    today = date.today()
+    
+    reviews = Review.objects.filter(runner=runner_profile).select_related('event')
+    review_dict = {review.event_id: review for review in reviews}
+
+    attendance_data = []
+    for record in attendance_list:
+        event = record.event
+        event_date = event.event_date.date() if event.event_date else None
+        
+        if event_date:
+            is_changed = False
+            if event_date < today and event.event_status != "finished":
+                event.event_status = "finished"
+                is_changed = True
+            elif event_date == today and event.event_status != "on_going":
+                event.event_status = "on_going"
+                is_changed = True
+            elif event_date > today and event.event_status != "coming_soon":
+                event.event_status = "coming_soon"
+                is_changed = True
+            
+            if is_changed:
+                event.save()
+                
+        if event.event_status == "finished" and record.status == 'attending':
+            record.status = 'finished'
