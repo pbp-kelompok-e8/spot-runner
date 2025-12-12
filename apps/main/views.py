@@ -551,3 +551,105 @@ def api_events(request):
             "error": str(e),
             "status": "error"
         }, status=500)
+
+@login_required(login_url='main:login')
+def show_user_json(request, username):
+    user = get_object_or_404(User, username=username)
+
+    # Validasi otorisasi
+    if user != request.user:
+        return JsonResponse({
+            "status": "error",
+            "message": "You are not authorized to view this profile."
+        }, status=403)
+
+    # Data dasar user
+    user_data = {
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "last_login": user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else None,
+        "status": "success", # Penting untuk pengecekan di Flutter
+    }
+
+    # Jika bukan runner, return basic info saja
+    if user.role != 'runner':
+        user_data["message"] = "User is not a runner"
+        return JsonResponse(user_data, status=200)
+
+    # Ambil profile runner
+    try:
+        runner_profile = user.runner
+        user_data["base_location"] = runner_profile.base_location
+        user_data["coin"] = runner_profile.coin
+    except Runner.DoesNotExist:
+            user_data["base_location"] = "-"
+            user_data["coin"] = 0
+
+    # Ambil Attendance List & Reviews
+    attendance_list = runner_profile.attendance_records.all().select_related('event').prefetch_related('event__event_category')
+    reviews = Review.objects.filter(runner=runner_profile).select_related('event')
+    review_dict = {review.event_id: review for review in reviews}
+    
+    today = date.today()
+    serialized_attendance = []
+    
+    for record in attendance_list:
+        event = record.event
+        event_date = event.event_date.date() if event.event_date else None
+        
+        # Update status event otomatis (sama seperti di HTML view)
+        if event_date:
+            is_changed = False
+            if event_date < today and event.event_status != "finished":
+                event.event_status = "finished"
+                is_changed = True
+            elif event_date == today and event.event_status != "on_going":
+                event.event_status = "on_going"
+                is_changed = True
+            elif event_date > today and event.event_status != "coming_soon":
+                event.event_status = "coming_soon"
+                is_changed = True
+            
+            if is_changed:
+                event.save()
+                
+        if event.event_status == "finished" and record.status == 'attending':
+            record.status = 'finished'
+            record.save()
+
+        # Susun data attendance untuk JSON
+        event_review = review_dict.get(event.id)
+        serialized_attendance.append({
+            "status": record.status,
+            "category": record.category.category if record.category else "-",
+            "participant_id": str(record.pk), # Atau field ID lain jika ada
+            "event": {
+                "name": event.name,
+                "location": event.location,
+                "location_display": event.location, # Sesuaikan jika ada method get_display
+                "event_date": event.event_date.strftime('%Y-%m-%d') if event.event_date else "-",
+                "event_status": event.event_status,
+            },
+            "review": {
+                "rating": event_review.rating,
+                "review_text": event_review.review_text
+            } if event_review else None
+        })
+
+    # Susun data Reviews untuk JSON
+    serialized_reviews = []
+    for r in reviews:
+        serialized_reviews.append({
+            "rating": r.rating,
+            "review_text": r.review_text,
+            "event": {
+                "name": r.event.name,
+            }
+        })
+
+    # Masukkan ke dictionary utama
+    user_data["attendance_list"] = serialized_attendance
+    user_data["user_reviews"] = serialized_reviews
+
+    return JsonResponse(user_data, status=200)
