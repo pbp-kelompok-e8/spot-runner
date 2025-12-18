@@ -385,20 +385,7 @@ function openDeleteConfirm(eventId, eventName) {
     toast.classList.remove('hidden');
 }
 
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast-message');
-    toast.textContent = message;
-    toast.className = `fixed top-20 right-5 px-4 py-2 rounded-lg shadow-lg text-white text-sm z-50 transition-opacity duration-300 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
-    toast.classList.remove('hidden');
-    
-    // Animasi fade-in/out
-    toast.style.opacity = "0";
-    setTimeout(() => (toast.style.opacity = "1"), 50);
-    setTimeout(() => {
-        toast.style.opacity = "0";
-        setTimeout(() => toast.classList.add("hidden"), 300);
-    }, 3000);
-}
+// Note: Global toast helper is provided by static/js/toast.js
 
 async function deleteEvent() {
     if (!currentEventId) return;
@@ -406,7 +393,7 @@ async function deleteEvent() {
     const csrftoken = getCookie('csrftoken');
     
     try {
-        const response = await fetch(`/event/${currentEventId}/delete`, {
+        const response = await fetch(`/event/${currentEventId}/delete/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrftoken,
@@ -418,21 +405,26 @@ async function deleteEvent() {
         const data = await response.json();
 
         if (data.success) {
-            showToast('Event deleted successfully!', 'success');
-            
+            if (typeof showToast === 'function') {
+                showToast('toast-success', 'Event deleted successfully!');
+            }
+            try {
+                sessionStorage.setItem('toastMessage', JSON.stringify({ type: 'success', message: 'Event deleted successfully!' }));
+            } catch (_) {}
+
             setTimeout(() => {
-                if (source === 'dashboard') {
-                    window.location.reload();
-                } else if (source === 'detail') {
-                    window.location.href = "{% url 'main:show_main' %}";
-                }
-            }, 1000);
+                window.location.replace("{% url 'event_organizer:dashboard' %}");
+            }, 300);
         } else {
-            showToast('Failed to delete event', 'error');
+            if (typeof showToast === 'function') {
+                showToast('toast-danger', 'Failed to delete event');
+            }
         }
     } catch (error) {
         console.error('Error:', error);
-        showToast('An error occurred', 'error');
+        if (typeof showToast === 'function') {
+            showToast('toast-danger', 'An error occurred');
+        }
     } finally {
         // Close toast
         document.getElementById('confirmToast').classList.add('hidden');

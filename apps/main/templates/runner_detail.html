@@ -9,175 +9,185 @@
 {% block content %}
 {% include 'navbar.html' %}{% include 'confirmation_modal.html' %}{% include 'edit_profile_modal.html' %}
 
-<div class="max-w-4xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
-	<div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
-		<div class="flex justify-between items-center mb-6">
-			<div class="flex items-center gap-3">
-				<h1 id="display-username-header" class="text-2xl font-bold text-gray-900">Your Profile</h1>
-				<span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
-			</div>
-			<div id="lastLogin" class="text-sm text-gray-500">
-				
-			</div>
-		</div>
+<div class="max-w-7xl mx-auto px-4 py-8 bg-[#F9F9F9] mt-10">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <h1 id="display-username-header" class="text-2xl font-bold text-gray-900">Your Profile</h1>
+                <span class="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-full">Runner</span>
+            </div>
+            <div id="lastLogin" class="text-sm text-gray-500">
+                
+            </div>
+        </div>
 
-		<div class="space-y-6">
-			<div >
-				<label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-				<input type="text" id="display-username-input" value="{{ user.username }}" disabled
-					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
-			</div>
+        <div class="space-y-6">
+            <div >
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" id="display-username-input" value="{{ user.username }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
 
-			<div id="location">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-				<input type="text" id="display-location-input" value="{{ user.runner.base_location|default:'Not set' }}" disabled
-					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
-			</div>
+            <div id="location">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input type="text" id="display-location-input" value="{{ user.runner.base_location|default:'Not set' }}" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+            </div>
 
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-				<input type="password" value="********" disabled
-					class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
-				<div class="flex items-center text-sm">
-					<span class="text-gray-500">Forgot your password?</span>
-					<a id="change-password-link" href="{% url 'main:change_password' user.username %}" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
-				</div>
-			</div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" value="********" disabled
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700 mb-1">
+                <div class="flex items-center text-sm">
+                    <span class="text-gray-500">Forgot your password?</span>
+                    <a id="change-password-link" href="{% url 'main:change_password' user.username %}" class="ml-2 text-blue-600 hover:text-blue-700">Change password</a>
+                </div>
+            </div>
 
-			<div class="flex justify-end space-x-4 mt-6">
-				<a href="{% url 'main:logout' %}">
-				<button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
-					Log out
-				</button>
-				</a>
-				<button type="button" onclick="openEditModal()"
-					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-					Edit Profile
-				</button>
-			</div>
-		</div>
-	</div>
+            <div class="flex justify-end space-x-4 mt-6">
+                <a href="{% url 'main:logout' %}">
+                <button class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    Log out
+                </button>
+                </a>
+                <button type="button" onclick="openEditModal()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Edit Profile
+                </button>
+                <button onclick="openDeleteAccountModal()" 
+                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium">
+                    Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
 
 
-	<div class="bg-white rounded-lg shadow-lg p-6">
-			{% if attendance_list %}
-				<div class="space-y-6">
-					{% for record in attendance_list %}
-					<div class="border rounded-lg p-6 relative mb-4
-						{% if record.status == 'canceled' %}
-							border-red-300 bg-red-50
-						{% elif record.status == 'finished' %}
-							border-green-300 bg-green-50
-						{% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
-							border-blue-300 bg-blue-50
-						{% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
-							border-yellow-300 bg-yellow-50
-						{% else %}
-							border-gray-300 bg-gray-50
-						{% endif %}">
-						
-						<div class="flex justify-between items-start mb-4">
-							<div>
-								<h3 class="font-semibold text-gray-900">{{ record.event.name }}</h3>
-								<p class="text-gray-600">{{ record.event.get_location_display }}</p>
-							</div>
-							<div class="flex items-center gap-3">
-								<div class="flex items-center gap-2">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Event History</h2>
+            <a href="{% url 'main:show_main' %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                Join New Event +
+            </a>
+        </div>
+            {% if attendance_list %}
+                <div class="space-y-6">
+                    {% for record in attendance_list %}
+                    <div class="border rounded-lg p-6 relative mb-4
+                        {% if record.status == 'canceled' %}
+                            border-red-300 bg-red-50
+                        {% elif record.status == 'finished' %}
+                            border-green-300 bg-green-50
+                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                            border-blue-300 bg-blue-50
+                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                            border-yellow-300 bg-yellow-50
+                        {% else %}
+                            border-gray-300 bg-gray-50
+                        {% endif %}">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ record.event.name }}</h3>
+                                <p class="text-gray-600">{{ record.event.get_location_display }}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-2">
 
-									<span class="px-3 py-1 rounded-full text-sm 
-										{% if record.status == 'canceled' %}
-											bg-red-100 text-red-800
-										{% elif record.status == 'finished' %}
-											bg-green-100 text-green-800
-										{% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
-											bg-blue-100 text-blue-800
-										{% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
-											bg-yellow-100 text-yellow-800
-										{% else %}
-											bg-gray-100 text-gray-800
-										{% endif %}">
-										{% if record.status == 'canceled' %}
-											Canceled
-										{% elif record.status == 'finished' %}
-											Finished
-										{% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
-											On Going
-										{% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
-											Coming Soon
-										{% else %}
-											{{ record.status|title }}
-										{% endif %}
-									</span>
-									
-									{% if record.status == 'finished' and record.review %}
-									<div class="flex items-center">
-										</div>
-									{% endif %}
-								</div>
+                                    <span class="px-3 py-1 rounded-full text-sm 
+                                        {% if record.status == 'canceled' %}
+                                            bg-red-100 text-red-800
+                                        {% elif record.status == 'finished' %}
+                                            bg-green-100 text-green-800
+                                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                                            bg-blue-100 text-blue-800
+                                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% else %}
+                                            bg-gray-100 text-gray-800
+                                        {% endif %}">
+                                        {% if record.status == 'canceled' %}
+                                            Canceled
+                                        {% elif record.status == 'finished' %}
+                                            Finished
+                                        {% elif record.status == 'attending' and record.event.event_status == 'on_going' %}
+                                            On Going
+                                        {% elif record.status == 'attending' and record.event.event_status == 'coming_soon' %}
+                                            Coming Soon
+                                        {% else %}
+                                            {{ record.status|title }}
+                                        {% endif %}
+                                    </span>
+                                    
+                                    {% if record.status == 'finished' and record.review %}
+                                    <div class="flex items-center">
+                                        </div>
+                                    {% endif %}
+                                </div>
 
-								{% if record.status == 'attending' %}
-								<div class="relative">
-									<button class="text-gray-400 hover:text-gray-600" onclick="toggleDropdown('dropdown-{{ record.event.id }}')">
-										<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-											<path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
-										</svg>
-									</button>
-									<div id="dropdown-{{ record.event.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-										<button id="cancel-btn-{{ record.event.id }}" onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
-										data-event-name="{{ record.event.name|escapejs }}"
-										class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-											<span class="flex items-center">
-												<svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-													<path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-												</svg>
-												Cancel Booking
-											</span>
-										</button>
-									</div>
-								</div>
-								{% endif %}
-							</div>
-						</div>
+                                {% if record.status == 'attending' %}
+                                <div class="relative">
+                                    <button class="text-gray-400 hover:text-gray-600" onclick="toggleDropdown('dropdown-{{ record.event.id }}')">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                                        </svg>
+                                    </button>
+                                    <div id="dropdown-{{ record.event.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                                        <button id="cancel-btn-{{ record.event.id }}" onclick="openCancelModal('{% url 'main:cancel_event' user.username record.event.id %}', '{{ record.event.name }}')"
+                                        data-event-name="{{ record.event.name|escapejs }}"
+                                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                            <span class="flex items-center">
+                                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Cancel Booking
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
 
-						<hr class="border-gray-200 my-4">
+                        <hr class="border-gray-200 my-4">
 
-						<div class="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-2 mb-4">
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Date</span>
-							<p class="text-gray-900">{{ record.event.event_date|date:"d M Y" }}</p>
+                        <div class="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-2 mb-4">
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Date</span>
+                            <p class="text-gray-900">{{ record.event.event_date|date:"d M Y" }}</p>
 
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Location</span>
-							<p class="text-gray-900">{{ record.event.get_location_display }}</p>
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Location</span>
+                            <p class="text-gray-900">{{ record.event.get_location_display }}</p>
 
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Type</span>
-							<p class="text-gray-900">
-								{{ record.category }}
-							</p>
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Type</span>
+                            <p class="text-gray-900">
+                                {{ record.category }}
+                            </p>
 
-							<div class="flex items-center text-gray-600">
-								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4m-9 4h2m-2 4h4m6-4h2m-2 4h4m-6-4h.01M16 16h.01"></path>
-								</svg>
-							</div>
-							<span class="text-sm text-gray-600">Participant ID</span>
-							<p class="text-gray-900">{{ record.participant_id }}</p>
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4m-9 4h2m-2 4h4m6-4h2m-2 4h4m-6-4h.01M16 16h.01"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600">Participant ID</span>
+                            <p class="text-gray-900">{{ record.participant_id }}</p>
 
-						</div>
+                        </div>
 
                     <!-- Rate Button -->
                     {% if record.status == 'finished' and not record.review %}
@@ -211,94 +221,103 @@
             </div>
         {% endif %}
     </div>
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Your Reviews</h2>
+
+        {% if user_reviews %}
+            <div class="flex overflow-x-auto pb-8 gap-6 scrollbar-hide snap-x snap-mandatory px-2">
+                {% for review in user_reviews %}
+                <div class="min-w-[320px] md:min-w-[340px] bg-white rounded-[20px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col items-center text-center relative snap-center transition-transform hover:-translate-y-1 duration-300">
+                    
+                    <div class="absolute top-5 right-5">
+                        <button onclick="toggleReviewMenu('menu-{{ review.id }}')" class="text-gray-300 hover:text-gray-600 transition-colors p-1">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="5" r="2"/>
+                                <circle cx="12" cy="12" r="2"/>
+                                <circle cx="12" cy="19" r="2"/>
+                            </svg>
+                        </button>
+                        
+                        <div id="menu-{{ review.id }}" class="hidden absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-xl border border-gray-100 z-20 overflow-hidden text-left animate-fadeIn">
+                            <button onclick="window.openEditReview('{{ review.id }}', '{{ review.event.id }}', '{{ review.event.name|escapejs }}', {{ review.rating }}, '{{ review.review_text|escapejs }}')" 
+                                    class="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                Edit
+                            </button>
+                            <button onclick="window.deleteReview('{{ review.id }}')" 
+                                    class="w-full text-left px-4 py-2.5 text-sm text-gray-600 hover:bg-red-50 hover:text-red-600 flex items-center gap-2 border-t border-gray-50 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-6 w-full">
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ user.username }}</h3>
+                        <p class="text-xs text-gray-400 font-medium truncate px-4">
+                            Participant {{ review.event.name }}
+                        </p>
+                    </div>
+
+                    <div class="flex-grow w-full mb-8 flex items-center justify-center">
+                        <p class="text-gray-500 text-sm leading-relaxed line-clamp-4">
+                            {{ review.review_text }}
+                        </p>
+                    </div>
+
+                    <div class="mt-auto flex items-center justify-center gap-2 w-full pt-4 border-t border-gray-50 border-dashed">
+                        <svg class="w-6 h-6 text-[#CDFA5D]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+                            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+                        </svg>
+                        <span class="text-2xl font-bold text-gray-900">{{ review.rating }}</span>
+                        <span class="text-xs text-gray-400 font-medium relative top-1">/5.0 rating</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-8 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
+                <p class="text-gray-500">You haven't written any reviews yet.</p>
+            </div>
+        {% endif %}
+    </div>
+    <div id="delete-account-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 transform transition-all" id="delete-modal-content">
+        
+        <h3 class="text-xl font-bold text-red-600 mb-2">Delete Account</h3>
+        <p class="text-gray-600 mb-4 text-sm">
+            Are you sure you want to delete your account? This action is <strong>permanent</strong> and cannot be undone. 
+            All your event history and coins will be lost.
+        </p>
+
+        <form id="delete-account-form" onsubmit="handleDeleteAccount(event)">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Confirm with Password</label>
+                <input type="password" name="password" required placeholder="Enter your password"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+            </div>
+            
+            <div id="delete-error-msg" class="hidden text-red-600 text-sm mb-3"></div>
+
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeDeleteAccountModal()" 
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center">
+                    <span>Delete Permanently</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 </div>
 
 <script>
-    // DEFINISI FUNGSI
-
-    function closeModal() {
-        const cancelModal = document.getElementById('confirmation-modal');
-        if (cancelModal) {
-            cancelModal.classList.add('hidden');
-        }
-    }
-
-    function openCancelModal(actionUrl, itemName) {
-        // Ambil elemen di dalam fungsi agar selalu up-to-date
-        const cancelModal = document.getElementById('confirmation-modal');
-        const cancelModalTitle = document.getElementById('modal-title');
-        const cancelModalText = document.getElementById('modal-text');
-        const cancelModalConfirmButton = document.getElementById('modal-confirm-button');
-
-        cancelModalTitle.textContent = `Are you sure you want to cancel?`;
-        cancelModalText.textContent = `You'll lose your spot in ${itemName}.`;
-        cancelModalConfirmButton.form.action = actionUrl; 
-        
-        cancelModal.classList.remove('hidden');
-    }
-
-    function openEditModal() {
-        const editModal = document.getElementById('edit-profile-modal');
-        if (!editModal) return;
-        
-        const displayUsernameInput = document.getElementById('display-username-input');
-        const displayLocationInput = document.getElementById('display-location-input');
-        const locationSelect = document.getElementById('edit-location');
-
-        // 1. Reset form ke nilai saat ini
-        document.getElementById('edit-username').value = displayUsernameInput.value;
-        const currentLocDisplay = displayLocationInput.value; 
-        
-        for (let i = 0; i < locationSelect.options.length; i++) {
-            if (locationSelect.options[i].text === currentLocDisplay) {
-                locationSelect.value = locationSelect.options[i].value;
-                break;
-            }
-        }
-
-        // 2. Tampilkan modal
-        editModal.classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('edit-modal-content').classList.remove('scale-95', 'opacity-0');
-            document.getElementById('edit-modal-content').classList.add('scale-100', 'opacity-100');
-        }, 10);
-    }
-
-    function closeEditModal() {
-        const editModal = document.getElementById('edit-profile-modal');
-        const editModalContent = document.getElementById('edit-modal-content');
-        const editError = document.getElementById('edit-profile-error');
-
-        if (!editModal) return;
-
-        editError.classList.add('hidden');
-        editError.textContent = '';
-        
-        editModalContent.classList.add('scale-95', 'opacity-0');
-        editModalContent.classList.remove('scale-100', 'opacity-100');
-        
-        setTimeout(() => {
-            editModal.classList.add('hidden');
-        }, 300);
-    }
-
-    function toggleDropdown(dropdownId) {
-        const dropdown = document.getElementById(dropdownId);
-        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
-        
-        allDropdowns.forEach(d => {
-            if (d.id !== dropdownId) {
-                d.classList.add('hidden');
-            }
-        });
-        
-        dropdown.classList.toggle('hidden');
-    }
-
-    // Main code hanya aktif kalo semua udh ke load
     document.addEventListener('DOMContentLoaded', () => {
-        
-        // --- Ambil semua elemen penting ---
+        // --- 1. INITIAL SETUP (Last Login & Edit Profile) ---
         const editForm = document.getElementById('edit-profile-form');
         const saveButton = document.getElementById('edit-profile-save-button');
         const saveButtonText = document.getElementById('save-button-text');
@@ -310,7 +329,6 @@
         const displayLocationInput = document.getElementById('display-location-input');
         const changePasswordLink = document.getElementById('change-password-link');
 
-        // --- Tampilkan Last Login ---
         {% if user.last_login %}
             const lastLogin = new Date("{{ user.last_login|date:'c' }}");
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -319,11 +337,9 @@
             document.getElementById('lastLogin').innerText = 'Last login: Never';
         {% endif %}
 
-        // --- Pasang Listener untuk Edit Form ---
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-
                 saveButton.disabled = true;
                 saveButtonText.classList.add('hidden');
                 saveSpinner.classList.remove('hidden');
@@ -336,20 +352,14 @@
                     const response = await fetch(editForm.action, {
                         method: 'POST',
                         body: formData,
-                        headers: {
-                            'X-CSRFToken': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
+                        headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
                     });
-
                     const data = await response.json();
 
                     if (response.ok && data.success) {
                         displayUsernameHeader.textContent = `${data.username}'s Profile`;
                         displayUsernameInput.value = data.username;
                         displayLocationInput.value = data.base_location;
-
-
                         editForm.action = data.new_urls.edit_profile;
                         changePasswordLink.href = data.new_urls.change_password;
 
@@ -358,24 +368,19 @@
                             const cancelBtn = document.getElementById(`cancel-btn-${eventId}`);
                             if (cancelBtn) {
                                 const eventName = cancelBtn.dataset.eventName;
-                                const newOnClick = `openCancelModal('${newCancelUrls[eventId]}', '${eventName}')`;
-                                cancelBtn.setAttribute('onclick', newOnClick);
+                                cancelBtn.onclick = () => openCancelModal(newCancelUrls[eventId], eventName);
                             }
                         }
-                        
                         closeEditModal();
-                        
                         const newPath = window.location.pathname.split('/').slice(0, -1).join('/') + '/' + data.username;
                         window.history.pushState({}, `${data.username}'s Profile`, newPath);
-
                     } else {
                         editError.textContent = data.error || 'An unknown error occurred.';
                         editError.classList.remove('hidden');
                     }
-
                 } catch (error) {
                     console.error("Fetch Error:", error);
-                    editError.textContent = 'A network error or JSON parsing error occurred. Please try again.';
+                    editError.textContent = 'A network error occurred.';
                     editError.classList.remove('hidden');
                 } finally {
                     saveButton.disabled = false;
@@ -383,19 +388,250 @@
                     saveSpinner.classList.add('hidden');
                 }
             });
-        } else {
-            console.error("Peringatan: Elemen form #edit-profile-form tidak ditemukan.");
         }
 
-        // --- Pasang Listener untuk menutup dropdown ---
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
-                allDropdowns.forEach(d => d.classList.add('hidden'));
+            const isButton = e.target.closest('button[onclick^="toggleReviewMenu"]') || e.target.closest('button[onclick^="toggleDropdown"]');
+            const isMenu = e.target.closest('[id^="menu-"]') || e.target.closest('[id^="dropdown-"]');
+            if (!isButton && !isMenu) {
+                document.querySelectorAll('[id^="menu-"], [id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
             }
         });
-
     }); 
+
+    // ==========================================
+    // 2. GENERIC CONFIRMATION MODAL
+    // ==========================================
+    
+    function closeConfirmationModal() {
+        const modal = document.getElementById('confirmation-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function showConfirmationModal({ title, text, leftText, rightText, type, actionUrl, onConfirm, isSubmitLeft = false }) {
+        const modal = document.getElementById('confirmation-modal');
+        if (!modal) return;
+
+        // 1. Clone Form untuk reset event listener
+        // Kita ambil elemen FRESH dari DOM setiap kali fungsi dipanggil
+        const oldForm = document.getElementById('modal-form');
+        const newForm = oldForm.cloneNode(true);
+        oldForm.parentNode.replaceChild(newForm, oldForm);
+
+        // Ambil referensi ke elemen judul dan teks (pastikan ID unik)
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+        
+        // Ambil tombol dari form yang BARU
+        const leftBtn = newForm.querySelector('#modal-cancel-btn');  // Tombol Putih (Kiri)
+        const rightBtn = newForm.querySelector('#modal-confirm-btn'); // Tombol Warna (Kanan)
+
+        // 2. Set Konten
+        modalTitle.textContent = title;
+        modalText.innerHTML = text;
+        leftBtn.textContent = leftText;
+        rightBtn.textContent = rightText;
+
+        // 3. Set Warna Tombol Kanan (Primary)
+        // Reset class dulu
+        rightBtn.className = "flex-1 px-4 py-2 font-medium rounded-md focus:outline-none transition-colors shadow-sm text-white"; 
+        
+        if (type === 'danger') {
+            rightBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            // Lime Green (Default) - Text gray agar terlihat di background lime
+            rightBtn.classList.add('bg-[#CDFA5D]', 'text-gray-900', 'hover:bg-[#bfe754]');
+            rightBtn.classList.remove('text-white');
+        }
+
+        // 4. Logika Tombol (Normal vs Terbalik)
+        
+        if (isSubmitLeft) {
+            // --- KASUS CANCEL EVENT ---
+            // Kiri (Putih): Submit/Action (Cancel Registration)
+            // Kanan (Warna): Close Modal (Stay)
+            
+            leftBtn.type = "submit";
+            leftBtn.onclick = null; 
+
+            rightBtn.type = "button";
+            rightBtn.onclick = closeConfirmationModal;
+
+            if (actionUrl) newForm.action = actionUrl;
+
+        } else {
+            // --- KASUS DELETE REVIEW (Default) ---
+            // Kiri (Putih): Close Modal (Cancel)
+            // Kanan (Warna): Submit/Action (Yes, Delete)
+
+            leftBtn.type = "button";
+            leftBtn.onclick = closeConfirmationModal;
+
+            rightBtn.type = "submit";
+            rightBtn.onclick = null;
+
+            if (actionUrl) {
+                newForm.action = actionUrl;
+            } else if (onConfirm) {
+                newForm.action = "";
+                newForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    await onConfirm();
+                    closeConfirmationModal();
+                };
+            }
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    // --- WRAPPER: Cancel Booking Event (Tombol Terbalik) ---
+    function openCancelModal(actionUrl, eventName) {
+        showConfirmationModal({
+            title: "Are you sure you want to cancel?",
+            text: `You'll lose your spot in ${eventName}.`,
+            
+            leftText: "Cancel Registration", // Kiri (Putih) -> Submit Form
+            rightText: "Stay",               // Kanan (Warna) -> Tutup Modal
+            
+            type: 'warning', // Warna Lime
+            actionUrl: actionUrl,
+            isSubmitLeft: true // Aktifkan mode tombol terbalik
+        });
+    }
+
+    // --- WRAPPER: Delete Review (Tombol Normal) ---
+    function deleteReview(reviewId) {
+        showConfirmationModal({
+            title: "Delete Review?",
+            text: "Are you sure you want to delete this review? This action cannot be undone.",
+            
+            leftText: "Cancel",      // Kiri (Putih) -> Tutup Modal
+            rightText: "Yes, Delete", // Kanan (Warna) -> Action AJAX
+            
+            type: 'danger', // Warna Merah
+            isSubmitLeft: false, // Mode normal
+            
+            onConfirm: async () => {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                try {
+                    const response = await fetch(`/review/${reviewId}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred.');
+                }
+            }
+        });
+    }
+
+    // ==========================================
+    // 3. EDIT PROFILE & UTILS
+    // ==========================================
+    function openEditModal() {
+        const editModal = document.getElementById('edit-profile-modal');
+        if (!editModal) return;
+        
+        const displayUsernameInput = document.getElementById('display-username-input');
+        const displayLocationInput = document.getElementById('display-location-input');
+        const locationSelect = document.getElementById('edit-location');
+
+        document.getElementById('edit-username').value = displayUsernameInput.value;
+        const currentLocDisplay = displayLocationInput.value; 
+        
+        for (let i = 0; i < locationSelect.options.length; i++) {
+            if (locationSelect.options[i].text === currentLocDisplay) {
+                locationSelect.value = locationSelect.options[i].value;
+                break;
+            }
+        }
+        editModal.classList.remove('hidden');
+        setTimeout(() => {
+            document.getElementById('edit-modal-content').classList.remove('scale-95', 'opacity-0');
+            document.getElementById('edit-modal-content').classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeEditModal() {
+        const editModal = document.getElementById('edit-profile-modal');
+        const editModalContent = document.getElementById('edit-modal-content');
+        if (!editModal) return;
+        document.getElementById('edit-profile-error').classList.add('hidden');
+        
+        editModalContent.classList.add('scale-95', 'opacity-0');
+        editModalContent.classList.remove('scale-100', 'opacity-100');
+        setTimeout(() => { editModal.classList.add('hidden'); }, 300);
+    }
+
+    function toggleReviewMenu(menuId) {
+        const menu = document.getElementById(menuId);
+        document.querySelectorAll('[id^="menu-"]').forEach(el => {
+            if (el.id !== menuId) el.classList.add('hidden');
+        });
+        if (menu) menu.classList.toggle('hidden');
+    }
+
+    function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+            if (d.id !== dropdownId) d.classList.add('hidden');
+        });
+        if (dropdown) dropdown.classList.toggle('hidden');
+    }
+
+    // ==========================================
+    // 4. DELETE ACCOUNT FUNCTIONS
+    // ==========================================
+    function openDeleteAccountModal() {
+        document.getElementById('delete-account-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteAccountModal() {
+        document.getElementById('delete-account-modal').classList.add('hidden');
+        document.getElementById('delete-account-form').reset();
+        document.getElementById('delete-error-msg').classList.add('hidden');
+    }
+
+    async function handleDeleteAccount(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const errorMsg = document.getElementById('delete-error-msg');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        if (!confirm("This is your last chance. Are you absolutely sure?")) return;
+
+        try {
+            const response = await fetch("{% url 'main:delete_profile' user.username %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert(data.message);
+                window.location.href = data.redirect_url;
+            } else {
+                errorMsg.textContent = data.message || "An error occurred.";
+                errorMsg.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            errorMsg.textContent = "Network error occurred.";
+            errorMsg.classList.remove('hidden');
+        }
+    }
 </script>
 
 

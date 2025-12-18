@@ -202,7 +202,44 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("Event deleted successfully!", true);
       eventCard.style.transition = "opacity 0.4s ease";
       eventCard.style.opacity = "0";
-      setTimeout(() => eventCard.remove(), 400);
+            setTimeout(() => {
+                eventCard.remove();
+                const remaining = document.querySelectorAll('.event-card').length;
+                if (remaining === 0) {
+                    let emptyState = document.getElementById('no-events-message');
+                    if (!emptyState) {
+                        emptyState = document.createElement('div');
+                        emptyState.id = 'no-events-message';
+                        emptyState.className = 'text-center py-16';
+                        emptyState.innerHTML = `
+                            <h3 class="text-sm font-medium text-gray-900">No events yet</h3>
+                            <p class="mt-1 text-sm text-gray-500">Create your first event now</p>
+                        `;
+                        const listContainer = document.getElementById('event-card-list');
+                        if (listContainer) {
+                            listContainer.parentNode.replaceChild(emptyState, listContainer);
+                        } else {
+                            const eventsSection = targetForm.closest('.bg-white.shadow.rounded-xl.border');
+                            eventsSection && eventsSection.appendChild(emptyState);
+                        }
+                    } else {
+                        emptyState.classList.remove('hidden');
+                    }
+                    const totalEventsBadges = document.querySelectorAll('p.text-3xl.font-bold');
+                    totalEventsBadges.forEach(b => { b.textContent = '0'; });
+                    const totalSpan = document.querySelectorAll('span.font-medium');
+                    totalSpan.forEach(span => {
+                        if (span.textContent.trim().match(/^\d+$/)) { span.textContent = '0'; }
+                    });
+                } else {
+                    const totalEventsBadges = document.querySelectorAll('p.text-3xl.font-bold');
+                    totalEventsBadges.forEach(b => {
+                        const num = parseInt(b.textContent, 10); if (!isNaN(num) && num>0) b.textContent = num-1; });
+                    const totalSpan = document.querySelectorAll('span.font-medium');
+                    totalSpan.forEach(span => {
+                        const num = parseInt(span.textContent, 10); if (!isNaN(num) && num>0) span.textContent = num-1; });
+                }
+            }, 400);
     } else {
       showToast(data.error || "Failed to delete event.", false);
     }
