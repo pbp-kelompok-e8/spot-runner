@@ -50,6 +50,7 @@ class Command(BaseCommand):
         eo_user = EventOrganizer.objects.first()
 
         created_count = 0
+        updated_count = 0
         skipped_count = 0
 
         for item in data:
@@ -74,25 +75,31 @@ class Command(BaseCommand):
                 print(f"⚠ Skip event karena format tanggal salah: {item['eventname']}")
                 continue
 
-            # CREATE EVENT
-            event = Event.objects.create(
-                user_eo=eo_user,
-                name=item["eventname"],
-                description=item["description"],
-                location=map_city(item["location"]),
-                image=item.get("image"),
-                event_date=event_date,
-                regist_deadline=regis_deadline,
-                capacity=int(item["maxParticipant"]),
-                total_participans=0,
-                full=False,
-                event_status=status,
-                coin=random.randint(10, 100)
+            # UPDATE OR CREATE EVENT
+            event, created = Event.objects.update_or_create(
+                name=item["eventname"],  
+                defaults={
+                    'user_eo': eo_user,
+                    'description': item["description"],
+                    'location': map_city(item["location"]),
+                    'image': item.get("image"),
+                    'event_date': event_date,
+                    'regist_deadline': regis_deadline,
+                    'capacity': int(item["maxParticipant"]),
+                    'total_participans': 0,
+                    'full': False,
+                    'event_status': status,
+                    'coin': random.randint(10, 100)
+                }
             )
 
             event.event_category.add(category_obj)
-            created_count += 1
+            
+            if created:
+                created_count += 1
+            else:
+                updated_count += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f"✅ Seeding selesai! {created_count} event berhasil dibuat, {skipped_count} dilewati."
+            f"Seeding selesai! {created_count} event baru dibuat, {updated_count} event diupdate, {skipped_count} dilewati."
         ))
