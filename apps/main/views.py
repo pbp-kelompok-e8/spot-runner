@@ -235,6 +235,9 @@ def cancel_event(request, username, id):
     except Exception as e:
         print(f"An error occurred while canceling: {str(e)}")
         messages.error(request, f"An error occurred while canceling: {str(e)}")
+        
+    if request.headers.get('Accept') == 'application/json' or '/json' in request.path:
+            return JsonResponse({"status": "success", "message": "Event berhasil dibatalkan."})
 
     return redirect('main:show_user', username=username)
 
@@ -625,6 +628,7 @@ def show_user_json(request, username):
             "category": record.category.category if record.category else "-",
             "participant_id": str(record.pk), # Atau field ID lain jika ada
             "event": {
+                "id": str(event.id),
                 "name": event.name,
                 "location": event.location,
                 "location_display": event.location, # Sesuaikan jika ada method get_display
