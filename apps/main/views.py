@@ -20,6 +20,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.db import transaction
 import requests
 from django.views.decorators.csrf import csrf_exempt
+import json
 # Create your views here.
 
 def show_main(request):
@@ -241,6 +242,60 @@ def cancel_event(request, username, id):
 
     return redirect('main:show_user', username=username)
 
+@csrf_exempt
+@require_POST
+def api_cancel_event(request, username, id):
+    # 1. Validasi User
+    if request.user.username != username:
+        return JsonResponse({"status": "error", "message": "Unauthorized user"}, status=403)
+    
+    user = request.user
+    if user.role != 'runner':
+        return JsonResponse({"status": "error", "message": "Only runners can cancel events"}, status=403)
+
+    # 2. Ambil Event & Runner
+    event = get_object_or_404(Event, pk=id)
+    runner = user.runner
+
+    # 3. Logika Cancel
+    try:
+        attendance = Attendance.objects.get(runner=runner, event=event)
+
+        if attendance.status == 'attending':
+            with transaction.atomic():
+                attendance.status = 'canceled'
+                attendance.save()
+                event.decrement_participans() 
+            
+            return JsonResponse({
+                "status": "success", 
+                "message": f"Successfully canceled attendance for {event.name}."
+            }, status=200)
+        
+        elif attendance.status == 'canceled':
+            return JsonResponse({
+                "status": "warning", 
+                "message": "You have already canceled this event."
+            }, status=200)
+        
+        else:
+            return JsonResponse({
+                "status": "error", 
+                "message": "Cannot cancel a finished event."
+            }, status=400)
+
+    except Attendance.DoesNotExist:
+        return JsonResponse({
+            "status": "error", 
+            "message": "You are not registered for this event."
+        }, status=404)
+    
+    except Exception as e:
+        return JsonResponse({
+            "status": "error", 
+            "message": f"An error occurred: {str(e)}"
+        }, status=500)
+
 
 def participate_in_event(request, username, id, category_key):
     user = get_object_or_404(User, username=username)
@@ -383,6 +438,31 @@ def change_password(request,username):
 
     return render(request, "change_password.html", context)
 
+
+@csrf_exempt
+@require_POST
+@login_required
+def api_change_password(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        # PasswordChangeForm membutuhkan user dan data (dictionary)
+        form = PasswordChangeForm(user, data)
+        
+        if form.is_valid():
+            user = form.save()
+            # Penting: update session agar user tidak ter-logout otomatis setelah ganti password
+            update_session_auth_hash(request, user) 
+            return JsonResponse({"status": "success", "message": "Password berhasil diubah!"}, status=200)
+        else:
+            # Ambil error pertama yang muncul
+            first_error = list(form.errors.values())[0][0]
+            return JsonResponse({"status": "error", "message": first_error}, status=400)
+            
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 @login_required(login_url='main:login')
 @require_POST
 def delete_profile(request, username):
@@ -419,7 +499,46 @@ def delete_profile(request, username):
             "success": False,
             "message": f"Terjadi kesalahan: {str(e)}"
         }, status=500)
-    
+
+@csrf_exempt
+@require_POST
+@login_required
+def api_delete_account(request):
+    try:
+        data = json.loads(request.body)
+        password = data.get('password')
+        user = request.user
+
+        # 1. Validasi Password
+        if not password:
+                return JsonResponse({"status": "error", "message": "Password is required"}, status=400)
+
+        if not user.check_password(password):
+            return JsonResponse({"status": "error", "message": "Password salah."}, status=400)
+        
+        # 2. Hapus Data dengan Aman (Atomic)
+        with transaction.atomic():
+            # Jika user terdaftar di event, kurangi kuota partisipan event tersebut
+            if hasattr(user, 'runner'):
+                active_attendances = Attendance.objects.filter(
+                    runner=user.runner, 
+                    status='attending'
+                ).select_related('event')
+                
+                for attendance in active_attendances:
+                    event = attendance.event
+                    event.decrement_participans() 
+            
+            # Hapus User
+            user.delete()
+            
+            # Logout session (opsional tapi disarankan)
+            logout(request)
+            
+        return JsonResponse({"status": "success", "message": "Akun berhasil dihapus."}, status=200)
+        
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 
