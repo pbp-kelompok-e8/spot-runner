@@ -247,3 +247,32 @@ def delete_account(request):
 
     messages.error(request, "Invalid request.")
     return redirect('event_organizer:profile')
+
+def show_json(request):
+    """Show all Event Organizers data in JSON format"""
+    organizers = EventOrganizer.objects.select_related('user').all()
+    
+    data = []
+    for organizer in organizers:
+        data.append({
+            'user_id': organizer.user.id,
+            'username': organizer.user.username,
+            'email': organizer.user.email,
+            'first_name': organizer.user.first_name,
+            'last_name': organizer.user.last_name,
+            'name': organizer.name,
+            'profile_picture': organizer.profile_picture,
+            'base_location': organizer.base_location,
+            'total_events': organizer.total_events,
+            'rating': organizer.rating,
+            'review_count': organizer.review_count,
+            'coin': organizer.coin,
+            'created_at': organizer.created_at.isoformat(),
+            'updated_at': organizer.updated_at.isoformat(),
+        })
+    
+    return JsonResponse({
+        'status': 'success',
+        'count': len(data),
+        'data': data
+    })
