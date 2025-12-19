@@ -292,6 +292,61 @@ def participate_in_event(request, username, id, category_key):
 
     return redirect('main:show_user', username=username)
 
+@csrf_exempt
+@require_POST
+def api_participate_event(request, username, id, category_key):
+    # 1. Validasi User
+    # Kita tidak perlu get_object_or_404 user karena request.user sudah ada
+    if request.user.username != username:
+        return JsonResponse({"status": "error", "message": "Unauthorized user"}, status=403)
+    
+    user = request.user
+    if user.role != 'runner':
+        return JsonResponse({"status": "error", "message": "Only runners can join events"}, status=403)
+
+    # 2. Ambil Event & Kategori
+    event = get_object_or_404(Event, pk=id)
+    runner = user.runner
+
+    try:
+        selected_category = EventCategory.objects.get(
+            category=category_key, 
+            events=event
+        )
+    except EventCategory.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Invalid category"}, status=400)
+
+    # 3. Logic Transaction (Sama persis)
+    try:
+        with transaction.atomic():
+            if event.total_participans >= event.capacity:
+                    return JsonResponse({"status": "error", "message": "Event is full"}, status=400)
+
+            attendance, created = Attendance.objects.get_or_create(
+                runner=runner,
+                event=event,
+                defaults={
+                    'status': 'attending',
+                    'category': selected_category
+                }
+            )
+
+            if created:
+                event.increment_participans()
+                return JsonResponse({"status": "success", "message": f"Successfully joined {event.name}!"}, status=200)
+            else:
+                if attendance.status == 'canceled':
+                    attendance.status = 'attending'
+                    attendance.category = selected_category
+                    attendance.save()
+                    event.increment_participans() 
+                    return JsonResponse({"status": "success", "message": f"Re-joined {event.name} successfully!"}, status=200)
+                else:
+                    return JsonResponse({"status": "warning", "message": "You are already registered."}, status=200)
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 @login_required(login_url='main:login')
 def change_password(request,username):
     if request.method == "POST":
