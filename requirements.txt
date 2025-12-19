@@ -8,3 +8,4 @@ python-dotenv
 selenium
 coverage
 django-cors-headers
+Pillow

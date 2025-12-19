@@ -1,5 +1,5 @@
 from django.urls import path
-from apps.main.views import register, show_main, login_user, show_user, logout_user, edit_profile_runner, cancel_event, participate_in_event, change_password, delete_profile, show_all_users_json, api_profile, api_events, show_all_users_json, show_user_json
+from apps.main.views import register, show_main, login_user, show_user, logout_user, edit_profile_runner, cancel_event, participate_in_event, change_password, delete_profile, show_all_users_json, api_profile, api_events, show_all_users_json, show_user_json, api_participate_event
 from apps.event.views import create_event, show_event, show_xml, show_json, show_xml_by_id, show_json_by_id, edit_event, delete_event
 from apps.review.views import create_review
 
@@ -20,6 +20,7 @@ urlpatterns = [
     path('<str:username>/json', show_user_json, name='show_user_json'),
     path('api/profile/', api_profile, name='api_profile'),
     path('api/events/', api_events, name='api_events'),
+    path('api/participate/<str:username>/<str:id>/<str:category_key>/', api_participate_event, name='api_participate_event'),
 
 
     # path('create-event/', create_event, name='create_event'),
