@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from apps.event.views import create_event_flutter, edit_event_flutter, delete_event_flutter
 
 urlpatterns = [
     path('', include('apps.main.urls')),  # Routing ke app main

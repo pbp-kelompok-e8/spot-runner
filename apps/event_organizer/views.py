@@ -11,6 +11,7 @@ from apps.main.models import User
 from .models import EventOrganizer
 from apps.review.models import Review
 from datetime import date
+from django.views.decorators.csrf import csrf_exempt
 
 
 @login_required
@@ -247,3 +248,169 @@ def delete_account(request):
 
     messages.error(request, "Invalid request.")
     return redirect('event_organizer:profile')
+
+@csrf_exempt
+def edit_profile_flutter(request):
+    if request.method != "POST":
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid request method."
+        }, status=405)
+
+    try:
+        organizer = request.user.event_organizer_profile
+    except EventOrganizer.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "message": "Organizer profile not found."
+        }, status=404)
+
+    new_username = request.POST.get('username')
+    base_location = request.POST.get('base_location', '')
+    image_url = request.POST.get('profile_picture', '')
+
+    # Update username
+    if new_username and new_username != request.user.username:
+        request.user.username = new_username
+        request.user.save()
+
+    # Update Event Organizer fields
+    organizer.base_location = base_location
+    organizer.profile_picture = image_url
+    organizer.save()
+
+    return JsonResponse({
+        "success": True,
+        "message": "Profile updated successfully."
+    })
+
+@csrf_exempt
+def change_password_flutter(request):
+    if request.method != "POST":
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid request method."
+        }, status=405)
+
+    form = PasswordChangeForm(request.user, request.POST)
+
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)
+        return JsonResponse({
+            "success": True,
+            "message": "Password updated successfully."
+        })
+
+    # Ambil error pertama
+    error_message = list(form.errors.values())[0][0]
+
+    return JsonResponse({
+        "success": False,
+        "message": error_message
+    }, status=400)
+
+@csrf_exempt
+@login_required
+def delete_account_flutter(request):
+    user = request.user
+
+    if not hasattr(user, 'role'):
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Invalid user'
+        }, status=403)
+
+    if user.role != 'event_organizer':
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Unauthorized'
+        }, status=403)
+
+    user.delete()
+
+    return JsonResponse({
+        'status': 'success',
+        'message': 'Account deleted'
+    })
+
+def show_json(request):
+    """Show all Event Organizers data in JSON format"""
+    organizers = EventOrganizer.objects.select_related('user').all()
+    
+    data = []
+    for organizer in organizers:
+        data.append({
+            'user_id': organizer.user.id,
+            'username': organizer.user.username,
+            'email': organizer.user.email,
+            'first_name': organizer.user.first_name,
+            'last_name': organizer.user.last_name,
+            'name': organizer.name,
+            'profile_picture': organizer.profile_picture,
+            'base_location': organizer.base_location,
+            'total_events': organizer.total_events,
+            'rating': organizer.rating,
+            'review_count': organizer.review_count,
+            'coin': organizer.coin,
+            'created_at': organizer.created_at.isoformat(),
+            'updated_at': organizer.updated_at.isoformat(),
+        })
+    
+    return JsonResponse({
+        'status': 'success',
+        'count': len(data),
+        'data': data
+    })
+
+@login_required
+def profile_json(request):
+    """
+    Return profile data for currently logged-in Event Organizer
+    (Used by Flutter Profile Screen)
+    """
+    try:
+        organizer = EventOrganizer.objects.select_related('user').get(
+            user=request.user
+        )
+
+        user = organizer.user
+
+        return JsonResponse({
+            'status': 'success',
+            'data': {
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+
+                # Profile-specific
+                'name': organizer.name,
+                'profile_picture': organizer.profile_picture or None,
+                'base_location': organizer.base_location,
+
+                # Metadata
+                'joined': user.date_joined.strftime('%Y-%m-%d'),
+                'last_login': user.last_login.strftime('%Y-%m-%d %H:%M:%S')
+                    if user.last_login else None,
+
+                # Stats
+                'total_events': organizer.total_events,
+                'rating': organizer.rating,
+                'review_count': organizer.review_count,
+                'coin': organizer.coin,
+
+                'created_at': organizer.created_at.isoformat(),
+                'updated_at': organizer.updated_at.isoformat(),
+            }
+        })
+
+    except EventOrganizer.DoesNotExist:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': 'Event Organizer profile not found'
+            },
+            status=404
+        )
