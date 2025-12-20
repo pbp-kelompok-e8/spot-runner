@@ -800,7 +800,7 @@ def show_user_json(request, username):
         serialized_attendance.append({
             "status": record.status,
             "category": record.category.category if record.category else "-",
-            "participant_id": str(record.pk), # Atau field ID lain jika ada
+            "participant_id": str(record.participant_id), # Atau field ID lain jika ada
             "event": {
                 "id": str(event.id),
                 "name": event.name,
