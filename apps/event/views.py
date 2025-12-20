@@ -16,6 +16,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.html import strip_tags
 from datetime import datetime
+from django.db import transaction
 
 @login_required
 def create_event(request):
@@ -31,7 +32,11 @@ def create_event(request):
             event_entry = form.save(commit=False)
             event_entry.user_eo = event_organizer 
             event_entry.save()
-            form.save_m2m() 
+            form.save_m2m()
+
+            event_organizer.total_events += 1
+            event_organizer.save(update_fields=["total_events"])
+
             if is_ajax:
                 return JsonResponse({
                     'success': True,
@@ -100,6 +105,8 @@ def delete_event(request, id):
             return redirect('event:show_event', id=id)
         is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         event.delete()
+        event.user_eo.total_events -= 1
+        event.user_eo.save(update_fields=['total_events'])
         
         if is_ajax:
             return JsonResponse({
@@ -253,6 +260,9 @@ def create_event_flutter(request):
                 if category_obj:
                     new_event.event_category.add(category_obj)
 
+        eo_profile.total_events += 1
+        eo_profile.save(update_fields=["total_events"])
+
         return JsonResponse({"status": "success"}, status=200)
 
 @csrf_exempt
@@ -296,7 +306,10 @@ def edit_event_flutter(request, event_id):
 def delete_event_flutter(request, event_id):
     if request.method == 'POST':
         try:
-            event = Event.objects.get(pk=event_id)
+            event = Event.objects.select_related("user_eo").get(pk=event_id)
+            eo = event.user_eo
+            eo.total_events = max(0, eo.total_events - 1)
+            eo.save(update_fields=['total_events'])
             event.delete()
 
             return JsonResponse({"status": "success", "message": "Event deleted successfully"}, status=200)
