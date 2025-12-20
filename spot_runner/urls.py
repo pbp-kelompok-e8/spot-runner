@@ -26,4 +26,5 @@ urlpatterns = [
     path('merchandise/', include('apps.merchandise.urls')),  # Routing ke app merchandise
     path('review/', include('apps.review.urls')),  # Routing ke app review
     path('auth/', include('apps.authentication.urls')),
+    path('', include('apps.review.urls')),
 ]
