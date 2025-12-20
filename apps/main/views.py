@@ -198,6 +198,43 @@ def edit_profile_runner(request, username):
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+@csrf_exempt
+@require_POST
+@login_required
+def api_edit_profile(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        new_username = data.get('username', '').strip()
+        new_location = data.get('base_location', '').strip()
+
+        # 1. Validasi Username
+        if not new_username:
+            return JsonResponse({"status": "error", "message": "Username tidak boleh kosong."}, status=400)
+        
+        # Cek unique username
+        if new_username != user.username:
+            if User.objects.filter(username=new_username).exists():
+                return JsonResponse({"status": "error", "message": "Username sudah digunakan."}, status=400)
+            user.username = new_username
+            user.save()
+
+        # 2. Update Location (Runner)
+        if hasattr(user, 'runner'):
+            user.runner.base_location = new_location
+            user.runner.save()
+        
+        return JsonResponse({
+            "status": "success", 
+            "message": "Profil berhasil diperbarui!",
+            "username": user.username,
+            "base_location": user.runner.base_location
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 def cancel_event(request, username, id):
     user = get_object_or_404(User, username=username)
     if user != request.user or user.role != 'runner':
