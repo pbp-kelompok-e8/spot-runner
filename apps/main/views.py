@@ -19,6 +19,8 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.db import transaction
 import requests
+from django.views.decorators.csrf import csrf_exempt
+import json
 # Create your views here.
 
 def show_main(request):
@@ -234,8 +236,65 @@ def cancel_event(request, username, id):
     except Exception as e:
         print(f"An error occurred while canceling: {str(e)}")
         messages.error(request, f"An error occurred while canceling: {str(e)}")
+        
+    if request.headers.get('Accept') == 'application/json' or '/json' in request.path:
+            return JsonResponse({"status": "success", "message": "Event berhasil dibatalkan."})
 
     return redirect('main:show_user', username=username)
+
+@csrf_exempt
+@require_POST
+def api_cancel_event(request, username, id):
+    # 1. Validasi User
+    if request.user.username != username:
+        return JsonResponse({"status": "error", "message": "Unauthorized user"}, status=403)
+    
+    user = request.user
+    if user.role != 'runner':
+        return JsonResponse({"status": "error", "message": "Only runners can cancel events"}, status=403)
+
+    # 2. Ambil Event & Runner
+    event = get_object_or_404(Event, pk=id)
+    runner = user.runner
+
+    # 3. Logika Cancel
+    try:
+        attendance = Attendance.objects.get(runner=runner, event=event)
+
+        if attendance.status == 'attending':
+            with transaction.atomic():
+                attendance.status = 'canceled'
+                attendance.save()
+                event.decrement_participans() 
+            
+            return JsonResponse({
+                "status": "success", 
+                "message": f"Successfully canceled attendance for {event.name}."
+            }, status=200)
+        
+        elif attendance.status == 'canceled':
+            return JsonResponse({
+                "status": "warning", 
+                "message": "You have already canceled this event."
+            }, status=200)
+        
+        else:
+            return JsonResponse({
+                "status": "error", 
+                "message": "Cannot cancel a finished event."
+            }, status=400)
+
+    except Attendance.DoesNotExist:
+        return JsonResponse({
+            "status": "error", 
+            "message": "You are not registered for this event."
+        }, status=404)
+    
+    except Exception as e:
+        return JsonResponse({
+            "status": "error", 
+            "message": f"An error occurred: {str(e)}"
+        }, status=500)
 
 
 def participate_in_event(request, username, id, category_key):
@@ -291,6 +350,61 @@ def participate_in_event(request, username, id, category_key):
 
     return redirect('main:show_user', username=username)
 
+@csrf_exempt
+@require_POST
+def api_participate_event(request, username, id, category_key):
+    # 1. Validasi User
+    # Kita tidak perlu get_object_or_404 user karena request.user sudah ada
+    if request.user.username != username:
+        return JsonResponse({"status": "error", "message": "Unauthorized user"}, status=403)
+    
+    user = request.user
+    if user.role != 'runner':
+        return JsonResponse({"status": "error", "message": "Only runners can join events"}, status=403)
+
+    # 2. Ambil Event & Kategori
+    event = get_object_or_404(Event, pk=id)
+    runner = user.runner
+
+    try:
+        selected_category = EventCategory.objects.get(
+            category=category_key, 
+            events=event
+        )
+    except EventCategory.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Invalid category"}, status=400)
+
+    # 3. Logic Transaction (Sama persis)
+    try:
+        with transaction.atomic():
+            if event.total_participans >= event.capacity:
+                    return JsonResponse({"status": "error", "message": "Event is full"}, status=400)
+
+            attendance, created = Attendance.objects.get_or_create(
+                runner=runner,
+                event=event,
+                defaults={
+                    'status': 'attending',
+                    'category': selected_category
+                }
+            )
+
+            if created:
+                event.increment_participans()
+                return JsonResponse({"status": "success", "message": f"Successfully joined {event.name}!"}, status=200)
+            else:
+                if attendance.status == 'canceled':
+                    attendance.status = 'attending'
+                    attendance.category = selected_category
+                    attendance.save()
+                    event.increment_participans() 
+                    return JsonResponse({"status": "success", "message": f"Re-joined {event.name} successfully!"}, status=200)
+                else:
+                    return JsonResponse({"status": "warning", "message": "You are already registered."}, status=200)
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 @login_required(login_url='main:login')
 def change_password(request,username):
     if request.method == "POST":
@@ -323,6 +437,31 @@ def change_password(request,username):
     }
 
     return render(request, "change_password.html", context)
+
+
+@csrf_exempt
+@require_POST
+@login_required
+def api_change_password(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        # PasswordChangeForm membutuhkan user dan data (dictionary)
+        form = PasswordChangeForm(user, data)
+        
+        if form.is_valid():
+            user = form.save()
+            # Penting: update session agar user tidak ter-logout otomatis setelah ganti password
+            update_session_auth_hash(request, user) 
+            return JsonResponse({"status": "success", "message": "Password berhasil diubah!"}, status=200)
+        else:
+            # Ambil error pertama yang muncul
+            first_error = list(form.errors.values())[0][0]
+            return JsonResponse({"status": "error", "message": first_error}, status=400)
+            
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 @login_required(login_url='main:login')
 @require_POST
@@ -360,7 +499,46 @@ def delete_profile(request, username):
             "success": False,
             "message": f"Terjadi kesalahan: {str(e)}"
         }, status=500)
-    
+
+@csrf_exempt
+@require_POST
+@login_required
+def api_delete_account(request):
+    try:
+        data = json.loads(request.body)
+        password = data.get('password')
+        user = request.user
+
+        # 1. Validasi Password
+        if not password:
+                return JsonResponse({"status": "error", "message": "Password is required"}, status=400)
+
+        if not user.check_password(password):
+            return JsonResponse({"status": "error", "message": "Password salah."}, status=400)
+        
+        # 2. Hapus Data dengan Aman (Atomic)
+        with transaction.atomic():
+            # Jika user terdaftar di event, kurangi kuota partisipan event tersebut
+            if hasattr(user, 'runner'):
+                active_attendances = Attendance.objects.filter(
+                    runner=user.runner, 
+                    status='attending'
+                ).select_related('event')
+                
+                for attendance in active_attendances:
+                    event = attendance.event
+                    event.decrement_participans() 
+            
+            # Hapus User
+            user.delete()
+            
+            # Logout session (opsional tapi disarankan)
+            logout(request)
+            
+        return JsonResponse({"status": "success", "message": "Akun berhasil dihapus."}, status=200)
+        
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 
@@ -386,7 +564,7 @@ def show_all_users_json(request):
                 runner_profile = user.runner
                 user_data["details"] = {
                     "base_location": runner_profile.base_location,
-                    "coin": runner_profile.coin,
+                    "coin": int(runner_profile.coin) if runner_profile.coin is not None else 0,
                 }
             except Runner.DoesNotExist:
                 pass # Biarkan details tetap None
@@ -399,8 +577,8 @@ def show_all_users_json(request):
                     "base_location": eo_profile.base_location,
                     "profile_picture": eo_profile.profile_picture,
                     "total_events": eo_profile.total_events,
-                    "rating": eo_profile.rating,
-                    "coin": eo_profile.coin,
+                    "rating": float(eo_profile.rating) if eo_profile.rating else 0.0,
+                    "coin": int(eo_profile.coin) if eo_profile.coin is not None else 0,
                 }
             except EventOrganizer.DoesNotExist:
                 pass
@@ -409,3 +587,247 @@ def show_all_users_json(request):
 
     # safe=False wajib digunakan jika yang dikembalikan adalah List (bukan Dict)
     return JsonResponse(data_list, safe=False, status=200)
+
+# views.py - api_profile
+@csrf_exempt
+@login_required
+def api_profile(request):
+    """API untuk mendapatkan data user profile (JSON)"""
+    try:
+        user = request.user
+        
+        # Build details based on user role
+        details = {}
+        
+        if user.role == 'event_organizer':
+            try:
+                eo_profile = user.event_organizer_profile
+                details = {
+                    "base_location": eo_profile.base_location or "",
+                    "profile_picture": eo_profile.profile_picture or "",
+                    "total_events": Event.objects.filter(user_eo=eo_profile).count(),
+                    "rating": float(eo_profile.rating) if eo_profile.rating else 0.0,
+                    "coin": int(eo_profile.coin) if eo_profile.coin is not None else 0,
+                }
+            except (EventOrganizer.DoesNotExist, AttributeError):
+                details = {
+                    "base_location": "",
+                    "profile_picture": "",
+                    "total_events": 0,
+                    "rating": 0.0,
+                    "coin": 0,
+                }
+        elif user.role == 'runner':
+            try:
+                runner_profile = user.runner
+                details = {
+                    "base_location": runner_profile.base_location or "",
+                    "coin": int(runner_profile.coin) if runner_profile.coin is not None else 0,
+                }
+            except (Runner.DoesNotExist, AttributeError):
+                details = {
+                    "base_location": "",
+                    "coin": 0,
+                }
+        else:
+            details = {
+                "base_location": "",
+                "coin": 0,
+            }
+        
+        data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role or "user",
+            "details": details
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e),
+            "status": "error"
+        }, status=500)
+
+
+# views.py - api_events
+@csrf_exempt
+@login_required
+def api_events(request):
+    """API untuk mendapatkan data events yang diorganisir user (JSON)"""
+    try:
+        user = request.user
+        
+        # Hanya event organizer yang memiliki events
+        if user.role != 'event_organizer':
+            return JsonResponse([], safe=False, status=200)
+        
+        # Dapatkan EventOrganizer profile
+        try:
+            eo_profile = user.event_organizer_profile
+        except EventOrganizer.DoesNotExist:
+            return JsonResponse([], safe=False, status=200)
+        
+        # Query events berdasarkan eo_profile (bukan user)
+        events = Event.objects.filter(user_eo=eo_profile).order_by('-event_date')[:5]
+        
+        data = []
+        for event in events:
+            # Pastikan semua field ada
+            event_status = getattr(event, 'event_status', 'On Going')
+            
+            # Format tanggal
+            event_date = event.event_date
+            if event_date:
+                event_date_str = event_date.isoformat()
+            else:
+                event_date_str = "2024-12-04T00:00:00Z"
+            
+            regist_deadline = getattr(event, 'regist_deadline', None)
+            if regist_deadline:
+                regist_deadline_str = regist_deadline.isoformat()
+            else:
+                regist_deadline_str = event_date_str
+            
+            # Kategori event
+            event_categories = []
+            if hasattr(event, 'event_categories') and event.event_categories.exists():
+                event_categories = list(event.event_categories.values_list('category', flat=True))
+            
+            event_obj = {
+                "id": str(event.id),
+                "name": event.name or "",
+                "description": event.description or "",
+                "location": event.location or "",
+                "event_status": event_status,
+                "image": event.image.url if hasattr(event.image, 'url') else "",
+                "image2": None,
+                "image3": None,
+                "event_date": event_date_str,
+                "regist_deadline": regist_deadline_str,
+                "contact": event.contact or "",
+                "capacity": event.capacity or 0,
+                "total_participans": event.total_participans or 0,
+                "full": event.full if hasattr(event, 'full') else False,
+                "coin": event.coin or 0,
+                "user_eo": {
+                    "id": user.id,
+                    "username": user.username
+                },
+                "event_categories": event_categories
+            }
+            
+            data.append(event_obj)
+        
+        return JsonResponse(data, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e),
+            "status": "error"
+        }, status=500)
+
+@login_required(login_url='main:login')
+def show_user_json(request, username):
+    user = get_object_or_404(User, username=username)
+
+    # Validasi otorisasi
+    if user != request.user:
+        return JsonResponse({
+            "status": "error",
+            "message": "You are not authorized to view this profile."
+        }, status=403)
+
+    # Data dasar user
+    user_data = {
+        "username": user.username,
+        "email": user.email,
+        "role": user.role,
+        "last_login": user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else None,
+        "status": "success", # Penting untuk pengecekan di Flutter
+    }
+
+    # Jika bukan runner, return basic info saja
+    if user.role != 'runner':
+        user_data["message"] = "User is not a runner"
+        return JsonResponse(user_data, status=200)
+
+    # Ambil profile runner
+    try:
+        runner_profile = user.runner
+        user_data["base_location"] = runner_profile.base_location
+        user_data["coin"] = runner_profile.coin
+    except Runner.DoesNotExist:
+            user_data["base_location"] = "-"
+            user_data["coin"] = 0
+
+    # Ambil Attendance List & Reviews
+    attendance_list = runner_profile.attendance_records.all().select_related('event').prefetch_related('event__event_category')
+    reviews = Review.objects.filter(runner=runner_profile).select_related('event')
+    review_dict = {review.event_id: review for review in reviews}
+    
+    today = date.today()
+    serialized_attendance = []
+    
+    for record in attendance_list:
+        event = record.event
+        event_date = event.event_date.date() if event.event_date else None
+        
+        # Update status event otomatis (sama seperti di HTML view)
+        if event_date:
+            is_changed = False
+            if event_date < today and event.event_status != "finished":
+                event.event_status = "finished"
+                is_changed = True
+            elif event_date == today and event.event_status != "on_going":
+                event.event_status = "on_going"
+                is_changed = True
+            elif event_date > today and event.event_status != "coming_soon":
+                event.event_status = "coming_soon"
+                is_changed = True
+            
+            if is_changed:
+                event.save()
+                
+        if event.event_status == "finished" and record.status == 'attending':
+            record.status = 'finished'
+            record.save()
+
+        # Susun data attendance untuk JSON
+        event_review = review_dict.get(event.id)
+        serialized_attendance.append({
+            "status": record.status,
+            "category": record.category.category if record.category else "-",
+            "participant_id": str(record.participant_id), # Atau field ID lain jika ada
+            "event": {
+                "id": str(event.id),
+                "name": event.name,
+                "location": event.location,
+                "location_display": event.location, # Sesuaikan jika ada method get_display
+                "event_date": event.event_date.strftime('%Y-%m-%d') if event.event_date else "-",
+                "event_status": event.event_status,
+            },
+            "review": {
+                "rating": event_review.rating,
+                "review_text": event_review.review_text
+            } if event_review else None
+        })
+
+    # Susun data Reviews untuk JSON
+    serialized_reviews = []
+    for r in reviews:
+        serialized_reviews.append({
+            "rating": r.rating,
+            "review_text": r.review_text,
+            "event": {
+                "name": r.event.name,
+            }
+        })
+
+    # Masukkan ke dictionary utama
+    user_data["attendance_list"] = serialized_attendance
+    user_data["user_reviews"] = serialized_reviews
+
+    return JsonResponse(user_data, status=200)
