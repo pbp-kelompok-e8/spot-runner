@@ -464,3 +464,130 @@ def create_review_flutter(request):
             "status": "error", 
             "message": "An internal server error occurred"
         }, status=500)
+
+
+@csrf_exempt
+def edit_review_flutter(request, review_id):
+    """
+    Edit review - Flutter specific endpoint
+    URL: /api/reviews/edit-flutter/<review_id>/
+    """
+    if request.method != 'POST':
+        return JsonResponse({
+            "status": "error",
+            "message": "Method not allowed"
+        }, status=405)
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "status": "error",
+            "message": "Authentication required"
+        }, status=401)
+    
+    try:
+        review = Review.objects.get(id=review_id)
+    except Review.DoesNotExist:
+        return JsonResponse({
+            "status": "error",
+            "message": "Review not found"
+        }, status=404)
+    
+    # Check authorization
+    if request.user != review.runner.user:
+        return JsonResponse({
+            "status": "error",
+            "message": "You are not authorized to edit this review"
+        }, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        review_text = strip_tags(data.get("review_text", ""))
+        rating = data.get("rating")
+        
+        if not review_text or rating is None:
+            return JsonResponse({
+                "status": "error",
+                "message": "Missing required fields: review_text or rating"
+            }, status=400)
+        
+        if not (1 <= int(rating) <= 5):
+            return JsonResponse({
+                "status": "error",
+                "message": "Rating must be between 1 and 5"
+            }, status=400)
+        
+        # Update review
+        review.rating = int(rating)
+        review.review_text = review_text
+        review.save()
+        
+        return JsonResponse({
+            "status": "success",
+            "message": "Review updated successfully",
+            "review": {
+                "id": str(review.id),
+                "rating": review.rating,
+                "review_text": review.review_text
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "status": "error",
+            "message": "Invalid JSON format"
+        }, status=400)
+    except Exception as e:
+        print(f"Edit review flutter error: {e}")
+        return JsonResponse({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
+
+
+@csrf_exempt
+def delete_review_flutter(request, review_id):
+    """
+    Delete review - Flutter specific endpoint
+    URL: /api/reviews/delete-flutter/<review_id>/
+    """
+    if request.method != 'POST':
+        return JsonResponse({
+            "status": "error",
+            "message": "Method not allowed"
+        }, status=405)
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "status": "error",
+            "message": "Authentication required"
+        }, status=401)
+    
+    try:
+        review = Review.objects.get(id=review_id)
+    except Review.DoesNotExist:
+        return JsonResponse({
+            "status": "error",
+            "message": "Review not found"
+        }, status=404)
+    
+    # Check authorization
+    if request.user != review.runner.user:
+        return JsonResponse({
+            "status": "error",
+            "message": "You are not authorized to delete this review"
+        }, status=403)
+    
+    try:
+        # HARD DELETE
+        review.delete()
+        
+        return JsonResponse({
+            "status": "success",
+            "message": "Review deleted successfully"
+        })
+    except Exception as e:
+        print(f"Delete review flutter error: {e}")
+        return JsonResponse({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
