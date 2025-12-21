@@ -852,13 +852,14 @@ def show_user_json(request, username):
             } if event_review else None
         })
 
-    # Susun data Reviews untuk JSON
     serialized_reviews = []
     for r in reviews:
         serialized_reviews.append({
+            "id": str(r.id),
             "rating": r.rating,
             "review_text": r.review_text,
             "event": {
+                "id": str(r.event.id),
                 "name": r.event.name,
             }
         })
