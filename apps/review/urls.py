@@ -11,6 +11,5 @@ urlpatterns = [
     path('create/<uuid:event_id>/', views.create_review, name='create_review'),
     path('<str:review_id>/edit/', views.edit_review, name='edit_review'),
     path('<str:review_id>/delete/', views.delete_review, name='delete_review'),
-    path('proxy-image/', views.proxy_image, name='proxy_image'),
     path('create-flutter/', views.create_review_flutter, name='create_review_flutter'),
 ]
