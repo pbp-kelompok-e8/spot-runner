@@ -84,16 +84,16 @@
             <!-- Organizer History View -->
             <div class="flex items-center justify-between">
               <div class="flex-1">
-                <div class="flex items-center justify-between mb-4">
-                  <div>
-                    <span class="text-gray-500">Redeem ID:</span><br>
-                    <span class="text-m font-semibold">{{ redemption.id }}</span>
+                <div class="flex items-center justify-between mb-4 gap-4">
+                  <div class="min-w-0">
+                    <span class="text-gray-500 text-sm">Redeem ID:</span><br>
+                    <div class="text-m font-semibold">{{ redemption.id }}</div>
                   </div>
-                  <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                    + {{ redemption.total_coins }}
+                  <div class="shrink-0 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 whitespace-nowrap">
+                    <span>+ {{ redemption.total_coins }}</span>
                     <img src="{% static 'images/coin-icon3.png' %}"
-                      alt="Coin icon"
-                      class="w-[24px] h-[24px] ml-2" />
+                        alt="Coin icon"
+                        class="w-[24px] h-[24px] ml-2" />
                   </div>
                 </div>
                 
