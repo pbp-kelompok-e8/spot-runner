@@ -249,7 +249,7 @@ def create_event_flutter(request):
             coin=int(data.get("coin", 0)),
             total_participans=0,
             user_eo=eo_profile,
-             
+            
         )
         new_event.save()
         categories_data = data.get("categories", []) 
